@@ -1,6 +1,6 @@
 # RackNES
 
-A Nintendo Entertainment System (NES) emulator for VCV Rack.
+A Nintendo Entertainment System (NES) emulator with Control Voltage (CV) for VCV Rack.
 
 ![RackNES](img/RackNES.png)
 
