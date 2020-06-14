@@ -11,6 +11,7 @@
 #include <vector>
 #include "common.hpp"
 #include "../mapper.hpp"
+#include "../log.hpp"
 
 namespace NES {
 
@@ -28,7 +29,15 @@ class MapperNROM : public Mapper {
     ///
     /// @param cart a reference to a cartridge for the mapper to access
     ///
-    explicit MapperNROM(Cartridge* cart);
+    explicit MapperNROM(Cartridge* cart) :
+        Mapper(cart),
+        is_one_bank(cart->getROM().size() == 0x4000),
+        has_character_ram(cart->getVROM().size() == 0) {
+        if (has_character_ram) {
+            character_ram.resize(0x2000);
+            LOG(Info) << "Uses character RAM" << std::endl;
+        }
+    }
 
     /// Read a byte from the PRG RAM.
     ///
@@ -47,7 +56,14 @@ class MapperNROM : public Mapper {
     /// @param address the 16-bit address to write to
     /// @param value the byte to write to the given address
     ///
-    void writePRG(NES_Address address, NES_Byte value);
+    inline void writePRG(NES_Address address, NES_Byte value) {
+        LOG(InfoVerbose) <<
+            "ROM memory write attempt at " <<
+            +address <<
+            " to set " <<
+            +value <<
+            std::endl;
+    }
 
     /// Read a byte from the CHR RAM.
     ///
@@ -66,7 +82,16 @@ class MapperNROM : public Mapper {
     /// @param address the 16-bit address to write to
     /// @param value the byte to write to the given address
     ///
-    void writeCHR(NES_Address address, NES_Byte value);
+    inline void writeCHR(NES_Address address, NES_Byte value) {
+        if (has_character_ram)
+            character_ram[address] = value;
+        else
+            LOG(Info) <<
+                "Read-only CHR memory write attempt at " <<
+                std::hex <<
+                address <<
+                std::endl;
+    }
 };
 
 }  // namespace NES
