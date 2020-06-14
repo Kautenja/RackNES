@@ -5,8 +5,8 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef MAIN_BUS_HPP
-#define MAIN_BUS_HPP
+#ifndef NES_MAIN_BUS_HPP
+#define NES_MAIN_BUS_HPP
 
 #include <vector>
 #include <unordered_map>
@@ -122,4 +122,4 @@ class MainBus {
 
 }  // namespace NES
 
-#endif  // MAIN_BUS_HPP
+#endif  // NES_MAIN_BUS_HPP
