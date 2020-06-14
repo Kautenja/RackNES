@@ -60,7 +60,7 @@ class PictureBus {
     ///
     /// @return the index of the RGB tuple in the color array
     ///
-    inline NES_Byte read_palette(NES_Byte address) {
+    inline NES_Byte read_palette(NES_Byte address) const {
         return palette[address];
     }
 

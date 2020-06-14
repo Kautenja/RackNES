@@ -12,20 +12,17 @@
 
 namespace NES {
 
-/// A standard NES controller
+/// A standard NES controller.
 class Controller {
  private:
     /// whether strobe is on
-    bool is_strobe;
+    bool is_strobe = true;
     /// the emulation of the buttons on the controller
-    NES_Byte joypad_buttons;
+    NES_Byte joypad_buttons = 0;
     /// the state of the buttons
-    NES_Byte joypad_bits;
+    NES_Byte joypad_bits = 0;
 
  public:
-    /// Initialize a new controller.
-    Controller() : is_strobe(true), joypad_buttons(0), joypad_bits(0) { }
-
     /// Return a pointer to the joypad buffer.
     inline NES_Byte* get_joypad_buffer() { return &joypad_buttons; }
 
@@ -45,7 +42,16 @@ class Controller {
     ///
     /// @return a state from the controller
     ///
-    NES_Byte read();
+    inline NES_Byte read() {
+        NES_Byte ret;
+        if (is_strobe) {
+            ret = (joypad_buttons & 1);
+        } else {
+            ret = (joypad_bits & 1);
+            joypad_bits >>= 1;
+        }
+        return ret | 0x40;
+    }
 };
 
 }  // namespace NES
