@@ -5,8 +5,8 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef LOG_HPP
-#define LOG_HPP
+#ifndef NES_LOG_HPP
+#define NES_LOG_HPP
 
 #include <iostream>
 
@@ -24,4 +24,4 @@ enum Level {
     CpuTrace
 };
 
-#endif  // LOG_HPP
+#endif  // NES_LOG_HPP

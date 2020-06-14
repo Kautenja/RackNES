@@ -5,23 +5,12 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef MAPPER_HPP
-#define MAPPER_HPP
+#ifndef NES_MAPPER_HPP
+#define NES_MAPPER_HPP
 
-#include <functional>
-#include "common.hpp"
 #include "cartridge.hpp"
 
 namespace NES {
-
-/// Mirroring modes supported by the NES
-enum NameTableMirroring {
-    HORIZONTAL  = 0,
-    VERTICAL    = 1,
-    FOUR_SCREEN  = 8,
-    ONE_SCREEN_LOWER,
-    ONE_SCREEN_HIGHER,
-};
 
 /// An abstraction of a general hardware mapper for different NES cartridges
 class Mapper {
@@ -36,13 +25,13 @@ class Mapper {
     ///
     explicit Mapper(Cartridge* game) : cartridge(game) { }
 
+    /// Return true if this mapper has extended RAM, false otherwise.
+    inline bool hasExtendedRAM() const { return cartridge->hasExtendedRAM(); }
+
     /// Return the name table mirroring mode of this mapper.
     inline virtual NameTableMirroring getNameTableMirroring() {
-        return static_cast<NameTableMirroring>(cartridge->getNameTableMirroring());
+        return cartridge->getNameTableMirroring();
     }
-
-    /// Return true if this mapper has extended RAM, false otherwise.
-    inline bool hasExtendedRAM() { return cartridge->hasExtendedRAM(); }
 
     /// Read a byte from the PRG RAM.
     ///
@@ -75,4 +64,4 @@ class Mapper {
 
 }  // namespace NES
 
-#endif  // MAPPER_HPP
+#endif  // NES_MAPPER_HPP

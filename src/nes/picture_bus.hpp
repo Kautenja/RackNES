@@ -5,8 +5,8 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef PICTURE_BUS_HPP
-#define PICTURE_BUS_HPP
+#ifndef NES_PICTURE_BUS_HPP
+#define NES_PICTURE_BUS_HPP
 
 #include <vector>
 #include <cstdlib>
@@ -60,7 +60,7 @@ class PictureBus {
     ///
     /// @return the index of the RGB tuple in the color array
     ///
-    inline NES_Byte read_palette(NES_Byte address) {
+    inline NES_Byte read_palette(NES_Byte address) const {
         return palette[address];
     }
 
@@ -70,4 +70,4 @@ class PictureBus {
 
 }  // namespace NES
 
-#endif  // PICTURE_BUS_HPP
+#endif  // NES_PICTURE_BUS_HPP
