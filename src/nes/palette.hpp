@@ -5,8 +5,8 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef PALETTE_HPP
-#define PALETTE_HPP
+#ifndef NES_PALETTE_HPP
+#define NES_PALETTE_HPP
 
 #include "common.hpp"
 
@@ -27,4 +27,4 @@ const NES_Pixel PALETTE[] = {
 
 }  // namespace NES
 
-#endif  // PALETTE_HPP
+#endif  // NES_PALETTE_HPP

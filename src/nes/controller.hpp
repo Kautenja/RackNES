@@ -5,8 +5,8 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef CONTROLLER_HPP
-#define CONTROLLER_HPP
+#ifndef NES_CONTROLLER_HPP
+#define NES_CONTROLLER_HPP
 
 #include "common.hpp"
 
@@ -56,4 +56,4 @@ class Controller {
 
 }  // namespace NES
 
-#endif  // CONTROLLER_HPP
+#endif  // NES_CONTROLLER_HPP
