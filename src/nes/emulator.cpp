@@ -56,7 +56,7 @@ Emulator::Emulator(const std::string& rom_path_) : rom_path(rom_path_) {
     bus.set_mapper(mapper);
     picture_bus.set_mapper(mapper);
     // setup the DMC reader callback (for loading samples from RAM)
-    apu.apu.dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
+    apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
 }
 
 void Emulator::step() {
