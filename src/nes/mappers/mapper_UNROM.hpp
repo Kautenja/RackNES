@@ -5,16 +5,16 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef MAPPERS_MAPPER_UNROM_HPP
-#define MAPPERS_MAPPER_UNROM_HPP
+#ifndef NES_MAPPERS_MAPPER_UNROM_HPP
+#define NES_MAPPERS_MAPPER_UNROM_HPP
 
 #include <vector>
-#include "../common.hpp"
 #include "../mapper.hpp"
 #include "../log.hpp"
 
 namespace NES {
 
+/// The UxROM mapper (mapper #2).
 class MapperUNROM : public Mapper {
  private:
     /// whether the cartridge use character RAM
@@ -47,7 +47,7 @@ class MapperUNROM : public Mapper {
     /// @param address the 16-bit address of the byte to read
     /// @return the byte located at the given address in PRG RAM
     ///
-    inline NES_Byte readPRG(NES_Address address) {
+    inline NES_Byte readPRG(NES_Address address) override {
         if (address < 0xc000)
             return cartridge->getROM()[((address - 0x8000) & 0x3fff) | (select_prg << 14)];
         else
@@ -59,7 +59,7 @@ class MapperUNROM : public Mapper {
     /// @param address the 16-bit address to write to
     /// @param value the byte to write to the given address
     ///
-    inline void writePRG(NES_Address address, NES_Byte value) {
+    inline void writePRG(NES_Address address, NES_Byte value) override {
         select_prg = value;
     }
 
@@ -68,7 +68,7 @@ class MapperUNROM : public Mapper {
     /// @param address the 16-bit address of the byte to read
     /// @return the byte located at the given address in CHR RAM
     ///
-    NES_Byte readCHR(NES_Address address) {
+    inline NES_Byte readCHR(NES_Address address) override {
         if (has_character_ram)
             return character_ram[address];
         else
@@ -80,18 +80,15 @@ class MapperUNROM : public Mapper {
     /// @param address the 16-bit address to write to
     /// @param value the byte to write to the given address
     ///
-    void writeCHR(NES_Address address, NES_Byte value) {
+    inline void writeCHR(NES_Address address, NES_Byte value) override {
         if (has_character_ram)
             character_ram[address] = value;
         else
-            LOG(Info) <<
-                "Read-only CHR memory write attempt at " <<
-                std::hex <<
-                address <<
-                std::endl;
+            LOG(Info) << "Read-only CHR memory write attempt at " <<
+                std::hex << address << std::endl;
     }
 };
 
 }  // namespace NES
 
-#endif  // MAPPERS_MAPPER_UNROM_HPP
+#endif  // NES_MAPPERS_MAPPER_UNROM_HPP

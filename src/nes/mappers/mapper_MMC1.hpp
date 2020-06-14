@@ -5,16 +5,16 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef MAPPERS_MAPPER_MMC1_HPP
-#define MAPPERS_MAPPER_MMC1_HPP
+#ifndef NES_MAPPERS_MAPPER_MMC1_HPP
+#define NES_MAPPERS_MAPPER_MMC1_HPP
 
 #include <vector>
-#include "common.hpp"
 #include "../mapper.hpp"
 #include "../log.hpp"
 
 namespace NES {
 
+/// The MMC1 mapper (mapper #1).
 class MapperMMC1 : public Mapper {
  private:
     /// The mirroring callback on the PPU
@@ -97,12 +97,17 @@ class MapperMMC1 : public Mapper {
         }
     }
 
+    /// Return the name table mirroring mode of this mapper.
+    inline NameTableMirroring getNameTableMirroring() override {
+        return mirroring;
+    }
+
     /// Read a byte from the PRG RAM.
     ///
     /// @param address the 16-bit address of the byte to read
     /// @return the byte located at the given address in PRG RAM
     ///
-    inline NES_Byte readPRG(NES_Address address) {
+    inline NES_Byte readPRG(NES_Address address) override {
         if (address < 0xc000)
             return cartridge->getROM()[first_bank_prg + (address & 0x3fff)];
         else
@@ -114,7 +119,7 @@ class MapperMMC1 : public Mapper {
     /// @param address the 16-bit address to write to
     /// @param value the byte to write to the given address
     ///
-    void writePRG(NES_Address address, NES_Byte value) {
+    void writePRG(NES_Address address, NES_Byte value) override {
         if (!(value & 0x80)) {  // reset bit is NOT set
             temp_register = (temp_register >> 1) | ((value & 1) << 4);
             ++write_counter;
@@ -178,7 +183,7 @@ class MapperMMC1 : public Mapper {
     /// @param address the 16-bit address of the byte to read
     /// @return the byte located at the given address in CHR RAM
     ///
-    inline NES_Byte readCHR(NES_Address address) {
+    inline NES_Byte readCHR(NES_Address address) override {
         if (has_character_ram)
             return character_ram[address];
         else if (address < 0x1000)
@@ -192,17 +197,15 @@ class MapperMMC1 : public Mapper {
     /// @param address the 16-bit address to write to
     /// @param value the byte to write to the given address
     ///
-    inline void writeCHR(NES_Address address, NES_Byte value) {
+    inline void writeCHR(NES_Address address, NES_Byte value) override {
         if (has_character_ram)
             character_ram[address] = value;
         else
-            LOG(Info) << "Read-only CHR memory write attempt at " << std::hex << address << std::endl;
+            LOG(Info) << "Read-only CHR memory write attempt at " <<
+                std::hex << address << std::endl;
     }
-
-    /// Return the name table mirroring mode of this mapper.
-    inline NameTableMirroring getNameTableMirroring() { return mirroring; }
 };
 
 }  // namespace NES
 
-#endif  // MAPPERS_MAPPER_MMC1_HPP
+#endif  // NES_MAPPERS_MAPPER_MMC1_HPP
