@@ -11,3 +11,9 @@ A Nintendo Entertainment System (NES) emulator with Control Voltage (CV) for VCV
 - **NES Audio Output:** Sample audio from the NES in real-time at any sampling rate
 - **Sampling/Ratcheting:** Save and restore the NES state for interesting musical effects
 - **Full CV Control:** CV inputs for Reset, Player 1, Player 2, and more
+
+## Acknowledgments
+
+The code for the module is derived from:
+1. the NES emulator, [SimpleNES](https://github.com/amhndu/SimpleNES), and
+2. the NES synthesis library, [Nes_Snd_Emu](https://github.com/jamesathey/Nes_Snd_Emu).
