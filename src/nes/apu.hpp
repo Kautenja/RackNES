@@ -5,9 +5,10 @@
 //  Copyright (c) 2020 Christian Kauten. All rights reserved.
 //
 
-#ifndef APU_HPP
-#define APU_HPP
+#ifndef NES_APU_HPP
+#define NES_APU_HPP
 
+#include "common.hpp"
 #include "apu/Nes_Apu.h"
 
 namespace NES {
@@ -49,14 +50,14 @@ class APU {
     inline void reset() { apu.reset(); buf.clear(); }
 
     /// Read the value from the APU status register.
-    inline uint8_t read_status() { return apu.read_status(elapsed); }
+    inline NES_Byte read_status() { return apu.read_status(elapsed); }
 
     /// Write a value from to APU registers.
     ///
     /// @param addr the address to write to
     /// @oaram value the value to write to the register
     ///
-    inline void write(uint16_t addr, uint8_t value) {
+    inline void write(NES_Address addr, NES_Byte value) {
         apu.write_register(elapsed, addr, value);
     }
 
@@ -76,4 +77,4 @@ class APU {
 
 }  // namespace NES
 
-#endif // APU_HPP
+#endif // NES_APU_HPP
