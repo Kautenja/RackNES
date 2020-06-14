@@ -1,8 +1,8 @@
 {
-  "slug": "RackNES",
+  "slug": "KautenjaDSP-RackNES",
   "version": "1.0.0",
   "license": "GPL-3.0-or-later",
-  "name": "RackNES",
+  "name": "KautenjaDSP-RackNES",
   "author": "Christian Kauten",
   "authorEmail": "kautenja@auburn.edu",
   "authorUrl": "https://kautenja.github.io/",
