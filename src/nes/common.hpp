@@ -5,8 +5,8 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef COMMON_HPP
-#define COMMON_HPP
+#ifndef NES_COMMON_HPP
+#define NES_COMMON_HPP
 
 // resolve an issue with MSVC overflow during compilation (Windows)
 #define _CRT_DECLARE_NONSTDC_NAMES 0
@@ -23,4 +23,4 @@ typedef uint32_t NES_Pixel;
 
 }  // namespace NES
 
-#endif  // COMMON_HPP
+#endif  // NES_COMMON_HPP

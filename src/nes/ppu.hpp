@@ -5,10 +5,9 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef PPU_HPP
-#define PPU_HPP
+#ifndef NES_PPU_HPP
+#define NES_PPU_HPP
 
-#include "common.hpp"
 #include "picture_bus.hpp"
 
 namespace NES {
@@ -168,7 +167,7 @@ class PPU {
     ///
     /// @return the byte at the given address in OAM memory
     ///
-    inline NES_Byte get_OAM_data() {
+    inline NES_Byte get_OAM_data() const {
         return sprite_memory[sprite_data_address];
     }
 
@@ -186,4 +185,4 @@ class PPU {
 
 }  // namespace NES
 
-#endif  // PPU_HPP
+#endif  // NES_PPU_HPP
