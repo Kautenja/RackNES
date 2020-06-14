@@ -36,6 +36,15 @@ class APU {
         apu.output(&buf);
     }
 
+    /// Set the DMC Reader on the APU. The DMC Reader is a callback for reading
+    /// audio samples from RAM for DMC playback.
+    ///
+    /// @param callback the callback function for reading RAM from memory
+    ///
+    inline void set_dmc_reader(RomReaderCallback callback) {
+        apu.dmc_reader(callback);
+    }
+
     /// Set the sample rate to a new value.
     ///
     /// @param value the frame rate, i.e., 96000Hz
