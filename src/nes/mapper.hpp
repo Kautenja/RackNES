@@ -8,7 +8,6 @@
 #ifndef NES_MAPPER_HPP
 #define NES_MAPPER_HPP
 
-#include <functional>
 #include "cartridge.hpp"
 
 namespace NES {
