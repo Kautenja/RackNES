@@ -10,6 +10,7 @@
 
 #include "common.hpp"
 #include "../mapper.hpp"
+#include "../log.hpp"
 
 namespace NES {
 
@@ -65,7 +66,13 @@ class MapperCNROM : public Mapper {
     /// @param address the 16-bit address to write to
     /// @param value the byte to write to the given address
     ///
-    void writeCHR(NES_Address address, NES_Byte value);
+    void writeCHR(NES_Address address, NES_Byte value) {
+        LOG(Info) <<
+            "Read-only CHR memory write attempt at " <<
+            std::hex <<
+            address <<
+            std::endl;
+    }
 };
 
 }  // namespace NES
