@@ -470,7 +470,6 @@ struct RackNESWidget : ModuleWidget {
 
     /// A menu item for loading ROMs into the emulator.
     struct RomSelectItem : MenuItem {
-
         /// the module associated with the menu item
         RackNES* module;
 
@@ -480,7 +479,10 @@ struct RackNESWidget : ModuleWidget {
             // last path if it is available)
             std::string dir = module->rom_path.empty() ?
                 asset::user("") : rack::string::directory(module->rom_path);
-            char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, NULL);
+            // filter to only allow files with a ".nes" or ".NES" extension
+            osdialog_filters *filters = osdialog_filters_parse("NES ROM:nes,NES");
+            char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, filters);
+            osdialog_filters_free(filters);
             if (path) {  // a path was selected
                 module->rom_path = path;
                 module->did_insert_game = true;
