@@ -8,6 +8,7 @@
 #ifndef NES_MAIN_BUS_HPP
 #define NES_MAIN_BUS_HPP
 
+#include <functional>
 #include <vector>
 #include <unordered_map>
 #include "common.hpp"
