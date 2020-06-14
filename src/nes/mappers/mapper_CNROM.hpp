@@ -5,14 +5,15 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef MAPPERCNROM_HPP
-#define MAPPERCNROM_HPP
+#ifndef NES_MAPPERS_MAPPER_CNROM_HPP
+#define NES_MAPPERS_MAPPER_CNROM_HPP
 
-#include "common.hpp"
 #include "../mapper.hpp"
+#include "../log.hpp"
 
 namespace NES {
 
+/// The CNROM mapper (mapper #3).
 class MapperCNROM : public Mapper {
  private:
     /// whether there are 1 or 2 banks
@@ -35,7 +36,7 @@ class MapperCNROM : public Mapper {
     /// @param address the 16-bit address of the byte to read
     /// @return the byte located at the given address in PRG RAM
     ///
-    inline NES_Byte readPRG(NES_Address address) {
+    inline NES_Byte readPRG(NES_Address address) override {
         if (!is_one_bank)
             return cartridge->getROM()[address - 0x8000];
         else  // mirrored
@@ -47,7 +48,7 @@ class MapperCNROM : public Mapper {
     /// @param address the 16-bit address to write to
     /// @param value the byte to write to the given address
     ///
-    inline void writePRG(NES_Address address, NES_Byte value) {
+    inline void writePRG(NES_Address address, NES_Byte value) override {
         select_chr = value & 0x3;
     }
 
@@ -56,7 +57,7 @@ class MapperCNROM : public Mapper {
     /// @param address the 16-bit address of the byte to read
     /// @return the byte located at the given address in CHR RAM
     ///
-    inline NES_Byte readCHR(NES_Address address) {
+    inline NES_Byte readCHR(NES_Address address) override {
         return cartridge->getVROM()[address | (select_chr << 13)];
     }
 
@@ -65,9 +66,12 @@ class MapperCNROM : public Mapper {
     /// @param address the 16-bit address to write to
     /// @param value the byte to write to the given address
     ///
-    void writeCHR(NES_Address address, NES_Byte value);
+    inline void writeCHR(NES_Address address, NES_Byte value) override {
+        LOG(Info) << "Read-only CHR memory write attempt at " <<
+            std::hex << address << std::endl;
+    }
 };
 
 }  // namespace NES
 
-#endif // MAPPERCNROM_HPP
+#endif // NES_MAPPERS_MAPPER_CNROM_HPP

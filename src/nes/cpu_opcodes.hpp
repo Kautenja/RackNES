@@ -5,8 +5,8 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef CPU_OPCODES_HPP
-#define CPU_OPCODES_HPP
+#ifndef NES_CPU_OPCODES_HPP
+#define NES_CPU_OPCODES_HPP
 
 #include "common.hpp"
 
@@ -156,4 +156,4 @@ const NES_Byte OPERATION_CYCLES[0x100] = {
 
 }  // namespace NES
 
-#endif  // CPU_OPCODES_HPP
+#endif  // NES_CPU_OPCODES_HPP
