@@ -5,8 +5,8 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef MAPPER_FACTORY_HPP
-#define MAPPER_FACTORY_HPP
+#ifndef NES_MAPPER_FACTORY_HPP
+#define NES_MAPPER_FACTORY_HPP
 
 #include <string>
 #include "mapper.hpp"
@@ -79,4 +79,4 @@ Mapper* MapperFactory(Cartridge* game, std::function<void(void)> callback) {
 
 }  // namespace NES
 
-#endif  // MAPPER_FACTORY_HPP
+#endif  // NES_MAPPER_FACTORY_HPP
