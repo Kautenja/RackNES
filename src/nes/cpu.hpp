@@ -5,8 +5,8 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef CPU_HPP
-#define CPU_HPP
+#ifndef NES_CPU_HPP
+#define NES_CPU_HPP
 
 #include "common.hpp"
 #include "cpu_opcodes.hpp"
@@ -169,4 +169,4 @@ class CPU {
 
 }  // namespace NES
 
-#endif  // CPU_HPP
+#endif  // NES_CPU_HPP

@@ -5,8 +5,8 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef EMULATOR_HPP
-#define EMULATOR_HPP
+#ifndef NES_EMULATOR_HPP
+#define NES_EMULATOR_HPP
 
 #include <string>
 #include "common.hpp"
@@ -144,4 +144,4 @@ class Emulator {
 
 }  // namespace NES
 
-#endif  // EMULATOR_HPP
+#endif  // NES_EMULATOR_HPP
