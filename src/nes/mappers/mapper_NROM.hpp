@@ -5,16 +5,16 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef MAPPERNROM_HPP
-#define MAPPERNROM_HPP
+#ifndef NES_MAPPERS_MAPPER_NROM_HPP
+#define NES_MAPPERS_MAPPER_NROM_HPP
 
 #include <vector>
-#include "common.hpp"
 #include "../mapper.hpp"
 #include "../log.hpp"
 
 namespace NES {
 
+/// The NROM mapper (mapper #0).
 class MapperNROM : public Mapper {
  private:
     /// whether there are 1 or 2 banks
@@ -44,7 +44,7 @@ class MapperNROM : public Mapper {
     /// @param address the 16-bit address of the byte to read
     /// @return the byte located at the given address in PRG RAM
     ///
-    inline NES_Byte readPRG(NES_Address address) {
+    inline NES_Byte readPRG(NES_Address address) override {
         if (!is_one_bank)
             return cartridge->getROM()[address - 0x8000];
         else  // mirrored
@@ -56,13 +56,9 @@ class MapperNROM : public Mapper {
     /// @param address the 16-bit address to write to
     /// @param value the byte to write to the given address
     ///
-    inline void writePRG(NES_Address address, NES_Byte value) {
-        LOG(InfoVerbose) <<
-            "ROM memory write attempt at " <<
-            +address <<
-            " to set " <<
-            +value <<
-            std::endl;
+    inline void writePRG(NES_Address address, NES_Byte value) override {
+        LOG(InfoVerbose) << "ROM memory write attempt at " <<
+            +address << " to set " << +value << std::endl;
     }
 
     /// Read a byte from the CHR RAM.
@@ -70,7 +66,7 @@ class MapperNROM : public Mapper {
     /// @param address the 16-bit address of the byte to read
     /// @return the byte located at the given address in CHR RAM
     ///
-    inline NES_Byte readCHR(NES_Address address) {
+    inline NES_Byte readCHR(NES_Address address) override {
         if (has_character_ram)
             return character_ram[address];
         else
@@ -82,18 +78,15 @@ class MapperNROM : public Mapper {
     /// @param address the 16-bit address to write to
     /// @param value the byte to write to the given address
     ///
-    inline void writeCHR(NES_Address address, NES_Byte value) {
+    inline void writeCHR(NES_Address address, NES_Byte value) override {
         if (has_character_ram)
             character_ram[address] = value;
         else
-            LOG(Info) <<
-                "Read-only CHR memory write attempt at " <<
-                std::hex <<
-                address <<
-                std::endl;
+            LOG(Info) << "Read-only CHR memory write attempt at " <<
+                std::hex << address << std::endl;
     }
 };
 
 }  // namespace NES
 
-#endif // MAPPERNROM_HPP
+#endif // NES_MAPPERS_MAPPER_NROM_HPP
