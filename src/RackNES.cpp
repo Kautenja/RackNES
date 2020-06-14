@@ -213,6 +213,9 @@ struct RackNES : Module {
 
     /// Return the clock speed of the NES.
     inline float getClockSpeed() {
+        // the range of the clock's value in Hz
+        static const float CLOCK_RATE_MIN = 2.f;
+        static const float CLOCK_RATE_MAX = 1000.f;
         // get the control voltage scaled in [-2, 2]
         auto cv = inputs[CLOCK_INPUT].getVoltage() / 5.f;
         // apply the attenuverter to the CV signal
@@ -222,7 +225,7 @@ struct RackNES : Module {
         // calculate the exponential frequency
         auto frequency = 60.f * powf(2.f, param + cv);
         // return the clock speed clamped within the legal values
-        return rack::clamp(frequency, 1.f, 1000.f);
+        return rack::clamp(frequency, CLOCK_RATE_MIN, CLOCK_RATE_MAX);
     }
 
     /// Return the output audio from the NES after applying the volume.
