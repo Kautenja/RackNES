@@ -168,7 +168,7 @@ class PPU {
     ///
     /// @return the byte at the given address in OAM memory
     ///
-    inline NES_Byte get_OAM_data() {
+    inline NES_Byte get_OAM_data() const {
         return sprite_memory[sprite_data_address];
     }
 

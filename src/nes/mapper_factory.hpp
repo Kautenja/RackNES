@@ -52,11 +52,12 @@ class MapperNotFoundException: public std::exception {
 
 /// an enumeration of mapper IDs
 enum class MapperID : NES_Byte {
-    NROM  = 0,
-    MMC1 = 1,
-    UNROM = 2,
-    CNROM = 3,
-    // MMC3  = 4
+    NROM   = 0,
+    MMC1   = 1,
+    UNROM  = 2,
+    CNROM  = 3,
+    // MMC3   = 4,
+    // AOROM  = 7
 };
 
 /// Create a mapper for the given cartridge with optional callback function
@@ -66,18 +67,13 @@ enum class MapperID : NES_Byte {
 ///
 Mapper* MapperFactory(Cartridge* game, std::function<void(void)> callback) {
     switch (static_cast<MapperID>(game->getMapper())) {
-        case MapperID::NROM:
-            return new MapperNROM(game);
-        case MapperID::MMC1:
-            return new MapperMMC1(game, callback);
-        case MapperID::UNROM:
-            return new MapperUNROM(game);
-        case MapperID::CNROM:
-            return new MapperCNROM(game);
-        // case MapperID::MMC3:
-        //     return new MapperMMC3(game);
-        default:
-            throw MapperNotFoundException("mapper not implemented for game");
+        case MapperID::NROM:  return new MapperNROM(game);
+        case MapperID::MMC1:  return new MapperMMC1(game, callback);
+        case MapperID::UNROM: return new MapperUNROM(game);
+        case MapperID::CNROM: return new MapperCNROM(game);
+        // case MapperID::MMC3:  return new MapperMMC3(game);
+        // case MapperID::AOROM: return new MapperAOROM(game);
+        default: throw MapperNotFoundException("mapper not implemented");
     }
 }
 

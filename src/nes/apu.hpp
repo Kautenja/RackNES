@@ -49,7 +49,7 @@ class APU {
     inline void reset() { apu.reset(); buf.clear(); }
 
     /// Read the value from the APU status register.
-    inline uint8_t const read_status() { return apu.read_status(elapsed); }
+    inline uint8_t read_status() { return apu.read_status(elapsed); }
 
     /// Write a value from to APU registers.
     ///

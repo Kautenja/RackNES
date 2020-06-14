@@ -85,7 +85,7 @@ class Emulator {
     inline void set_frame_rate(float value) { apu.set_frame_rate(value); }
 
     /// Return the path to the ROM on disk.
-    inline std::string get_rom_path() { return rom_path; }
+    inline std::string get_rom_path() const { return rom_path; }
 
     /// Return a 32-bit pointer to the screen buffer's first address.
     ///
