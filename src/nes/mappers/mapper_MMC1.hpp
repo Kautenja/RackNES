@@ -8,6 +8,7 @@
 #ifndef NES_MAPPERS_MAPPER_MMC1_HPP
 #define NES_MAPPERS_MAPPER_MMC1_HPP
 
+#include <functional>
 #include <vector>
 #include "../mapper.hpp"
 #include "../log.hpp"
