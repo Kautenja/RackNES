@@ -61,16 +61,16 @@ Emulator::Emulator(const std::string& rom_path_) : rom_path(rom_path_) {
 
 void Emulator::step() {
     // render a single frame on the emulator
-    for (int i = 0; i < CYCLES_PER_FRAME; i++) {
-        apu.elapsed = i;
+    for (int cycleIndex = 0; cycleIndex < CYCLES_PER_FRAME; cycleIndex++) {
         // 3 PPU steps per CPU step
         ppu.cycle(picture_bus);
         ppu.cycle(picture_bus);
         ppu.cycle(picture_bus);
         cpu.cycle(bus);
+        apu.cycle();
     }
-    // run a step on the APU
-    apu.step();
+    // finish the frame on the APU
+    apu.end_frame();
 }
 
 }  // namespace NES
