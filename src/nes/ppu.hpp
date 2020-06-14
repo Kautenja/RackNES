@@ -8,6 +8,7 @@
 #ifndef NES_PPU_HPP
 #define NES_PPU_HPP
 
+#include <functional>
 #include "picture_bus.hpp"
 
 namespace NES {
