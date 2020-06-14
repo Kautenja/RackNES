@@ -5,15 +5,24 @@
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef CARTRIDGE_HPP
-#define CARTRIDGE_HPP
+#ifndef NES_CARTRIDGE_HPP
+#define NES_CARTRIDGE_HPP
 
 #include <fstream>
-#include <vector>
 #include <string>
+#include <vector>
 #include "common.hpp"
 
 namespace NES {
+
+/// Mirroring modes supported by the NES
+enum NameTableMirroring {
+    HORIZONTAL  = 0,
+    VERTICAL    = 1,
+    FOUR_SCREEN  = 8,
+    ONE_SCREEN_LOWER,
+    ONE_SCREEN_HIGHER,
+};
 
 /// A cartridge holding game ROM and a special hardware mapper emulation
 class Cartridge {
@@ -68,8 +77,8 @@ class Cartridge {
     inline NES_Byte getMapper() const { return mapper_number; }
 
     /// Return the name table mirroring mode.
-    inline NES_Byte getNameTableMirroring() const {
-        return name_table_mirroring;
+    inline NameTableMirroring getNameTableMirroring() const {
+        return static_cast<NameTableMirroring>(name_table_mirroring);
     }
 
     /// Return a boolean determining whether this cartridge uses extended RAM.
@@ -102,4 +111,4 @@ class Cartridge {
 
 }  // namespace NES
 
-#endif // CARTRIDGE_HPP
+#endif // NES_CARTRIDGE_HPP
