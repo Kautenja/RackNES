@@ -27,6 +27,8 @@ enum NameTableMirroring {
 /// A cartridge holding game ROM and a special hardware mapper emulation
 class Cartridge {
  private:
+    /// the path to the ROM file on disk
+    const std::string rom_path;
     /// the PRG ROM
     std::vector<NES_Byte> prg_rom;
     /// the CHR ROM
@@ -62,10 +64,30 @@ class Cartridge {
     }
 
     /// Initialize a new cartridge
-    Cartridge() :
-        name_table_mirroring(0),
-        mapper_number(0),
-        has_extended_ram(false) { }
+    explicit Cartridge(const std::string& path) : rom_path(path) {
+        // create a stream to load the ROM file
+        std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
+        // create a byte vector for the iNES header
+        std::vector<NES_Byte> header{0x10};
+        romFile.read(reinterpret_cast<char*>(&header[0]), 0x10);
+        // read internal data
+        name_table_mirroring = header[6] & 0xB;
+        mapper_number = ((header[6] >> 4) & 0xf) | (header[7] & 0xf0);
+        has_extended_ram = header[6] & 0x2;
+        // read PRG-ROM 16KB banks
+        NES_Byte banks = header[4];
+        prg_rom.resize(0x4000 * banks);
+        romFile.read(reinterpret_cast<char*>(&prg_rom[0]), 0x4000 * banks);
+        // read CHR-ROM 8KB banks
+        NES_Byte vbanks = header[5];
+        if (!vbanks)
+            return;
+        chr_rom.resize(0x2000 * vbanks);
+        romFile.read(reinterpret_cast<char*>(&chr_rom[0]), 0x2000 * vbanks);
+    }
+
+    /// Return the path to the ROM on disk.
+    inline std::string get_rom_path() const { return rom_path; }
 
     /// Return the ROM data.
     const inline std::vector<NES_Byte>& getROM() const { return prg_rom; }
@@ -83,30 +105,6 @@ class Cartridge {
 
     /// Return a boolean determining whether this cartridge uses extended RAM.
     inline bool hasExtendedRAM() const { return has_extended_ram; }
-
-    /// Load a ROM file into the cartridge and build the corresponding mapper.
-    void loadFromFile(std::string path) {
-        // create a stream to load the ROM file
-        std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
-        // create a byte vector for the iNES header
-        std::vector<NES_Byte> header;
-        header.resize(0x10);
-        romFile.read(reinterpret_cast<char*>(&header[0]), 0x10);
-        // read internal data
-        name_table_mirroring = header[6] & 0xB;
-        mapper_number = ((header[6] >> 4) & 0xf) | (header[7] & 0xf0);
-        has_extended_ram = header[6] & 0x2;
-        // read PRG-ROM 16KB banks
-        NES_Byte banks = header[4];
-        prg_rom.resize(0x4000 * banks);
-        romFile.read(reinterpret_cast<char*>(&prg_rom[0]), 0x4000 * banks);
-        // read CHR-ROM 8KB banks
-        NES_Byte vbanks = header[5];
-        if (!vbanks)
-            return;
-        chr_rom.resize(0x2000 * vbanks);
-        romFile.read(reinterpret_cast<char*>(&chr_rom[0]), 0x2000 * vbanks);
-    }
 };
 
 }  // namespace NES
