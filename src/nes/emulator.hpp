@@ -100,6 +100,12 @@ class Emulator {
         bus.set_write_callback(APU7,               [&](NES_Byte b) { apu.write(APU7, b);               });
         bus.set_write_callback(APU8,               [&](NES_Byte b) { apu.write(APU8, b);               });
         bus.set_write_callback(APU9,               [&](NES_Byte b) { apu.write(APU9, b);               });
+        bus.set_write_callback(APUA,               [&](NES_Byte b) { apu.write(APUA, b);               });
+        bus.set_write_callback(APUB,               [&](NES_Byte b) { apu.write(APUB, b);               });
+        bus.set_write_callback(APUC,               [&](NES_Byte b) { apu.write(APUC, b);               });
+        bus.set_write_callback(APUD,               [&](NES_Byte b) { apu.write(APUD, b);               });
+        bus.set_write_callback(APUE,               [&](NES_Byte b) { apu.write(APUE, b);               });
+        bus.set_write_callback(APUF,               [&](NES_Byte b) { apu.write(APUF, b);               });
         bus.set_write_callback(DMC_STATUS,         [&](NES_Byte b) { apu.write(DMC_STATUS, b);         });
         bus.set_write_callback(DMC_LOAD_COUNTER,   [&](NES_Byte b) { apu.write(DMC_LOAD_COUNTER, b);   });
         bus.set_write_callback(DMC_SAMPLE_ADDRESS, [&](NES_Byte b) { apu.write(DMC_SAMPLE_ADDRESS, b); });
