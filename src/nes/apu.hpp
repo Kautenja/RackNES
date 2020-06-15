@@ -46,6 +46,14 @@ class APU {
         apu.dmc_reader(callback);
     }
 
+    /// Set the callback function for IRQ interrupting the CPU.
+    ///
+    /// @param callback the callback method that interrupts the CPU (IRQ)
+    ///
+    inline void set_irq_callback(APU_IRQ_InterruptCallback callback) {
+        apu.irq_notifier(callback);
+    }
+
     /// Set the sample rate to a new value.
     ///
     /// @param value the frame rate, i.e., 96000Hz

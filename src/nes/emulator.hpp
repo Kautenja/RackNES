@@ -121,6 +121,7 @@ class Emulator {
         picture_bus.set_mapper(mapper);
         // setup the DMC reader callback (for loading samples from RAM)
         apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
+        apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
     }
 
     /// Set the sample rate to a new value.

@@ -100,6 +100,7 @@ struct Nes_Noise : Nes_Envelope
 	}
 };
 
+/// a callback function for reading from the emulator's ROM
 typedef std::function<int(void*, cpu_addr_t)> RomReaderCallback;
 
 // Nes_Dmc
