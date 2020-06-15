@@ -16,6 +16,7 @@
 //
 
 #include <string>
+#include <jansson.h>
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "components.hpp"
