@@ -1,1 +1,2 @@
 -I../../include
+-I../../dep/jansson-2.12/src
