@@ -12,7 +12,7 @@ A Nintendo Entertainment System (NES) emulator with Control Voltage (CV) for VCV
 - **Sampling/Ratcheting:** Save and restore the NES state for interesting musical effects
 - **Full CV Control:** CV inputs for Reset, Player 1, Player 2, and more
 
-See the [Manual](img/manual.pdf) for more information about the features of this module
+See the [Manual](manual.pdf) for more information about the features of this module
 
 ## Acknowledgments
 
