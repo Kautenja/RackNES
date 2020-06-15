@@ -65,7 +65,7 @@ enum class MapperID : NES_Byte {
 /// @param game the cartridge to initialize a mapper for
 /// @param callback the callback function for the mapper (if necessary)
 ///
-Mapper* MapperFactory(Cartridge* game, std::function<void(void)> callback) {
+static Mapper* MapperFactory(Cartridge* game, std::function<void(void)> callback) {
     switch (static_cast<MapperID>(game->getMapper())) {
         case MapperID::NROM:  return new MapperNROM(game);
         case MapperID::MMC1:  return new MapperMMC1(game, callback);
