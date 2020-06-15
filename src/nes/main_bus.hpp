@@ -193,7 +193,7 @@ class MainBus {
                 LOG(InfoVerbose) << "Write access attmept at: " << std::hex << +address << std::endl;
             }
         } else if (address < 0x6000) {
-            LOG(InfoVerbose) << "Expansion ROM access attempted. This is currently unsupported" << std::endl;
+            LOG(InfoVerbose) << "Expansion ROM write access attempted. This is currently unsupported" << std::endl;
         } else if (address < 0x8000) {
             if (mapper->hasExtendedRAM())
                 extended_ram[address - 0x6000] = value;
