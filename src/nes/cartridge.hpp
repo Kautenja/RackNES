@@ -68,7 +68,8 @@ class Cartridge {
         // create a stream to load the ROM file
         std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
         // create a byte vector for the iNES header
-        std::vector<NES_Byte> header{0x10};
+        std::vector<NES_Byte> header;
+        header.resize(0x10);
         romFile.read(reinterpret_cast<char*>(&header[0]), 0x10);
         // read internal data
         name_table_mirroring = header[6] & 0xB;
