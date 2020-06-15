@@ -186,30 +186,13 @@ struct RackNES : Module {
     }
 
     /// Initialize the screen with empty pixels.
-    void initalizeScreen() {
-        for (int i = 0; i < NES::Emulator::SCREEN_BYTES; i += 4) {
-            // use a black pixel with full alpha
-            screen[i + 0] = 0;
-            screen[i + 1] = 0;
-            screen[i + 2] = 0;
-            screen[i + 3] = 255;
-        }
+    inline void initalizeScreen() {
+        memset(screen, 0, NES::Emulator::SCREEN_BYTES);
     }
 
     /// Copy the screen buffer from the NES in BGR to the local buffer in RGBA.
-    void copyScreen() {
-        // convert the data from 32-bit pixels 8-bit values
-        auto pixels = reinterpret_cast<uint8_t*>(emulator->get_screen_buffer());
-        for (int i = 0; i < NES::Emulator::SCREEN_BYTES; i += 4) {
-            // swap from RGB to BGR, necessary because nanoSVG doesn't support
-            // BGRA or BGR color-space natively
-            screen[i + 0] = pixels[i + 2];
-            screen[i + 1] = pixels[i + 1];
-            screen[i + 2] = pixels[i + 0];
-            // no need to set alpha (i + 3), because it gets set on init and
-            // never gets changes afterwards
-            // screen[i + 3] = 255;
-        }
+    inline void copyScreen() {
+        memcpy(screen, emulator->get_screen_buffer(), NES::Emulator::SCREEN_BYTES);
     }
 
     /// Return the clock speed of the NES.
