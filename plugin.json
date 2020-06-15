@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "license": "GPL-3.0-or-later",
   "name": "KautenjaDSP-RackNES",
+  "brand": "KautenjaDSP",
   "author": "Christian Kauten",
   "authorEmail": "kautenja@auburn.edu",
   "authorUrl": "https://kautenja.github.io/",
@@ -16,7 +17,7 @@
       "slug": "RackNES",
       "name": "RackNES",
       "description": "A Nintendo Entertainment System emulator with CV",
-      "manualUrl": "https://kautenja.github.io/modules/RackNES/manual/",
+      "manualUrl": "https://kautenja.github.io/manuals/RackNES.pdf",
       "tags": [
         "Hardware clone",
         "Visual",
