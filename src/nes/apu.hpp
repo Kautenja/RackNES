@@ -34,6 +34,7 @@ class APU {
         // 29781 * 60
         buf.clock_rate(1789773);
         apu.output(&buf);
+        apu.volume(2.0);
     }
 
     /// Set the DMC Reader on the APU. The DMC Reader is a callback for reading
