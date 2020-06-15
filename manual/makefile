@@ -16,13 +16,7 @@ manual:
 	rm -rf ${BUILD}
 	mkdir -p ${BUILD}
 	cp -r img ${BUILD}
-	cp -r literature ${BUILD}
 	cp *.tex ${BUILD}
 	cd ${BUILD} && ${PDFLATEX} ${SOURCE} | grep -a3 "^!" || true
 	cd ${BUILD} && ${PDFLATEX} ${SOURCE} | grep -a3 "^!" || true
 	cd ${BUILD} && rm -f ${CLEAN}
-
-# 	cd ${BUILD} && bibtex ${SOURCE}
-# 	cd ${BUILD} && ${PDFLATEX} ${SOURCE} | grep -a3 "^!" || true
-# 	cd ${BUILD} && ${PDFLATEX} ${SOURCE} | grep -a3 "^!" || true
-# 	cd ${BUILD} && rm -f ${CLEAN}
