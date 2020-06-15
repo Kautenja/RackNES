@@ -23,10 +23,10 @@ namespace NES {
 /// An NES Emulator and OpenAI Gym interface
 class Emulator {
  private:
-    /// the path to theROM
-    std::string rom_path;
     /// the virtual cartridge with ROM and mapper data
     Cartridge cartridge;
+    /// the mapper for the cartridge
+    Mapper* mapper;
     /// the 2 controllers on the emulator
     Controller controllers[2];
 
@@ -68,9 +68,9 @@ class Emulator {
 
     /// Initialize a new emulator with a path to a ROM file.
     ///
-    /// @param rom_path_ the path to the ROM for the emulator to run
+    /// @param rom_path the path to the ROM for the emulator to run
     ///
-    explicit Emulator(const std::string& rom_path_);
+    explicit Emulator(const std::string& rom_path);
 
     /// Set the sample rate to a new value.
     ///
@@ -85,7 +85,7 @@ class Emulator {
     inline void set_frame_rate(float value) { apu.set_frame_rate(value); }
 
     /// Return the path to the ROM on disk.
-    inline std::string get_rom_path() const { return rom_path; }
+    inline std::string get_rom_path() const { return cartridge.get_rom_path(); }
 
     /// Return a 32-bit pointer to the screen buffer's first address.
     ///
@@ -119,8 +119,24 @@ class Emulator {
     /// Load the ROM into the NES.
     inline void reset() { cpu.reset(bus); ppu.reset(); }
 
+    /// Run a single CPU cycle on the emulator.
+    void cycle() {
+        // 3 PPU steps per CPU step
+        ppu.cycle(picture_bus);
+        ppu.cycle(picture_bus);
+        ppu.cycle(picture_bus);
+        cpu.cycle(bus);
+        // 1 APU cycle per CPU step
+        apu.cycle();
+    }
+
     /// Perform a step on the emulator, i.e., a single frame.
-    void step();
+    void step() {
+        // render a single frame on the emulator
+        for (int i = 0; i < CYCLES_PER_FRAME; i++) cycle();
+        // finish the frame on the APU
+        apu.end_frame();
+    }
 
     /// Create a backup state on the emulator.
     inline void backup() {

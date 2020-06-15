@@ -11,7 +11,7 @@
 
 namespace NES {
 
-Emulator::Emulator(const std::string& rom_path_) : rom_path(rom_path_) {
+Emulator::Emulator(const std::string& rom_path) : cartridge(rom_path) {
     // set the read callbacks
     bus.set_read_callback(PPUSTATUS, [&](void) { return ppu.get_status();          });
     bus.set_read_callback(PPUDATA,   [&](void) { return ppu.get_data(picture_bus); });
@@ -48,29 +48,13 @@ Emulator::Emulator(const std::string& rom_path_) : rom_path(rom_path_) {
     bus.set_write_callback(JOY2,               [&](NES_Byte b) { apu.write(JOY2, b);               });
     // set the interrupt callback for the PPU
     ppu.set_interrupt_callback([&]() { cpu.interrupt(bus, CPU::NMI_INTERRUPT); });
-    // load the ROM from disk, expect that the Python code has validated it
-    cartridge.loadFromFile(rom_path);
     // create the mapper based on the mapper ID in the iNES header of the ROM
-    auto mapper = MapperFactory(&cartridge, [&](){ picture_bus.update_mirroring(); });
+    mapper = MapperFactory(&cartridge, [&](){ picture_bus.update_mirroring(); });
     // give the IO buses a pointer to the mapper
     bus.set_mapper(mapper);
     picture_bus.set_mapper(mapper);
     // setup the DMC reader callback (for loading samples from RAM)
     apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
-}
-
-void Emulator::step() {
-    // render a single frame on the emulator
-    for (int cycleIndex = 0; cycleIndex < CYCLES_PER_FRAME; cycleIndex++) {
-        // 3 PPU steps per CPU step
-        ppu.cycle(picture_bus);
-        ppu.cycle(picture_bus);
-        ppu.cycle(picture_bus);
-        cpu.cycle(bus);
-        apu.cycle();
-    }
-    // finish the frame on the APU
-    apu.end_frame();
 }
 
 }  // namespace NES
