@@ -47,6 +47,8 @@ enum IORegisters {
     JOY2 = 0x4017,
 };
 
+// TODO: test potential performance improvements from alternate map hash algos
+
 /// An enum functor object for calculating the hash of an enum class
 /// https://stackoverflow.com/questions/18837857/cant-use-enum-class-as-unordered-map-key
 struct EnumClassHash {
