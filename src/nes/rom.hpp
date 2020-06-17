@@ -8,6 +8,7 @@
 #ifndef NES_CARTRIDGE_HPP
 #define NES_CARTRIDGE_HPP
 
+#include <jansson.h>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -231,6 +232,12 @@ class ROM {
         /// @param value the byte to write to the given address
         ///
         virtual void writeCHR(NES_Address address, NES_Byte value) = 0;
+
+        /// Convert the object's state to a JSON object.
+        virtual json_t* dataToJson() = 0;
+
+        /// Load the object's state from a JSON object.
+        virtual void dataFromJson(json_t* rootJ) = 0;
     };
 };
 

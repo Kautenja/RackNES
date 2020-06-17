@@ -95,6 +95,20 @@ class Cartridge : public ROM {
 
     /// Return a pointer to the mapper for the cartridge.
     inline Mapper* get_mapper() { return mapper; }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = ROM::dataToJson();
+        json_object_set_new(rootJ, "mapper", mapper->dataToJson());
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        ROM::dataFromJson(rootJ);
+        json_t* json_data = json_object_get(rootJ, "mapper");
+        if (json_data) mapper->dataFromJson(rootJ);
+    }
 };
 
 }  // namespace NES
