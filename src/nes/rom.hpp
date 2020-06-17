@@ -122,6 +122,9 @@ class ROM {
         ///
         explicit Mapper(ROM& rom_) : rom(rom_) { }
 
+        /// Destroy this mapper.
+        inline virtual ~Mapper() { }
+
         /// Return true if this mapper has extended RAM, false otherwise.
         inline bool hasExtendedRAM() const { return rom.hasExtendedRAM(); }
 

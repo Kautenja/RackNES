@@ -97,6 +97,9 @@ class MapperMMC1 : public ROM::Mapper {
         }
     }
 
+    /// Destroy this mapper.
+    inline ~MapperMMC1() override { }
+
     /// Return the name table mirroring mode of this mapper.
     inline NameTableMirroring getNameTableMirroring() override {
         return mirroring;
