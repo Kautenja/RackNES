@@ -8,9 +8,12 @@
 #ifndef NES_CARTRIDGE_HPP
 #define NES_CARTRIDGE_HPP
 
+#include <jansson.h>
 #include <fstream>
 #include <string>
 #include <vector>
+#include <jansson.h>
+#include "../base64.h"
 #include "common.hpp"
 
 namespace NES {
@@ -28,7 +31,7 @@ enum NameTableMirroring {
 class ROM {
  protected:
     /// the path to the ROM file on disk
-    const std::string rom_path;
+    std::string rom_path;
     /// the PRG ROM
     std::vector<NES_Byte> prg_rom;
     /// the CHR ROM
@@ -106,6 +109,72 @@ class ROM {
     /// Return a boolean determining whether this cartridge uses extended RAM.
     inline bool hasExtendedRAM() const { return has_extended_ram; }
 
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = json_object();
+        json_object_set_new(rootJ, "rom_path", json_string(rom_path.c_str()));
+        // encode prg_rom
+        {
+            auto data_string = base64_encode(&prg_rom[0], prg_rom.size());
+            json_object_set_new(rootJ, "prg_rom", json_string(data_string.c_str()));
+        }
+        // encode chr_rom
+        {
+            auto data_string = base64_encode(&chr_rom[0], chr_rom.size());
+            json_object_set_new(rootJ, "chr_rom", json_string(data_string.c_str()));
+        }
+        json_object_set_new(rootJ, "name_table_mirroring", json_integer(name_table_mirroring));
+        json_object_set_new(rootJ, "mapper_number", json_integer(mapper_number));
+        json_object_set_new(rootJ, "has_extended_ram", json_boolean(has_extended_ram));
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        // load rom_path
+        {
+            json_t* json_data = json_object_get(rootJ, "rom_path");
+            if (json_data)
+                rom_path = json_string_value(json_data);
+        }
+        // load prg_rom
+        {
+            json_t* json_data = json_object_get(rootJ, "prg_rom");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                prg_rom = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            }
+        }
+        // load chr_rom
+        {
+            json_t* json_data = json_object_get(rootJ, "chr_rom");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                chr_rom = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            }
+        }
+        // load name_table_mirroring
+        {
+            json_t* json_data = json_object_get(rootJ, "name_table_mirroring");
+            if (json_data)
+                name_table_mirroring = json_integer_value(json_data);
+        }
+        // load mapper_number
+        {
+            json_t* json_data = json_object_get(rootJ, "mapper_number");
+            if (json_data)
+                mapper_number = json_integer_value(json_data);
+        }
+        // load has_extended_ram
+        {
+            json_t* json_data = json_object_get(rootJ, "has_extended_ram");
+            if (json_data)
+                has_extended_ram = json_boolean_value(json_data);
+        }
+    }
+
     /// An ASIC mapper for different NES cartridges.
     class Mapper {
      protected:
@@ -163,6 +232,12 @@ class ROM {
         /// @param value the byte to write to the given address
         ///
         virtual void writeCHR(NES_Address address, NES_Byte value) = 0;
+
+        /// Convert the object's state to a JSON object.
+        virtual json_t* dataToJson() = 0;
+
+        /// Load the object's state from a JSON object.
+        virtual void dataFromJson(json_t* rootJ) = 0;
     };
 };
 

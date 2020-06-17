@@ -28,9 +28,6 @@ class Emulator {
     /// the 2 controllers on the emulator
     Controller controllers[2];
 
-    /// whether the emulator has a backup available
-    bool has_backup = false;
-
     /// the main data bus of the emulator
     MainBus bus;
     /// the picture bus from the PPU of the emulator
@@ -48,6 +45,9 @@ class Emulator {
     //       EmulatorData struct or something similar
     // ------------------------------------------------------------------------
 
+    /// whether the emulator has a backup available
+    bool has_backup = false;
+
     /// the virtual cartridge with ROM and mapper data
     Cartridge* backup_cartridge = nullptr;
     /// the 2 controllers on the emulator
@@ -63,7 +63,7 @@ class Emulator {
     /// the emulators' PPU
     PPU backup_ppu;
     /// The emulator's APU
-    // APU backup_apu;
+    APU backup_apu;
 
  public:
     /// The number of cycles in 1 frame
@@ -256,6 +256,8 @@ class Emulator {
         backup_picture_bus = picture_bus;
         backup_cpu = cpu;
         backup_ppu = ppu;
+        // TODO: APU copy constructor
+        // backup_apu = apu;
         has_backup = true;
     }
 
@@ -272,6 +274,75 @@ class Emulator {
         picture_bus = backup_picture_bus;
         cpu = backup_cpu;
         ppu = backup_ppu;
+        // TODO: APU copy constructor
+        // apu = backup_apu;
+    }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = json_object();
+        if (cartridge != nullptr)
+            json_object_set_new(rootJ, "cartridge", cartridge->dataToJson());
+        json_object_set_new(rootJ, "controllers[0]", controllers[0].dataToJson());
+        json_object_set_new(rootJ, "controllers[1]", controllers[1].dataToJson());
+        // TODO: serialize backups
+        // json_object_set_new(rootJ, "has_backup", json_boolean(has_backup));
+        json_object_set_new(rootJ, "bus", bus.dataToJson());
+        json_object_set_new(rootJ, "picture_bus", picture_bus.dataToJson());
+        json_object_set_new(rootJ, "cpu", cpu.dataToJson());
+        json_object_set_new(rootJ, "ppu", ppu.dataToJson());
+        json_object_set_new(rootJ, "apu", apu.dataToJson());
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        // load cartridge
+        {
+            json_t* json_data = json_object_get(rootJ, "cartridge");
+            if (json_data) cartridge->dataFromJson(json_data);
+        }
+        // load controllers[0]
+        {
+            json_t* json_data = json_object_get(rootJ, "controllers[0]");
+            if (json_data) controllers[0].dataFromJson(json_data);
+        }
+        // load controllers[1]
+        {
+            json_t* json_data = json_object_get(rootJ, "controllers[1]");
+            if (json_data) controllers[1].dataFromJson(json_data);
+        }
+        // TODO: serialize backups
+        // // load has_backup
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "has_backup");
+        //     if (json_data) has_backup = json_boolean_value(json_data);
+        // }
+        // load bus
+        {
+            json_t* json_data = json_object_get(rootJ, "bus");
+            if (json_data) bus.dataFromJson(json_data);
+        }
+        // load picture_bus
+        {
+            json_t* json_data = json_object_get(rootJ, "picture_bus");
+            if (json_data) picture_bus.dataFromJson(json_data);
+        }
+        // load cpu
+        {
+            json_t* json_data = json_object_get(rootJ, "cpu");
+            if (json_data) cpu.dataFromJson(json_data);
+        }
+        // load ppu
+        {
+            json_t* json_data = json_object_get(rootJ, "ppu");
+            if (json_data) ppu.dataFromJson(json_data);
+        }
+        // load apu
+        {
+            json_t* json_data = json_object_get(rootJ, "apu");
+            if (json_data) apu.dataFromJson(json_data);
+        }
     }
 };
 

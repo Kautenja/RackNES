@@ -8,8 +8,10 @@
 #ifndef NES_APU_HPP
 #define NES_APU_HPP
 
+#include <jansson.h>
 #include "common.hpp"
 #include "apu/Nes_Apu.h"
+#include "apu/apu_snapshot.h"
 
 namespace NES {
 
@@ -100,6 +102,34 @@ class APU {
         if (buf.samples_avail() >= OUT_SIZE)
             buf.read_samples(outBuf, OUT_SIZE);
         return outBuf[0];
+    }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = json_object();
+        json_object_set_new(rootJ, "elapsedCycles", json_integer(elapsedCycles));
+        apu_snapshot_t snapshot;
+        apu.save_snapshot(&snapshot);
+        json_object_set_new(rootJ, "apu", snapshot.dataToJson());
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        // load elapsedCycles
+        {
+            json_t* json_data = json_object_get(rootJ, "elapsedCycles");
+            if (json_data) elapsedCycles = json_integer_value(json_data);
+        }
+        // load apu
+        {
+            json_t* json_data = json_object_get(rootJ, "apu");
+            if (json_data) {
+                apu_snapshot_t snapshot;
+                snapshot.dataFromJson(json_data);
+                apu.load_snapshot(snapshot);
+            }
+        }
     }
 };
 

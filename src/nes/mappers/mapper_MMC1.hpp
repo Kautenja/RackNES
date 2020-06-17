@@ -9,6 +9,7 @@
 #define NES_MAPPERS_MAPPER_MMC1_HPP
 
 #include <functional>
+#include <string>
 #include <vector>
 #include "../rom.hpp"
 #include "../log.hpp"
@@ -227,6 +228,107 @@ class MapperMMC1 : public ROM::Mapper {
         else
             LOG(Info) << "Read-only CHR memory write attempt at " <<
                 std::hex << address << std::endl;
+    }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() override {
+        json_t* rootJ = json_object();
+        json_object_set_new(rootJ, "mirroring", json_integer(mirroring));
+        json_object_set_new(rootJ, "has_character_ram", json_boolean(has_character_ram));
+        json_object_set_new(rootJ, "mode_chr", json_integer(mode_chr));
+        json_object_set_new(rootJ, "mode_prg", json_integer(mode_prg));
+        json_object_set_new(rootJ, "temp_register", json_integer(temp_register));
+        json_object_set_new(rootJ, "write_counter", json_integer(write_counter));
+        json_object_set_new(rootJ, "register_prg", json_integer(register_prg));
+        json_object_set_new(rootJ, "register_chr0", json_integer(register_chr0));
+        json_object_set_new(rootJ, "register_chr1", json_integer(register_chr1));
+        json_object_set_new(rootJ, "first_bank_prg", json_integer(first_bank_prg));
+        json_object_set_new(rootJ, "second_bank_prg", json_integer(second_bank_prg));
+        json_object_set_new(rootJ, "first_bank_chr", json_integer(first_bank_chr));
+        json_object_set_new(rootJ, "second_bank_chr", json_integer(second_bank_chr));
+        {
+            auto data_string = base64_encode(&character_ram[0], character_ram.size());
+            json_object_set_new(rootJ, "character_ram", json_string(data_string.c_str()));
+        }
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) override {
+        // load mirroring
+        {
+            json_t* json_data = json_object_get(rootJ, "mirroring");
+            if (json_data) mirroring = static_cast<NameTableMirroring>(json_integer_value(json_data));
+        }
+        // load has_character_ram
+        {
+            json_t* json_data = json_object_get(rootJ, "has_character_ram");
+            if (json_data) has_character_ram = json_boolean_value(json_data);
+        }
+        // load mode_chr
+        {
+            json_t* json_data = json_object_get(rootJ, "mode_chr");
+            if (json_data) mode_chr = json_integer_value(json_data);
+        }
+        // load mode_prg
+        {
+            json_t* json_data = json_object_get(rootJ, "mode_prg");
+            if (json_data) mode_prg = json_integer_value(json_data);
+        }
+        // load temp_register
+        {
+            json_t* json_data = json_object_get(rootJ, "temp_register");
+            if (json_data) temp_register = json_integer_value(json_data);
+        }
+        // load write_counter
+        {
+            json_t* json_data = json_object_get(rootJ, "write_counter");
+            if (json_data) write_counter = json_integer_value(json_data);
+        }
+        // load register_prg
+        {
+            json_t* json_data = json_object_get(rootJ, "register_prg");
+            if (json_data) register_prg = json_integer_value(json_data);
+        }
+        // load register_chr0
+        {
+            json_t* json_data = json_object_get(rootJ, "register_chr0");
+            if (json_data) register_chr0 = json_integer_value(json_data);
+        }
+        // load register_chr1
+        {
+            json_t* json_data = json_object_get(rootJ, "register_chr1");
+            if (json_data) register_chr1 = json_integer_value(json_data);
+        }
+        // load first_bank_prg
+        {
+            json_t* json_data = json_object_get(rootJ, "first_bank_prg");
+            if (json_data) first_bank_prg = json_integer_value(json_data);
+        }
+        // load second_bank_prg
+        {
+            json_t* json_data = json_object_get(rootJ, "second_bank_prg");
+            if (json_data) second_bank_prg = json_integer_value(json_data);
+        }
+        // load first_bank_chr
+        {
+            json_t* json_data = json_object_get(rootJ, "first_bank_chr");
+            if (json_data) first_bank_chr = json_integer_value(json_data);
+        }
+        // load second_bank_chr
+        {
+            json_t* json_data = json_object_get(rootJ, "second_bank_chr");
+            if (json_data) second_bank_chr = json_integer_value(json_data);
+        }
+        // load character_ram
+        {
+            json_t* json_data = json_object_get(rootJ, "character_ram");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                character_ram = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            }
+        }
     }
 };
 
