@@ -82,8 +82,8 @@ class PictureBus {
     ///
     /// @param mapper the new mapper pointer for the bus to use
     ///
-    inline void set_mapper(ROM::Mapper *mapper) {
-        this->mapper = mapper;
+    inline void set_mapper(ROM::Mapper *mapper_) {
+        mapper = mapper_;
         update_mirroring();
     }
 
