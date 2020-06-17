@@ -143,7 +143,7 @@ class ROM {
                 std::string data_string = json_string_value(json_data);
                 data_string = base64_decode(data_string);
                 prg_rom = std::vector<NES_Byte>(data_string.begin(), data_string.end());
-        }
+            }
         }
         // load chr_rom
         {
@@ -152,7 +152,7 @@ class ROM {
                 std::string data_string = json_string_value(json_data);
                 data_string = base64_decode(data_string);
                 chr_rom = std::vector<NES_Byte>(data_string.begin(), data_string.end());
-        }
+            }
         }
         // load name_table_mirroring
         {
