@@ -113,8 +113,8 @@ class Emulator {
         apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
     }
 
-    // TODO:
-    // ~Emulator() { }
+    // Destroy this emulator
+    ~Emulator() { if (cartridge != nullptr) delete cartridge; }
 
     /// Return true if the emulator has a game inserted.
     inline bool has_game() { return cartridge != nullptr; }
@@ -124,8 +124,7 @@ class Emulator {
     /// @param path a path to the ROM to load into the emulator
     ///
     inline void load_game(const std::string& path) {
-        // TODO: deleter for mappers
-        // if (cartridge != nullptr) delete cartridge;
+        if (cartridge != nullptr) delete cartridge;
         cartridge = new Cartridge(path, [&](){ picture_bus.update_mirroring(); });
         bus.set_mapper(cartridge->get_mapper());
         picture_bus.set_mapper(cartridge->get_mapper());
@@ -136,8 +135,7 @@ class Emulator {
 
     /// Remove the inserted game from the emulator.
     inline void remove_game() {
-        // TODO: deleter for mappers
-        // if (cartridge != nullptr) delete cartridge;
+        if (cartridge != nullptr) delete cartridge;
         cartridge = nullptr;
     }
 
