@@ -295,56 +295,47 @@ class Emulator {
         // load cartridge
         {
             json_t* json_data = json_object_get(rootJ, "cartridge");
-            if (json_data)
-                cartridge->dataFromJson(json_data);
+            if (json_data) cartridge->dataFromJson(json_data);
         }
         // load controllers[0]
         {
             json_t* json_data = json_object_get(rootJ, "controllers[0]");
-            if (json_data)
-                controllers[0].dataFromJson(json_data);
+            if (json_data) controllers[0].dataFromJson(json_data);
         }
         // load controllers[1]
         {
             json_t* json_data = json_object_get(rootJ, "controllers[1]");
-            if (json_data)
-                controllers[1].dataFromJson(json_data);
+            if (json_data) controllers[1].dataFromJson(json_data);
         }
         // load has_backup
         {
             json_t* json_data = json_object_get(rootJ, "has_backup");
-            if (json_data)
-                has_backup = json_boolean_value(json_data);
+            if (json_data) has_backup = json_boolean_value(json_data);
         }
         // load bus
         {
             json_t* json_data = json_object_get(rootJ, "bus");
-            if (json_data)
-                bus.dataFromJson(json_data);
+            if (json_data) bus.dataFromJson(json_data);
         }
         // load picture_bus
         {
             json_t* json_data = json_object_get(rootJ, "picture_bus");
-            if (json_data)
-                picture_bus.dataFromJson(json_data);
+            if (json_data) picture_bus.dataFromJson(json_data);
         }
         // load cpu
         {
             json_t* json_data = json_object_get(rootJ, "cpu");
-            if (json_data)
-                cpu.dataFromJson(json_data);
+            if (json_data) cpu.dataFromJson(json_data);
         }
         // load ppu
         {
             json_t* json_data = json_object_get(rootJ, "ppu");
-            if (json_data)
-                ppu.dataFromJson(json_data);
+            if (json_data) ppu.dataFromJson(json_data);
         }
         // load apu
         {
             json_t* json_data = json_object_get(rootJ, "apu");
-            if (json_data)
-                apu.dataFromJson(json_data);
+            if (json_data) apu.dataFromJson(json_data);
         }
     }
 };
