@@ -64,11 +64,8 @@ class Emulator {
     /// the number of bytes in the screen (RGBx)
     static const int SCREEN_BYTES = PIXELS * 4;
 
-    /// Initialize a new emulator with a path to a ROM file.
-    ///
-    /// @param rom_path the path to the ROM for the emulator to run
-    ///
-    explicit Emulator(const std::string& rom_path) {
+    /// Initialize a new emulator.
+    Emulator() {
         // set the read callbacks
         bus.set_read_callback(PPUSTATUS, [&](void) { return ppu.get_status();          });
         bus.set_read_callback(PPUDATA,   [&](void) { return ppu.get_data(picture_bus); });
@@ -114,9 +111,13 @@ class Emulator {
         // setup the DMC reader callback (for loading samples from RAM)
         apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
         apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
-        // load the cartridge with given ROM path and mirroring update callback
-        load_game(rom_path);
     }
+
+    // TODO:
+    // ~Emulator() { }
+
+    /// Return true if the emulator has a game inserted.
+    inline bool has_game() { return cartridge != nullptr; }
 
     /// Load a new game into the emulator.
     ///
@@ -131,6 +132,13 @@ class Emulator {
         cpu.reset(bus);
         ppu.reset();
         apu.reset();
+    }
+
+    /// Remove the inserted game from the emulator.
+    inline void remove_game() {
+        // TODO: deleter for mappers
+        // if (cartridge != nullptr) delete cartridge;
+        cartridge = nullptr;
     }
 
     /// Set the sample rate to a new value.
@@ -178,7 +186,7 @@ class Emulator {
     }
 
     /// Load the ROM into the NES.
-    inline void reset() { cpu.reset(bus); ppu.reset(); }
+    inline void reset() { cpu.reset(bus); ppu.reset(); apu.reset(); }
 
     /// Run a single CPU cycle on the emulator.
     inline void cycle() {
