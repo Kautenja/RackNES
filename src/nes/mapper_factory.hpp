@@ -18,7 +18,7 @@
 namespace NES {
 
 /// An exception that is raised when a mapper cannot be found for a ROM.
-class MapperNotFoundException: public std::exception {
+class MapperNotFound: public std::exception {
  protected:
     /// Error message.
     std::string msg_;
@@ -30,17 +30,17 @@ class MapperNotFoundException: public std::exception {
     ///                Hence, responsibility for deleting the char* lies
     ///                with the caller.
     ///
-    explicit MapperNotFoundException(const char* message) : msg_(message) { }
+    explicit MapperNotFound(const char* message) : msg_(message) { }
 
     /// Constructor (C++ STL strings).
     /// @param message The error message.
     ///
-    explicit MapperNotFoundException(const std::string& message) : msg_(message) { }
+    explicit MapperNotFound(const std::string& message) : msg_(message) { }
 
     /// Destructor.
     /// Virtual to allow for subclassing.
     ///
-    virtual ~MapperNotFoundException() throw() { }
+    virtual ~MapperNotFound() throw() { }
 
     /// Returns a pointer to the (constant) error description.
     /// @return A pointer to a const char*. The underlying memory
@@ -60,22 +60,32 @@ enum class MapperID : NES_Byte {
     // AOROM  = 7
 };
 
-/// Create a mapper for the given cartridge with optional callback function
-///
-/// @param game the cartridge to initialize a mapper for
-/// @param callback the callback function for the mapper (if necessary)
-///
-static Cartridge::Mapper* MapperFactory(Cartridge& game, std::function<void(void)> callback) {
-    switch (static_cast<MapperID>(game.getMapper())) {
-        case MapperID::NROM:  return new MapperNROM(game);
-        case MapperID::MMC1:  return new MapperMMC1(game, callback);
-        case MapperID::UNROM: return new MapperUNROM(game);
-        case MapperID::CNROM: return new MapperCNROM(game);
-        // case MapperID::MMC3:  return new MapperMMC3(game);
-        // case MapperID::AOROM: return new MapperAOROM(game);
-        default: throw MapperNotFoundException("mapper not implemented");
+class CartridgeMapper : public Cartridge {
+ protected:
+    /// the mapper for the cartridge
+    Mapper* mapper = nullptr;
+
+ public:
+    CartridgeMapper(
+        const std::string& path,
+        std::function<void(void)> callback
+    ) : Cartridge(path) {
+        switch (static_cast<MapperID>(getMapper())) {
+            case MapperID::NROM:  mapper = new MapperNROM(*this);           break;
+            case MapperID::MMC1:  mapper = new MapperMMC1(*this, callback); break;
+            case MapperID::UNROM: mapper = new MapperUNROM(*this);          break;
+            case MapperID::CNROM: mapper = new MapperCNROM(*this);          break;
+            // case MapperID::MMC3:  mapper = new MapperMMC3(*this);           break;
+            // case MapperID::AOROM: mapper = new MapperAOROM(*this);          break;
+            default: throw MapperNotFound("mapper not implemented");
+        }
     }
-}
+
+    // TODO: virtual deleter for Mapper
+    // ~CartridgeMapper() { delete mapper; }
+
+    Mapper* get_mapper() { return mapper; }
+};
 
 }  // namespace NES
 
