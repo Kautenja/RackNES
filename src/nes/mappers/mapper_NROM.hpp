@@ -96,6 +96,44 @@ class MapperNROM : public ROM::Mapper {
             LOG(Info) << "Read-only CHR memory write attempt at " <<
                 std::hex << address << std::endl;
     }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = json_object();
+        json_object_set_new(rootJ, "is_one_bank", json_boolean(is_one_bank));
+        json_object_set_new(rootJ, "has_character_ram", json_boolean(has_character_ram));
+        // encode character_ram
+        {
+            auto data_string = base64_encode(&character_ram[0], character_ram.size());
+            json_object_set_new(rootJ, "character_ram", json_string(data_string.c_str()));
+        }
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        // load is_one_bank
+        {
+            json_t* json_data = json_object_get(rootJ, "is_one_bank");
+            if (json_data)
+                is_one_bank = json_boolean_value(json_data);
+        }
+        // load has_character_ram
+        {
+            json_t* json_data = json_object_get(rootJ, "has_character_ram");
+            if (json_data)
+                has_character_ram = json_boolean_value(json_data);
+        }
+        // load character_ram
+        {
+            json_t* json_data = json_object_get(rootJ, "character_ram");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                character_ram = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            }
+        }
+    }
 };
 
 }  // namespace NES
