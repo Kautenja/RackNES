@@ -43,14 +43,25 @@ class Emulator {
     /// The emulator's APU
     APU apu;
 
+
+
+
+    /// the virtual cartridge with ROM and mapper data
+    Cartridge* backup_cartridge = nullptr;
+    /// the 2 controllers on the emulator
+    Controller backup_controllers[2];
+
     /// the main data bus of the emulator
     MainBus backup_bus;
     /// the picture bus from the PPU of the emulator
     PictureBus backup_picture_bus;
+
     /// The emulator's CPU
     CPU backup_cpu;
     /// the emulators' PPU
     PPU backup_ppu;
+    /// The emulator's APU
+    // APU backup_apu;
 
  public:
     /// The number of cycles in 1 frame
@@ -207,6 +218,10 @@ class Emulator {
 
     /// Create a backup state on the emulator.
     inline void backup() {
+        // if (cartridge != nullptr)
+        //     (*backup_cartridge) = (*cartridge);
+        backup_controllers[0] = controllers[0];
+        backup_controllers[1] = controllers[1];
         backup_bus = bus;
         backup_picture_bus = picture_bus;
         backup_cpu = cpu;
@@ -218,6 +233,10 @@ class Emulator {
     inline void restore() {
         // restore if there is a backup available
         if (!has_backup) return;
+        // if (backup_cartridge != nullptr)
+        //     (*cartridge) = (*backup_cartridge);
+        controllers[0] = backup_controllers[0];
+        controllers[1] = backup_controllers[1];
         bus = backup_bus;
         picture_bus = backup_picture_bus;
         cpu = backup_cpu;
