@@ -79,7 +79,7 @@ class MainBus {
     /// The extended RAM (if the mapper has extended RAM)
     std::vector<NES_Byte> extended_ram = std::vector<NES_Byte>(0);
     /// a pointer to the mapper on the cartridge
-    Cartridge::Mapper* mapper = nullptr;
+    ROM::Mapper* mapper = nullptr;
     /// a map of IO registers to callback methods for writes
     IORegisterToWriteCallbackMap write_callbacks;
     /// a map of IO registers to callback methods for reads
@@ -90,7 +90,7 @@ class MainBus {
     ///
     /// @param mapper the new mapper pointer for the bus to use
     ///
-    void set_mapper(Cartridge::Mapper* mapper) {
+    void set_mapper(ROM::Mapper* mapper) {
         this->mapper = mapper;
         if (mapper->hasExtendedRAM()) extended_ram.resize(0x2000);
     }

@@ -15,7 +15,7 @@
 namespace NES {
 
 /// The NROM mapper (mapper #0).
-class MapperNROM : public Cartridge::Mapper {
+class MapperNROM : public ROM::Mapper {
  private:
     /// whether there are 1 or 2 banks
     bool is_one_bank;
@@ -25,13 +25,13 @@ class MapperNROM : public Cartridge::Mapper {
     std::vector<NES_Byte> character_ram;
 
  public:
-    /// Create a new mapper with a cartridge.
+    /// Create a new mapper with a rom.
     ///
-    /// @param cart a reference to a cartridge for the mapper to access
+    /// @param cart a reference to a rom for the mapper to access
     ///
-    explicit MapperNROM(Cartridge& cart) : Mapper(cart),
-        is_one_bank(cartridge.getROM().size() == 0x4000),
-        has_character_ram(cartridge.getVROM().size() == 0) {
+    explicit MapperNROM(ROM& cart) : Mapper(cart),
+        is_one_bank(rom.getROM().size() == 0x4000),
+        has_character_ram(rom.getVROM().size() == 0) {
         if (has_character_ram) {
             character_ram.resize(0x2000);
             LOG(Info) << "Uses character RAM" << std::endl;
@@ -45,9 +45,9 @@ class MapperNROM : public Cartridge::Mapper {
     ///
     inline NES_Byte readPRG(NES_Address address) override {
         if (!is_one_bank)
-            return cartridge.getROM()[address - 0x8000];
+            return rom.getROM()[address - 0x8000];
         else  // mirrored
-            return cartridge.getROM()[(address - 0x8000) & 0x3fff];
+            return rom.getROM()[(address - 0x8000) & 0x3fff];
     }
 
     /// Write a byte to an address in the PRG RAM.
@@ -69,7 +69,7 @@ class MapperNROM : public Cartridge::Mapper {
         if (has_character_ram)
             return character_ram[address];
         else
-            return cartridge.getVROM()[address];
+            return rom.getVROM()[address];
     }
 
     /// Write a byte to an address in the CHR RAM.
