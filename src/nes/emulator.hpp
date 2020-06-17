@@ -28,9 +28,6 @@ class Emulator {
     /// the 2 controllers on the emulator
     Controller controllers[2];
 
-    /// whether the emulator has a backup available
-    bool has_backup = false;
-
     /// the main data bus of the emulator
     MainBus bus;
     /// the picture bus from the PPU of the emulator
@@ -48,6 +45,9 @@ class Emulator {
     //       EmulatorData struct or something similar
     // ------------------------------------------------------------------------
 
+    /// whether the emulator has a backup available
+    bool has_backup = false;
+
     /// the virtual cartridge with ROM and mapper data
     Cartridge* backup_cartridge = nullptr;
     /// the 2 controllers on the emulator
@@ -63,7 +63,7 @@ class Emulator {
     /// the emulators' PPU
     PPU backup_ppu;
     /// The emulator's APU
-    // APU backup_apu;
+    APU backup_apu;
 
  public:
     /// The number of cycles in 1 frame
@@ -256,6 +256,8 @@ class Emulator {
         backup_picture_bus = picture_bus;
         backup_cpu = cpu;
         backup_ppu = ppu;
+        // TODO: APU copy constructor
+        // backup_apu = apu;
         has_backup = true;
     }
 
@@ -272,6 +274,8 @@ class Emulator {
         picture_bus = backup_picture_bus;
         cpu = backup_cpu;
         ppu = backup_ppu;
+        // TODO: APU copy constructor
+        // apu = backup_apu;
     }
 
     /// Convert the object's state to a JSON object.
