@@ -80,6 +80,30 @@ class MapperCNROM : public ROM::Mapper {
         LOG(Info) << "Read-only CHR memory write attempt at " <<
             std::hex << address << std::endl;
     }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = json_object();
+        json_object_set_new(rootJ, "is_one_bank", json_boolean(is_one_bank));
+        json_object_set_new(rootJ, "select_chr", json_integer(select_chr));
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        // load is_one_bank
+        {
+            json_t* json_data = json_object_get(rootJ, "is_one_bank");
+            if (json_data)
+                is_one_bank = json_boolean_value(json_data);
+        }
+        // load select_chr
+        {
+            json_t* json_data = json_object_get(rootJ, "select_chr");
+            if (json_data)
+                select_chr = json_integer_value(json_data);
+        }
+    }
 };
 
 }  // namespace NES
