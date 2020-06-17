@@ -22,7 +22,7 @@ class PictureBus {
     /// the VRAM on the picture bus
     std::vector<NES_Byte> ram = std::vector<NES_Byte>(0x800);
     /// indexes where they start in RAM vector
-    std::size_t name_tables[4] = {0, 0, 0, 0};
+    std::vector<std::size_t> name_tables = {0, 0, 0, 0};
     /// the palette for decoding RGB tuples
     std::vector<NES_Byte> palette = std::vector<NES_Byte>(0x20);
     /// a pointer to the mapper on the cartridge
@@ -121,6 +121,58 @@ class PictureBus {
             default:
                 name_tables[0] = name_tables[1] = name_tables[2] = name_tables[3] = 0;
                 LOG(Error) << "Unsupported Name Table mirroring : " << mapper->getNameTableMirroring() << std::endl;
+        }
+    }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = json_object();
+        // encode ram
+        {
+            auto data_string = base64_encode(&ram[0], ram.size());
+            json_object_set_new(rootJ, "ram", json_string(data_string.c_str()));
+        }
+        // encode name_tables (TODO: fix for endian-ness cast std::size_t to char is not safe)
+        {
+            auto data_string = base64_encode((char*) &name_tables[0], sizeof(name_tables));
+            json_object_set_new(rootJ, "name_tables", json_string(data_string.c_str()));
+        }
+        // encode palette
+        {
+            auto data_string = base64_encode(&palette[0], palette.size());
+            json_object_set_new(rootJ, "palette", json_string(data_string.c_str()));
+        }
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        // load ram
+        {
+            json_t* json_data = json_object_get(rootJ, "ram");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                ram = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            }
+        }
+        // load name_tables
+        {
+            json_t* json_data = json_object_get(rootJ, "name_tables");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                name_tables = std::vector<std::size_t>(data_string.begin(), data_string.end());
+            }
+        }
+        // load palette
+        {
+            json_t* json_data = json_object_get(rootJ, "palette");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                palette = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            }
         }
     }
 };
