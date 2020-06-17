@@ -230,17 +230,17 @@ struct RackNES : Module {
         if (backupButton.process(
             params[BACKUP_PARAM].getValue(),
             inputs[BACKUP_INPUT].getVoltage()
-        ) && emulator.has_game()) emulator.backup();
+        )) emulator.backup();
         // handle inputs to the reset button and CV
         if (resetButton.process(
             params[RESET_PARAM].getValue(),
             inputs[RESET_INPUT].getVoltage()
-        ) && emulator.has_game()) emulator.reset();
+        )) emulator.reset();
         // handle inputs to the restore button and CV
         if (restoreButton.process(
             params[RESTORE_PARAM].getValue(),
             inputs[RESTORE_INPUT].getVoltage()
-        ) && emulator.has_game()) emulator.restore();
+        )) emulator.restore();
 
         // get the controller for both players as a byte where each bit
         // represents the gate signal for whether one of the 8 buttons are
@@ -272,14 +272,13 @@ struct RackNES : Module {
         clock.process(args.sampleTime);
         auto clockVoltage = rescale(clock.getVoltage(), 0.1, 2.0f, 0.f, 1.f);
         // run a frame on the emulator if the clock is high
-        if (clockTrigger.process(clockVoltage) and emulator.has_game()) {
+        if (clockTrigger.process(clockVoltage)) {
             // set the frequency of the clock and back-end sound engine
             auto frequency = getClockSpeed();
             clock.setFrequency(frequency);
             emulator.set_frame_rate(frequency);
             // set the controller values
-            *emulator.get_controller(0) = player1;
-            *emulator.get_controller(1) = player2;
+            emulator.set_controllers(player1, player2);
             // run a complete frame through the emulator
             emulator.step();
             // copy the screen to the internal module buffer. this is necessary

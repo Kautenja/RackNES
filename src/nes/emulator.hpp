@@ -141,9 +141,7 @@ class Emulator {
         cartridge = new Cartridge(path, [&](){ picture_bus.update_mirroring(); });
         bus.set_mapper(cartridge->get_mapper());
         picture_bus.set_mapper(cartridge->get_mapper());
-        cpu.reset(bus);
-        ppu.reset();
-        apu.reset();
+        reset();
     }
 
     /// Remove the inserted game from the emulator.
@@ -188,6 +186,24 @@ class Emulator {
         return controllers[port].get_joypad_buffer();
     }
 
+    /// Write buttons to the virtual controller.
+    ///
+    /// @param buttons the button bitmap to write to the controller
+    ///
+    inline void set_controller(int port, NES_Byte buttons) {
+        controllers[port].write_buttons(buttons);
+    }
+
+    /// Write buttons to the virtual controller.
+    ///
+    /// @param player1 the button bitmap to write to port 1 controller
+    /// @param player2 the button bitmap to write to port 2 controller
+    ///
+    inline void set_controllers(NES_Byte player1, NES_Byte player2) {
+        controllers[0].write_buttons(player1);
+        controllers[1].write_buttons(player2);
+    }
+
     /// Return an audio sample from the APU of the emulator.
     inline int16_t get_audio_sample() { return apu.get_sample(); }
 
@@ -197,10 +213,19 @@ class Emulator {
     }
 
     /// Load the ROM into the NES.
-    inline void reset() { cpu.reset(bus); ppu.reset(); apu.reset(); }
+    inline void reset() {
+        // ignore the call if there is no game
+        if (!has_game()) return;
+        // reset the CPU, PPU, and APU
+        cpu.reset(bus);
+        ppu.reset();
+        apu.reset();
+    }
 
     /// Run a single CPU cycle on the emulator.
     inline void cycle() {
+        // ignore the call if there is no game
+        if (!has_game()) return;
         // 3 PPU steps per CPU step
         ppu.cycle(picture_bus);
         ppu.cycle(picture_bus);
@@ -212,6 +237,8 @@ class Emulator {
 
     /// Perform a step on the emulator, i.e., a single frame.
     inline void step() {
+        // ignore the call if there is no game
+        if (!has_game()) return;
         // render a single frame on the emulator
         for (int i = 0; i < CYCLES_PER_FRAME; i++) cycle();
         // finish the frame on the APU
@@ -220,6 +247,8 @@ class Emulator {
 
     /// Create a backup state on the emulator.
     inline void backup() {
+        // ignore the call if there is no game
+        if (!has_game()) return;
         if (cartridge != nullptr) backup_cartridge = cartridge->clone();
         backup_controllers[0] = controllers[0];
         backup_controllers[1] = controllers[1];
@@ -232,6 +261,8 @@ class Emulator {
 
     /// Restore the backup state on the emulator.
     inline void restore() {
+        // ignore the call if there is no game
+        if (!has_game()) return;
         // restore if there is a backup available
         if (!has_backup) return;
         if (backup_cartridge != nullptr) cartridge = backup_cartridge->clone();
