@@ -97,8 +97,29 @@ class MapperMMC1 : public ROM::Mapper {
         }
     }
 
+    /// Create a mapper as a copy of another mapper.
+    MapperMMC1(const MapperMMC1& other) : ROM::Mapper(*this),
+        mirroring_callback(other.mirroring_callback),
+        mirroring(other.mirroring),
+        has_character_ram(other.has_character_ram),
+        mode_chr(other.mode_chr),
+        mode_prg(other.mode_prg),
+        temp_register(other.temp_register),
+        write_counter(other.write_counter),
+        register_prg(other.register_prg),
+        register_chr0(other.register_chr0),
+        register_chr1(other.register_chr1),
+        first_bank_prg(other.first_bank_prg),
+        second_bank_prg(other.second_bank_prg),
+        first_bank_chr(other.first_bank_chr),
+        second_bank_chr(other.second_bank_chr),
+        character_ram(other.character_ram) { }
+
     /// Destroy this mapper.
-    inline ~MapperMMC1() override { }
+    ~MapperMMC1() override { }
+
+    /// Clone the mapper, i.e., the virtual copy constructor
+    MapperMMC1* clone() override { return new MapperMMC1(*this); }
 
     /// Return the name table mirroring mode of this mapper.
     inline NameTableMirroring getNameTableMirroring() override {

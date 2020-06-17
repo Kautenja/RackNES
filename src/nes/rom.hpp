@@ -86,9 +86,6 @@ class ROM {
         romFile.read(reinterpret_cast<char*>(&chr_rom[0]), 0x2000 * vbanks);
     }
 
-    /// Destroy an instance of ROM.
-    ~ROM() { }
-
     /// Return the path to the ROM on disk.
     inline std::string get_rom_path() const { return rom_path; }
 
@@ -115,6 +112,9 @@ class ROM {
         /// The cartridge this mapper associates with
         ROM& rom;
 
+        /// Create a mapper as a copy of another mapper.
+        Mapper(const Mapper& other) : rom(other.rom) { }
+
      public:
         /// Create a new mapper with a rom and given type.
         ///
@@ -123,7 +123,10 @@ class ROM {
         explicit Mapper(ROM& rom_) : rom(rom_) { }
 
         /// Destroy this mapper.
-        inline virtual ~Mapper() { }
+        virtual ~Mapper() { }
+
+        /// Clone the mapper, i.e., the virtual copy constructor
+        virtual Mapper* clone() = 0;
 
         /// Return true if this mapper has extended RAM, false otherwise.
         inline bool hasExtendedRAM() const { return rom.hasExtendedRAM(); }
