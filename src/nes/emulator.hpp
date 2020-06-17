@@ -115,10 +115,17 @@ class Emulator {
         apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
         apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
         // load the cartridge with given ROM path and mirroring update callback
-        cartridge = new Cartridge(rom_path, [&](){ picture_bus.update_mirroring(); });
-        // create the mapper based on the mapper ID in the iNES header of the ROM
-        // mapper = MapperFactory(cartridge, [&](){ picture_bus.update_mirroring(); });
-        // give the IO buses a pointer to the mapper
+        load_game(rom_path);
+    }
+
+    /// Load a new game into the emulator.
+    ///
+    /// @param path a path to the ROM to load into the emulator
+    ///
+    inline void load_game(const std::string& path) {
+        // TODO: deleter for mappers
+        // if (cartridge != nullptr) delete cartridge;
+        cartridge = new Cartridge(path, [&](){ picture_bus.update_mirroring(); });
         bus.set_mapper(cartridge->get_mapper());
         picture_bus.set_mapper(cartridge->get_mapper());
     }
