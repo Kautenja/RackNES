@@ -10,14 +10,13 @@
 
 #include <string>
 #include "common.hpp"
-#include "cartridge.hpp"
 #include "controller.hpp"
 #include "apu.hpp"
 #include "cpu.hpp"
 #include "ppu.hpp"
 #include "main_bus.hpp"
 #include "picture_bus.hpp"
-#include "mapper_factory.hpp"
+#include "cartridge.hpp"
 
 namespace NES {
 
@@ -25,9 +24,7 @@ namespace NES {
 class Emulator {
  private:
     /// the virtual cartridge with ROM and mapper data
-    Cartridge cartridge;
-    /// the mapper for the cartridge
-    Mapper* mapper;
+    Cartridge* cartridge = nullptr;
     /// the 2 controllers on the emulator
     Controller controllers[2];
 
@@ -46,14 +43,27 @@ class Emulator {
     /// The emulator's APU
     APU apu;
 
+    // ------------------------------------------------------------------------
+    // MARK: Backup state variables: TODO: improve organization, i.e., a
+    //       EmulatorData struct or something similar
+    // ------------------------------------------------------------------------
+
+    /// the virtual cartridge with ROM and mapper data
+    Cartridge* backup_cartridge = nullptr;
+    /// the 2 controllers on the emulator
+    Controller backup_controllers[2];
+
     /// the main data bus of the emulator
     MainBus backup_bus;
     /// the picture bus from the PPU of the emulator
     PictureBus backup_picture_bus;
+
     /// The emulator's CPU
     CPU backup_cpu;
     /// the emulators' PPU
     PPU backup_ppu;
+    /// The emulator's APU
+    // APU backup_apu;
 
  public:
     /// The number of cycles in 1 frame
@@ -67,11 +77,8 @@ class Emulator {
     /// the number of bytes in the screen (RGBx)
     static const int SCREEN_BYTES = PIXELS * 4;
 
-    /// Initialize a new emulator with a path to a ROM file.
-    ///
-    /// @param rom_path the path to the ROM for the emulator to run
-    ///
-    explicit Emulator(const std::string& rom_path) : cartridge(rom_path) {
+    /// Initialize a new emulator.
+    Emulator() {
         // set the read callbacks
         bus.set_read_callback(PPUSTATUS, [&](void) { return ppu.get_status();          });
         bus.set_read_callback(PPUDATA,   [&](void) { return ppu.get_data(picture_bus); });
@@ -114,14 +121,33 @@ class Emulator {
         bus.set_write_callback(JOY2,               [&](NES_Byte b) { apu.write(JOY2, b);               });
         // set the interrupt callback for the PPU
         ppu.set_interrupt_callback([&]() { cpu.interrupt(bus, CPU::NMI_INTERRUPT); });
-        // create the mapper based on the mapper ID in the iNES header of the ROM
-        mapper = MapperFactory(&cartridge, [&](){ picture_bus.update_mirroring(); });
-        // give the IO buses a pointer to the mapper
-        bus.set_mapper(mapper);
-        picture_bus.set_mapper(mapper);
         // setup the DMC reader callback (for loading samples from RAM)
         apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
         apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
+    }
+
+    // Destroy this emulator
+    ~Emulator() { if (cartridge != nullptr) delete cartridge; }
+
+    /// Return true if the emulator has a game inserted.
+    inline bool has_game() { return cartridge != nullptr; }
+
+    /// Load a new game into the emulator.
+    ///
+    /// @param path a path to the ROM to load into the emulator
+    ///
+    inline void load_game(const std::string& path) {
+        if (cartridge != nullptr) delete cartridge;
+        cartridge = new Cartridge(path, [&](){ picture_bus.update_mirroring(); });
+        bus.set_mapper(cartridge->get_mapper());
+        picture_bus.set_mapper(cartridge->get_mapper());
+        reset();
+    }
+
+    /// Remove the inserted game from the emulator.
+    inline void remove_game() {
+        if (cartridge != nullptr) delete cartridge;
+        cartridge = nullptr;
     }
 
     /// Set the sample rate to a new value.
@@ -137,7 +163,7 @@ class Emulator {
     inline void set_frame_rate(float value) { apu.set_frame_rate(value); }
 
     /// Return the path to the ROM on disk.
-    inline std::string get_rom_path() const { return cartridge.get_rom_path(); }
+    inline std::string get_rom_path() const { return cartridge->get_rom_path(); }
 
     /// Return a 32-bit pointer to the screen buffer's first address.
     ///
@@ -160,6 +186,24 @@ class Emulator {
         return controllers[port].get_joypad_buffer();
     }
 
+    /// Write buttons to the virtual controller.
+    ///
+    /// @param buttons the button bitmap to write to the controller
+    ///
+    inline void set_controller(int port, NES_Byte buttons) {
+        controllers[port].write_buttons(buttons);
+    }
+
+    /// Write buttons to the virtual controller.
+    ///
+    /// @param player1 the button bitmap to write to port 1 controller
+    /// @param player2 the button bitmap to write to port 2 controller
+    ///
+    inline void set_controllers(NES_Byte player1, NES_Byte player2) {
+        controllers[0].write_buttons(player1);
+        controllers[1].write_buttons(player2);
+    }
+
     /// Return an audio sample from the APU of the emulator.
     inline int16_t get_audio_sample() { return apu.get_sample(); }
 
@@ -169,10 +213,19 @@ class Emulator {
     }
 
     /// Load the ROM into the NES.
-    inline void reset() { cpu.reset(bus); ppu.reset(); }
+    inline void reset() {
+        // ignore the call if there is no game
+        if (!has_game()) return;
+        // reset the CPU, PPU, and APU
+        cpu.reset(bus);
+        ppu.reset();
+        apu.reset();
+    }
 
     /// Run a single CPU cycle on the emulator.
     inline void cycle() {
+        // ignore the call if there is no game
+        if (!has_game()) return;
         // 3 PPU steps per CPU step
         ppu.cycle(picture_bus);
         ppu.cycle(picture_bus);
@@ -184,6 +237,8 @@ class Emulator {
 
     /// Perform a step on the emulator, i.e., a single frame.
     inline void step() {
+        // ignore the call if there is no game
+        if (!has_game()) return;
         // render a single frame on the emulator
         for (int i = 0; i < CYCLES_PER_FRAME; i++) cycle();
         // finish the frame on the APU
@@ -192,6 +247,11 @@ class Emulator {
 
     /// Create a backup state on the emulator.
     inline void backup() {
+        // ignore the call if there is no game
+        if (!has_game()) return;
+        if (cartridge != nullptr) backup_cartridge = cartridge->clone();
+        backup_controllers[0] = controllers[0];
+        backup_controllers[1] = controllers[1];
         backup_bus = bus;
         backup_picture_bus = picture_bus;
         backup_cpu = cpu;
@@ -201,8 +261,13 @@ class Emulator {
 
     /// Restore the backup state on the emulator.
     inline void restore() {
+        // ignore the call if there is no game
+        if (!has_game()) return;
         // restore if there is a backup available
         if (!has_backup) return;
+        if (backup_cartridge != nullptr) cartridge = backup_cartridge->clone();
+        controllers[0] = backup_controllers[0];
+        controllers[1] = backup_controllers[1];
         bus = backup_bus;
         picture_bus = backup_picture_bus;
         cpu = backup_cpu;

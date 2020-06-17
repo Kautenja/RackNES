@@ -10,19 +10,19 @@
 
 #include <functional>
 #include <vector>
-#include "../mapper.hpp"
+#include "../rom.hpp"
 #include "../log.hpp"
 
 namespace NES {
 
 /// The MMC1 mapper (mapper #1).
-class MapperMMC1 : public Mapper {
+class MapperMMC1 : public ROM::Mapper {
  private:
     /// The mirroring callback on the PPU
     std::function<void(void)> mirroring_callback;
     /// the mirroring mode on the device
     NameTableMirroring mirroring;
-    /// whether the cartridge uses character RAM
+    /// whether the rom uses character RAM
     bool has_character_ram;
     /// the mode for CHR ROM
     int mode_chr;
@@ -46,7 +46,7 @@ class MapperMMC1 : public Mapper {
     std::size_t first_bank_chr;
     /// The second CHR bank
     std::size_t second_bank_chr;
-    /// The character RAM on the cartridge
+    /// The character RAM on the rom
     std::vector<NES_Byte> character_ram;
 
     /// TODO: what does this do
@@ -61,18 +61,17 @@ class MapperMMC1 : public Mapper {
             second_bank_prg = first_bank_prg + 0x4000 * register_prg;
         } else {  // switch first fix second
             first_bank_prg = 0x4000 * register_prg;
-            second_bank_prg = cartridge->getROM().size() - 0x4000;
+            second_bank_prg = rom.getROM().size() - 0x4000;
         }
     }
 
  public:
-    /// Create a new mapper with a cartridge.
+    /// Create a new mapper with a rom.
     ///
-    /// @param cart a reference to a cartridge for the mapper to access
+    /// @param cart a reference to a rom for the mapper to access
     /// @param mirroring_cb the callback to change mirroring modes on the PPU
     ///
-    MapperMMC1(Cartridge* cart, std::function<void(void)> mirroring_cb) :
-        Mapper(cart),
+    MapperMMC1(ROM& cart, std::function<void(void)> mirroring_cb) : Mapper(cart),
         mirroring_callback(mirroring_cb),
         mirroring(HORIZONTAL),
         mode_chr(0),
@@ -83,10 +82,10 @@ class MapperMMC1 : public Mapper {
         register_chr0(0),
         register_chr1(0),
         first_bank_prg(0),
-        second_bank_prg(cart->getROM().size() - 0x4000),
+        second_bank_prg(rom.getROM().size() - 0x4000),
         first_bank_chr(0),
         second_bank_chr(0) {
-        if (cart->getVROM().size() == 0) {
+        if (rom.getVROM().size() == 0) {
             has_character_ram = true;
             character_ram.resize(0x2000);
             LOG(Info) << "Uses character RAM" << std::endl;
@@ -97,6 +96,30 @@ class MapperMMC1 : public Mapper {
             second_bank_chr = 0x1000 * register_chr1;
         }
     }
+
+    /// Create a mapper as a copy of another mapper.
+    MapperMMC1(const MapperMMC1& other) : ROM::Mapper(*this),
+        mirroring_callback(other.mirroring_callback),
+        mirroring(other.mirroring),
+        has_character_ram(other.has_character_ram),
+        mode_chr(other.mode_chr),
+        mode_prg(other.mode_prg),
+        temp_register(other.temp_register),
+        write_counter(other.write_counter),
+        register_prg(other.register_prg),
+        register_chr0(other.register_chr0),
+        register_chr1(other.register_chr1),
+        first_bank_prg(other.first_bank_prg),
+        second_bank_prg(other.second_bank_prg),
+        first_bank_chr(other.first_bank_chr),
+        second_bank_chr(other.second_bank_chr),
+        character_ram(other.character_ram) { }
+
+    /// Destroy this mapper.
+    ~MapperMMC1() override { }
+
+    /// Clone the mapper, i.e., the virtual copy constructor
+    MapperMMC1* clone() override { return new MapperMMC1(*this); }
 
     /// Return the name table mirroring mode of this mapper.
     inline NameTableMirroring getNameTableMirroring() override {
@@ -110,9 +133,9 @@ class MapperMMC1 : public Mapper {
     ///
     inline NES_Byte readPRG(NES_Address address) override {
         if (address < 0xc000)
-            return cartridge->getROM()[first_bank_prg + (address & 0x3fff)];
+            return rom.getROM()[first_bank_prg + (address & 0x3fff)];
         else
-            return cartridge->getROM()[second_bank_prg + (address & 0x3fff)];
+            return rom.getROM()[second_bank_prg + (address & 0x3fff)];
     }
 
     /// Write a byte to an address in the PRG RAM.
@@ -188,9 +211,9 @@ class MapperMMC1 : public Mapper {
         if (has_character_ram)
             return character_ram[address];
         else if (address < 0x1000)
-            return cartridge->getVROM()[first_bank_chr + address];
+            return rom.getVROM()[first_bank_chr + address];
         else
-            return cartridge->getVROM()[second_bank_chr + (address & 0xfff)];
+            return rom.getVROM()[second_bank_chr + (address & 0xfff)];
     }
 
     /// Write a byte to an address in the CHR RAM.

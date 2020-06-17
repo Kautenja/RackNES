@@ -96,7 +96,7 @@ struct RackNES : Module {
     };
 
     /// the NES emulator
-    NES::Emulator* emulator = nullptr;
+    NES::Emulator emulator;
     /// the path to the ROM for the emulator
     std::string rom_path = "";
     /// a signal determining if a game was inserted into the emulator, i.e.,
@@ -161,25 +161,15 @@ struct RackNES : Module {
     /// @param sampleRate the sample rate the engine is running at
     ///
     void handleNewROM(int sampleRate) {
-        // nothing to do if the UI hasn't set the did insert game flag
-        if (!did_insert_game) return;
-        // reset the did insert game event signal
-        did_insert_game = false;
-        // check if an emulator exists, i.e., a game is already loaded
-        if (emulator != nullptr) delete emulator;
         // create a new emulator with the specified ROM and reset it
         if (NES::Cartridge::is_valid_rom(rom_path)) {  // ROM file valid
             try {
-                emulator = new NES::Emulator(rom_path);
-                emulator->set_sample_rate(sampleRate);
-                emulator->reset();
+                emulator.load_game(rom_path);
             } catch (std::exception e) {  // ROM failed to load
-                emulator = nullptr;
                 // (TODO: error screen)
                 initalizeScreen();
             }
         } else {  // ROM file not valid
-            emulator = nullptr;
             // (TODO: error screen)
             initalizeScreen();
         }
@@ -192,7 +182,7 @@ struct RackNES : Module {
 
     /// Copy the screen buffer from the NES in BGR to the local buffer in RGBA.
     inline void copyScreen() {
-        memcpy(screen, emulator->get_screen_buffer(), NES::Emulator::SCREEN_BYTES);
+        memcpy(screen, emulator.get_screen_buffer(), NES::Emulator::SCREEN_BYTES);
     }
 
     /// Return the clock speed of the NES.
@@ -214,17 +204,22 @@ struct RackNES : Module {
 
     /// Return the output audio from the NES after applying the volume.
     inline float getAudio() {
-        return params[VOLUME_PARAM].getValue() * emulator->get_audio_voltage();
+        return params[VOLUME_PARAM].getValue() * emulator.get_audio_voltage();
     }
 
     /// Process a sample.
     void process(const ProcessArgs &args) override {
         // check for a new ROM to load
-        handleNewROM(static_cast<int>(args.sampleRate));
+        if (did_insert_game) {
+            handleNewROM(static_cast<int>(args.sampleRate));
+            did_insert_game = false;
+            // set the sample rate of the emulator
+            new_sample_rate = true;
+        }
 
         // check for sample rate changes from the engine to send to the NES
-        if (new_sample_rate && emulator != nullptr) {
-            emulator->set_sample_rate(static_cast<int>(args.sampleRate));
+        if (new_sample_rate) {
+            emulator.set_sample_rate(static_cast<int>(args.sampleRate));
             new_sample_rate = false;
         }
 
@@ -235,17 +230,17 @@ struct RackNES : Module {
         if (backupButton.process(
             params[BACKUP_PARAM].getValue(),
             inputs[BACKUP_INPUT].getVoltage()
-        ) && emulator != nullptr) emulator->backup();
+        )) emulator.backup();
         // handle inputs to the reset button and CV
         if (resetButton.process(
             params[RESET_PARAM].getValue(),
             inputs[RESET_INPUT].getVoltage()
-        ) && emulator != nullptr) emulator->reset();
+        )) emulator.reset();
         // handle inputs to the restore button and CV
         if (restoreButton.process(
             params[RESTORE_PARAM].getValue(),
             inputs[RESTORE_INPUT].getVoltage()
-        ) && emulator != nullptr) emulator->restore();
+        )) emulator.restore();
 
         // get the controller for both players as a byte where each bit
         // represents the gate signal for whether one of the 8 buttons are
@@ -277,16 +272,15 @@ struct RackNES : Module {
         clock.process(args.sampleTime);
         auto clockVoltage = rescale(clock.getVoltage(), 0.1, 2.0f, 0.f, 1.f);
         // run a frame on the emulator if the clock is high
-        if (clockTrigger.process(clockVoltage) and emulator != nullptr) {
+        if (clockTrigger.process(clockVoltage)) {
             // set the frequency of the clock and back-end sound engine
             auto frequency = getClockSpeed();
             clock.setFrequency(frequency);
-            emulator->set_frame_rate(frequency);
+            emulator.set_frame_rate(frequency);
             // set the controller values
-            *emulator->get_controller(0) = player1;
-            *emulator->get_controller(1) = player2;
+            emulator.set_controllers(player1, player2);
             // run a complete frame through the emulator
-            emulator->step();
+            emulator.step();
             // copy the screen to the internal module buffer. this is necessary
             // because the emulator renders in BGR and we need RGBA. It also
             // prevents the UI thread from needing direct access to the emulator
@@ -295,7 +289,7 @@ struct RackNES : Module {
         // set the clock output trigger based on the clock signal
         outputs[CLOCK_OUTPUT].setVoltage(10.f * clockTrigger.isHigh());
         // get the sound output from the emulator
-        if (emulator != nullptr)
+        if (emulator.has_game())
             outputs[SOUND_OUTPUT].setVoltage(getAudio());
     }
 
@@ -307,21 +301,9 @@ struct RackNES : Module {
         // remove the path to the current ROM
         rom_path = "";
         // deallocate the emulator from RAM
-        if (emulator != nullptr) {
-            delete emulator;
-            emulator = nullptr;
-        }
+        emulator.remove_game();
         // reset the screen to an initial state
         initalizeScreen();
-    }
-
-    /// Respond to the module being removed from the rack.
-    void onRemove() override {
-        // deallocate the emulator from RAM
-        if (emulator != nullptr) {
-            delete emulator;
-            emulator = nullptr;
-        }
     }
 
     /// Convert the module's state to a JSON object.

@@ -9,15 +9,15 @@
 #define NES_MAPPERS_MAPPER_UNROM_HPP
 
 #include <vector>
-#include "../mapper.hpp"
+#include "../rom.hpp"
 #include "../log.hpp"
 
 namespace NES {
 
 /// The UxROM mapper (mapper #2).
-class MapperUNROM : public Mapper {
+class MapperUNROM : public ROM::Mapper {
  private:
-    /// whether the cartridge use character RAM
+    /// whether the rom use character RAM
     bool has_character_ram;
     /// the pointer to the last bank
     std::size_t last_bank_pointer;
@@ -27,20 +27,32 @@ class MapperUNROM : public Mapper {
     std::vector<NES_Byte> character_ram;
 
  public:
-    /// Create a new mapper with a cartridge.
+    /// Create a new mapper with a rom.
     ///
-    /// @param cart a reference to a cartridge for the mapper to access
+    /// @param cart a reference to a rom for the mapper to access
     ///
-    explicit MapperUNROM(Cartridge* cart):
-        Mapper(cart),
-        has_character_ram(cart->getVROM().size() == 0),
-        last_bank_pointer(cart->getROM().size() - 0x4000),
+    explicit MapperUNROM(ROM& cart): Mapper(cart),
+        has_character_ram(rom.getVROM().size() == 0),
+        last_bank_pointer(rom.getROM().size() - 0x4000),
         select_prg(0) {
         if (has_character_ram) {
             character_ram.resize(0x2000);
             LOG(Info) << "Uses character RAM" << std::endl;
         }
     }
+
+    /// Create a mapper as a copy of another mapper.
+    MapperUNROM(const MapperUNROM& other) : ROM::Mapper(*this),
+        has_character_ram(other.has_character_ram),
+        last_bank_pointer(other.last_bank_pointer),
+        select_prg(other.select_prg),
+        character_ram(other.character_ram) { }
+
+    /// Destroy this mapper.
+    ~MapperUNROM() override { }
+
+    /// Clone the mapper, i.e., the virtual copy constructor
+    MapperUNROM* clone() override { return new MapperUNROM(*this); }
 
     /// Read a byte from the PRG RAM.
     ///
@@ -49,9 +61,9 @@ class MapperUNROM : public Mapper {
     ///
     inline NES_Byte readPRG(NES_Address address) override {
         if (address < 0xc000)
-            return cartridge->getROM()[((address - 0x8000) & 0x3fff) | (select_prg << 14)];
+            return rom.getROM()[((address - 0x8000) & 0x3fff) | (select_prg << 14)];
         else
-            return cartridge->getROM()[last_bank_pointer + (address & 0x3fff)];
+            return rom.getROM()[last_bank_pointer + (address & 0x3fff)];
     }
 
     /// Write a byte to an address in the PRG RAM.
@@ -72,7 +84,7 @@ class MapperUNROM : public Mapper {
         if (has_character_ram)
             return character_ram[address];
         else
-            return cartridge->getVROM()[address];
+            return rom.getVROM()[address];
     }
 
     /// Write a byte to an address in the CHR RAM.
