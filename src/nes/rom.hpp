@@ -26,7 +26,7 @@ enum NameTableMirroring {
 
 /// A cartridge holding game ROM and a special hardware mapper emulation
 class ROM {
- private:
+ protected:
     /// the path to the ROM file on disk
     const std::string rom_path;
     /// the PRG ROM
@@ -86,6 +86,9 @@ class ROM {
         romFile.read(reinterpret_cast<char*>(&chr_rom[0]), 0x2000 * vbanks);
     }
 
+    /// Destroy an instance of ROM.
+    ~ROM() { }
+
     /// Return the path to the ROM on disk.
     inline std::string get_rom_path() const { return rom_path; }
 
@@ -95,13 +98,13 @@ class ROM {
     /// Return the VROM data.
     const inline std::vector<NES_Byte>& getVROM() const { return chr_rom; }
 
-    /// Return the mapper ID number.
-    inline NES_Byte getMapper() const { return mapper_number; }
-
     /// Return the name table mirroring mode.
     inline NameTableMirroring getNameTableMirroring() const {
         return static_cast<NameTableMirroring>(name_table_mirroring);
     }
+
+    /// Return the mapper ID number.
+    inline NES_Byte get_mapper_number() const { return mapper_number; }
 
     /// Return a boolean determining whether this cartridge uses extended RAM.
     inline bool hasExtendedRAM() const { return has_extended_ram; }

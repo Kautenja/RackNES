@@ -8,6 +8,7 @@
 #ifndef NES_MAPPER_FACTORY_HPP
 #define NES_MAPPER_FACTORY_HPP
 
+#include <exception>
 #include <string>
 #include "rom.hpp"
 #include "mappers/mapper_NROM.hpp"
@@ -50,26 +51,31 @@ class MapperNotFound: public std::exception {
     virtual const char* what() const throw() { return msg_.c_str(); }
 };
 
-/// an enumeration of mapper IDs
-enum class MapperID : NES_Byte {
-    NROM   = 0,
-    MMC1   = 1,
-    UNROM  = 2,
-    CNROM  = 3,
-};
-
+/// An NES cartridge including ROM and mapper.
 class Cartridge : public ROM {
  protected:
     /// the mapper for the cartridge
     Mapper* mapper = nullptr;
 
  public:
-    /// Create a new Cartridge
+    /// an enumeration of supported mapper IDs
+    enum class MapperID : NES_Byte {
+        NROM   = 0,
+        MMC1   = 1,
+        UNROM  = 2,
+        CNROM  = 3,
+    };
+
+    /// Create a new Cartridge.
+    ///
+    /// @param path the path to the ROM for the callback
+    /// @param callback a callback to update nametable mirroring on the PPU
+    ///
     Cartridge(
         const std::string& path,
         std::function<void(void)> callback
     ) : ROM(path) {
-        switch (static_cast<MapperID>(getMapper())) {
+        switch (static_cast<MapperID>(mapper_number)) {
             case MapperID::NROM:  mapper = new MapperNROM(*this);           break;
             case MapperID::MMC1:  mapper = new MapperMMC1(*this, callback); break;
             case MapperID::UNROM: mapper = new MapperUNROM(*this);          break;
@@ -78,9 +84,10 @@ class Cartridge : public ROM {
         }
     }
 
-    // TODO: virtual deleter for Mapper
-    // ~CartridgeMapper() { delete mapper; }
+    // TODO: virtual deleter for ROM and ROM::Mapper
+    // ~Cartridge() { delete mapper; }
 
+    /// Return a pointer to the mapper for the cartridge.
     Mapper* get_mapper() { return mapper; }
 };
 
