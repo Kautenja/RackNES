@@ -11,7 +11,7 @@
 #include <vector>
 #include <cstdlib>
 #include "common.hpp"
-#include "mapper.hpp"
+#include "cartridge.hpp"
 #include "log.hpp"
 
 namespace NES {
@@ -20,18 +20,15 @@ namespace NES {
 class PictureBus {
  private:
     /// the VRAM on the picture bus
-    std::vector<NES_Byte> ram;
+    std::vector<NES_Byte> ram = std::vector<NES_Byte>(0x800);
     /// indexes where they start in RAM vector
     std::size_t name_tables[4] = {0, 0, 0, 0};
     /// the palette for decoding RGB tuples
-    std::vector<NES_Byte> palette;
+    std::vector<NES_Byte> palette = std::vector<NES_Byte>(0x20);
     /// a pointer to the mapper on the cartridge
-    Mapper* mapper;
+    ROM::Mapper* mapper = nullptr;
 
  public:
-    /// Initialize a new picture bus.
-    PictureBus() : ram(0x800), palette(0x20), mapper(nullptr) { }
-
     /// Read a byte from an address on the VRAM.
     ///
     /// @param address the 16-bit address of the byte to read in the VRAM
@@ -85,8 +82,9 @@ class PictureBus {
     ///
     /// @param mapper the new mapper pointer for the bus to use
     ///
-    inline void set_mapper(Mapper *mapper) {
-        this->mapper = mapper; update_mirroring();
+    inline void set_mapper(ROM::Mapper *mapper_) {
+        mapper = mapper_;
+        update_mirroring();
     }
 
     /// Read a color index from the palette.
@@ -105,35 +103,24 @@ class PictureBus {
             case HORIZONTAL:
                 name_tables[0] = name_tables[1] = 0;
                 name_tables[2] = name_tables[3] = 0x400;
-                LOG(InfoVerbose) <<
-                    "Horizontal Name Table mirroring set. (Vertical Scrolling)" <<
-                    std::endl;
+                LOG(InfoVerbose) << "Horizontal Name Table mirroring set. (Vertical Scrolling)" << std::endl;
                 break;
             case VERTICAL:
                 name_tables[0] = name_tables[2] = 0;
                 name_tables[1] = name_tables[3] = 0x400;
-                LOG(InfoVerbose) <<
-                    "Vertical Name Table mirroring set. (Horizontal Scrolling)" <<
-                    std::endl;
+                LOG(InfoVerbose) << "Vertical Name Table mirroring set. (Horizontal Scrolling)" << std::endl;
                 break;
             case ONE_SCREEN_LOWER:
                 name_tables[0] = name_tables[1] = name_tables[2] = name_tables[3] = 0;
-                LOG(InfoVerbose) <<
-                    "Single Screen mirroring set with lower bank." <<
-                    std::endl;
+                LOG(InfoVerbose) << "Single Screen mirroring set with lower bank." << std::endl;
                 break;
             case ONE_SCREEN_HIGHER:
                 name_tables[0] = name_tables[1] = name_tables[2] = name_tables[3] = 0x400;
-                LOG(InfoVerbose) <<
-                    "Single Screen mirroring set with higher bank." <<
-                    std::endl;
+                LOG(InfoVerbose) << "Single Screen mirroring set with higher bank." << std::endl;
                 break;
             default:
                 name_tables[0] = name_tables[1] = name_tables[2] = name_tables[3] = 0;
-                LOG(Error) <<
-                    "Unsupported Name Table mirroring : " <<
-                    mapper->getNameTableMirroring() <<
-                    std::endl;
+                LOG(Error) << "Unsupported Name Table mirroring : " << mapper->getNameTableMirroring() << std::endl;
         }
     }
 };
