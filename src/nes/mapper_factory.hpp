@@ -56,27 +56,24 @@ enum class MapperID : NES_Byte {
     MMC1   = 1,
     UNROM  = 2,
     CNROM  = 3,
-    // MMC3   = 4,
-    // AOROM  = 7
 };
 
-class CartridgeMapper : public Cartridge {
+class Cartridge : public ROM {
  protected:
     /// the mapper for the cartridge
     Mapper* mapper = nullptr;
 
  public:
-    CartridgeMapper(
+    /// Create a new Cartridge
+    Cartridge(
         const std::string& path,
         std::function<void(void)> callback
-    ) : Cartridge(path) {
+    ) : ROM(path) {
         switch (static_cast<MapperID>(getMapper())) {
             case MapperID::NROM:  mapper = new MapperNROM(*this);           break;
             case MapperID::MMC1:  mapper = new MapperMMC1(*this, callback); break;
             case MapperID::UNROM: mapper = new MapperUNROM(*this);          break;
             case MapperID::CNROM: mapper = new MapperCNROM(*this);          break;
-            // case MapperID::MMC3:  mapper = new MapperMMC3(*this);           break;
-            // case MapperID::AOROM: mapper = new MapperAOROM(*this);          break;
             default: throw MapperNotFound("mapper not implemented");
         }
     }
