@@ -26,7 +26,7 @@ class PictureBus {
     /// the palette for decoding RGB tuples
     std::vector<NES_Byte> palette = std::vector<NES_Byte>(0x20);
     /// a pointer to the mapper on the cartridge
-    Cartridge::Mapper* mapper = nullptr;
+    ROM::Mapper* mapper = nullptr;
 
  public:
     /// Read a byte from an address on the VRAM.
@@ -82,7 +82,7 @@ class PictureBus {
     ///
     /// @param mapper the new mapper pointer for the bus to use
     ///
-    inline void set_mapper(Cartridge::Mapper *mapper) {
+    inline void set_mapper(ROM::Mapper *mapper) {
         this->mapper = mapper;
         update_mirroring();
     }
