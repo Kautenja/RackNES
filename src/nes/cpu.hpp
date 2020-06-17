@@ -165,6 +165,56 @@ class CPU {
     /// &1 -> +1 if on odd cycle
     ///
     inline void skip_DMA_cycles() { skip_cycles += 513 + (cycles & 1); }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = json_object();
+        json_object_set_new(rootJ, "register_PC", json_integer(register_PC));
+        json_object_set_new(rootJ, "register_SP", json_integer(register_SP));
+        json_object_set_new(rootJ, "register_A", json_integer(register_A));
+        json_object_set_new(rootJ, "register_X", json_integer(register_X));
+        json_object_set_new(rootJ, "register_Y", json_integer(register_Y));
+        json_object_set_new(rootJ, "flags", json_integer(flags.byte));
+        json_object_set_new(rootJ, "skip_cycles", json_integer(skip_cycles));
+        json_object_set_new(rootJ, "cycles", json_integer(cycles));
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        // load register_PC
+        json_t* register_PC_ = json_object_get(rootJ, "register_PC");
+        if (register_PC_)
+            register_PC = json_integer_value(register_PC_);
+        // load register_SP
+        json_t* register_SP_ = json_object_get(rootJ, "register_SP");
+        if (register_SP_)
+            register_SP = json_integer_value(register_SP_);
+        // load register_A
+        json_t* register_A_ = json_object_get(rootJ, "register_A");
+        if (register_A_)
+            register_A = json_integer_value(register_A_);
+        // load register_X
+        json_t* register_X_ = json_object_get(rootJ, "register_X");
+        if (register_X_)
+            register_X = json_integer_value(register_X_);
+        // load register_Y
+        json_t* register_Y_ = json_object_get(rootJ, "register_Y");
+        if (register_Y_)
+            register_Y = json_integer_value(register_Y_);
+        // load flags
+        json_t* flags_ = json_object_get(rootJ, "flags");
+        if (flags_)
+            flags.byte = json_integer_value(flags_);
+        // load skip_cycles
+        json_t* skip_cycles_ = json_object_get(rootJ, "skip_cycles");
+        if (skip_cycles_)
+            skip_cycles = json_integer_value(skip_cycles_);
+        // load cycles
+        json_t* cycles_ = json_object_get(rootJ, "cycles");
+        if (cycles_)
+            cycles = json_integer_value(cycles_);
+    }
 };
 
 }  // namespace NES
