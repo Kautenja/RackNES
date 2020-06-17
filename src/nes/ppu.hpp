@@ -182,16 +182,6 @@ class PPU {
     /// Return a pointer to the screen buffer.
     inline NES_Pixel* get_screen_buffer() { return *screen; }
 
-
-
-
-
-
-
-
-
-    // NES_Pixel screen[VISIBLE_SCANLINES][SCANLINE_VISIBLE_DOTS];
-
     /// Convert the object's state to a JSON object.
     json_t* dataToJson() {
         json_t* rootJ = json_object();
