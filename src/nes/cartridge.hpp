@@ -1,113 +1,102 @@
 //  Program:      nes-py
-//  File:         cartridge.hpp
-//  Description:  This class houses the logic and data for an NES cartridge
+//  File:         mapper.hpp
+//  Description:  An abstract factory for mappers
 //
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
 
-#ifndef NES_CARTRIDGE_HPP
-#define NES_CARTRIDGE_HPP
+#ifndef NES_MAPPER_FACTORY_HPP
+#define NES_MAPPER_FACTORY_HPP
 
-#include <fstream>
+#include <exception>
 #include <string>
-#include <vector>
-#include "common.hpp"
+#include "rom.hpp"
+#include "mappers/mapper_NROM.hpp"
+#include "mappers/mapper_MMC1.hpp"
+#include "mappers/mapper_UNROM.hpp"
+#include "mappers/mapper_CNROM.hpp"
 
 namespace NES {
 
-/// Mirroring modes supported by the NES
-enum NameTableMirroring {
-    HORIZONTAL  = 0,
-    VERTICAL    = 1,
-    FOUR_SCREEN  = 8,
-    ONE_SCREEN_LOWER,
-    ONE_SCREEN_HIGHER,
-};
-
-/// A cartridge holding game ROM and a special hardware mapper emulation
-class Cartridge {
- private:
-    /// the path to the ROM file on disk
-    const std::string rom_path;
-    /// the PRG ROM
-    std::vector<NES_Byte> prg_rom;
-    /// the CHR ROM
-    std::vector<NES_Byte> chr_rom;
-    /// the name table mirroring mode
-    NES_Byte name_table_mirroring;
-    /// the mapper ID number
-    NES_Byte mapper_number;
-    /// whether this cartridge uses extended RAM
-    bool has_extended_ram;
+/// An exception that is raised when a mapper cannot be found for a ROM.
+class MapperNotFound: public std::exception {
+ protected:
+    /// Error message.
+    std::string msg_;
 
  public:
-    /// Return true of the path points to a valid iNES file.
+    /// Constructor (C strings).
+    /// @param message C-style string error message.
+    ///                The string contents are copied upon construction.
+    ///                Hence, responsibility for deleting the char* lies
+    ///                with the caller.
     ///
-    /// @param path the path to the potential file to check
-    /// @returns true if the path points to a valid iNES file, false otherwise
+    explicit MapperNotFound(const char* message) : msg_(message) { }
+
+    /// Constructor (C++ STL strings).
+    /// @param message The error message.
     ///
-    static inline bool is_valid_rom(const std::string& path) {
-        // the "magic number", i.e., sentinel value, of the header
-        static const std::vector<NES_Byte> MAGIC = {0x4E, 0x45, 0x53, 0x1A};
-        // // create a stream to load the ROM file
-        std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
-        /// return false if the file could not be opened
-        if (!romFile.is_open()) return false;
-        // create a byte vector for the iNES header
-        std::vector<NES_Byte> header;
-        // resize the header vector
-        header.resize(MAGIC.size());
-        // read the header data from the file
-        romFile.read(reinterpret_cast<char*>(&header[0]), MAGIC.size());
-        // check if the header is equal to the magic number
-        return header == MAGIC;
+    explicit MapperNotFound(const std::string& message) : msg_(message) { }
+
+    /// Destructor.
+    /// Virtual to allow for subclassing.
+    ///
+    virtual ~MapperNotFound() throw() { }
+
+    /// Returns a pointer to the (constant) error description.
+    /// @return A pointer to a const char*. The underlying memory
+    ///         is in posession of the Exception object. Callers must
+    ///         not attempt to free the memory.
+    ///
+    virtual const char* what() const throw() { return msg_.c_str(); }
+};
+
+/// An NES cartridge including ROM and mapper.
+class Cartridge : public ROM {
+ protected:
+    /// the mapper for the cartridge
+    Mapper* mapper = nullptr;
+
+ public:
+    /// an enumeration of supported mapper IDs
+    enum class MapperID : NES_Byte {
+        NROM   = 0,
+        MMC1   = 1,
+        UNROM  = 2,
+        CNROM  = 3,
+    };
+
+    /// Create a new Cartridge.
+    ///
+    /// @param path the path to the ROM for the callback
+    /// @param callback a callback to update nametable mirroring on the PPU
+    ///
+    Cartridge(const std::string& path, std::function<void(void)> callback) :
+        ROM(path) {
+        switch (static_cast<MapperID>(mapper_number)) {
+            case MapperID::NROM:  mapper = new MapperNROM(*this);           break;
+            case MapperID::MMC1:  mapper = new MapperMMC1(*this, callback); break;
+            case MapperID::UNROM: mapper = new MapperUNROM(*this);          break;
+            case MapperID::CNROM: mapper = new MapperCNROM(*this);          break;
+            default: throw MapperNotFound("mapper not implemented");
+        }
     }
 
-    /// Initialize a new cartridge
-    explicit Cartridge(const std::string& path) : rom_path(path) {
-        // create a stream to load the ROM file
-        std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
-        // create a byte vector for the iNES header
-        std::vector<NES_Byte> header;
-        header.resize(0x10);
-        romFile.read(reinterpret_cast<char*>(&header[0]), 0x10);
-        // read internal data
-        name_table_mirroring = header[6] & 0xB;
-        mapper_number = ((header[6] >> 4) & 0xf) | (header[7] & 0xf0);
-        has_extended_ram = header[6] & 0x2;
-        // read PRG-ROM 16KB banks
-        NES_Byte banks = header[4];
-        prg_rom.resize(0x4000 * banks);
-        romFile.read(reinterpret_cast<char*>(&prg_rom[0]), 0x4000 * banks);
-        // read CHR-ROM 8KB banks
-        NES_Byte vbanks = header[5];
-        if (!vbanks)
-            return;
-        chr_rom.resize(0x2000 * vbanks);
-        romFile.read(reinterpret_cast<char*>(&chr_rom[0]), 0x2000 * vbanks);
+    /// Copy this cartridge.
+    Cartridge(const Cartridge& other) : ROM(other) {
+        if (other.mapper != nullptr) mapper = other.mapper->clone();
     }
 
-    /// Return the path to the ROM on disk.
-    inline std::string get_rom_path() const { return rom_path; }
+    /// Destroy this cartridge.
+    ~Cartridge() { if (mapper != nullptr) delete mapper; }
 
-    /// Return the ROM data.
-    const inline std::vector<NES_Byte>& getROM() const { return prg_rom; }
+    /// Clone the cartridge, i.e., the virtual copy constructor.
+    Cartridge* clone() { return new Cartridge(*this); }
 
-    /// Return the VROM data.
-    const inline std::vector<NES_Byte>& getVROM() const { return chr_rom; }
-
-    /// Return the mapper ID number.
-    inline NES_Byte getMapper() const { return mapper_number; }
-
-    /// Return the name table mirroring mode.
-    inline NameTableMirroring getNameTableMirroring() const {
-        return static_cast<NameTableMirroring>(name_table_mirroring);
-    }
-
-    /// Return a boolean determining whether this cartridge uses extended RAM.
-    inline bool hasExtendedRAM() const { return has_extended_ram; }
+    /// Return a pointer to the mapper for the cartridge.
+    inline Mapper* get_mapper() { return mapper; }
 };
 
 }  // namespace NES
 
-#endif // NES_CARTRIDGE_HPP
+#endif  // NES_MAPPER_FACTORY_HPP
