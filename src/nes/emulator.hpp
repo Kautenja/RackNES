@@ -25,7 +25,7 @@ namespace NES {
 class Emulator {
  private:
     /// the virtual cartridge with ROM and mapper data
-    CartridgeMapper* cartridge = nullptr;
+    Cartridge* cartridge = nullptr;
     /// the 2 controllers on the emulator
     Controller controllers[2];
 
@@ -115,8 +115,8 @@ class Emulator {
         // setup the DMC reader callback (for loading samples from RAM)
         apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
         apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
-
-        cartridge = new CartridgeMapper(rom_path, [&](){ picture_bus.update_mirroring(); });
+        // load the cartridge with given ROM path and mirroring update callback
+        cartridge = new Cartridge(rom_path, [&](){ picture_bus.update_mirroring(); });
         // create the mapper based on the mapper ID in the iNES header of the ROM
         // mapper = MapperFactory(cartridge, [&](){ picture_bus.update_mirroring(); });
         // give the IO buses a pointer to the mapper

@@ -25,7 +25,7 @@ enum NameTableMirroring {
 };
 
 /// A cartridge holding game ROM and a special hardware mapper emulation
-class Cartridge {
+class ROM {
  private:
     /// the path to the ROM file on disk
     const std::string rom_path;
@@ -63,8 +63,8 @@ class Cartridge {
         return header == MAGIC;
     }
 
-    /// Initialize a new cartridge
-    explicit Cartridge(const std::string& path) : rom_path(path) {
+    /// Initialize a new ROM file.
+    explicit ROM(const std::string& path) : rom_path(path) {
         // create a stream to load the ROM file
         std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
         // create a byte vector for the iNES header
@@ -81,8 +81,7 @@ class Cartridge {
         romFile.read(reinterpret_cast<char*>(&prg_rom[0]), 0x4000 * banks);
         // read CHR-ROM 8KB banks
         NES_Byte vbanks = header[5];
-        if (!vbanks)
-            return;
+        if (!vbanks) return;
         chr_rom.resize(0x2000 * vbanks);
         romFile.read(reinterpret_cast<char*>(&chr_rom[0]), 0x2000 * vbanks);
     }
@@ -111,21 +110,21 @@ class Cartridge {
     class Mapper {
      protected:
         /// The cartridge this mapper associates with
-        Cartridge& cartridge;
+        ROM& rom;
 
      public:
-        /// Create a new mapper with a cartridge and given type.
+        /// Create a new mapper with a rom and given type.
         ///
-        /// @param game a reference to a cartridge for the mapper to access
+        /// @param rom_ a reference to a rom for the mapper to access
         ///
-        explicit Mapper(Cartridge& game) : cartridge(game) { }
+        explicit Mapper(ROM& rom_) : rom(rom_) { }
 
         /// Return true if this mapper has extended RAM, false otherwise.
-        inline bool hasExtendedRAM() const { return cartridge.hasExtendedRAM(); }
+        inline bool hasExtendedRAM() const { return rom.hasExtendedRAM(); }
 
         /// Return the name table mirroring mode of this mapper.
         inline virtual NameTableMirroring getNameTableMirroring() {
-            return cartridge.getNameTableMirroring();
+            return rom.getNameTableMirroring();
         }
 
         /// Read a byte from the PRG RAM.

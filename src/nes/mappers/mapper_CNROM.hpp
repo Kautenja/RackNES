@@ -14,7 +14,7 @@
 namespace NES {
 
 /// The CNROM mapper (mapper #3).
-class MapperCNROM : public Cartridge::Mapper {
+class MapperCNROM : public ROM::Mapper {
  private:
     /// whether there are 1 or 2 banks
     bool is_one_bank;
@@ -22,12 +22,12 @@ class MapperCNROM : public Cartridge::Mapper {
     NES_Address select_chr;
 
  public:
-    /// Create a new mapper with a cartridge.
+    /// Create a new mapper with a rom.
     ///
-    /// @param cart a reference to a cartridge for the mapper to access
+    /// @param rom_ a reference to a rom for the mapper to access
     ///
-    explicit MapperCNROM(Cartridge& cart) : Mapper(cart),
-        is_one_bank(cartridge.getROM().size() == 0x4000),
+    explicit MapperCNROM(ROM& rom_) : Mapper(rom_),
+        is_one_bank(rom.getROM().size() == 0x4000),
         select_chr(0) { }
 
     /// Read a byte from the PRG RAM.
@@ -37,9 +37,9 @@ class MapperCNROM : public Cartridge::Mapper {
     ///
     inline NES_Byte readPRG(NES_Address address) override {
         if (!is_one_bank)
-            return cartridge.getROM()[address - 0x8000];
+            return rom.getROM()[address - 0x8000];
         else  // mirrored
-            return cartridge.getROM()[(address - 0x8000) & 0x3fff];
+            return rom.getROM()[(address - 0x8000) & 0x3fff];
     }
 
     /// Write a byte to an address in the PRG RAM.
@@ -57,7 +57,7 @@ class MapperCNROM : public Cartridge::Mapper {
     /// @return the byte located at the given address in CHR RAM
     ///
     inline NES_Byte readCHR(NES_Address address) override {
-        return cartridge.getVROM()[address | (select_chr << 13)];
+        return rom.getVROM()[address | (select_chr << 13)];
     }
 
     /// Write a byte to an address in the CHR RAM.

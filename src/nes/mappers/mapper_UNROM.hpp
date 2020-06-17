@@ -15,9 +15,9 @@
 namespace NES {
 
 /// The UxROM mapper (mapper #2).
-class MapperUNROM : public Cartridge::Mapper {
+class MapperUNROM : public ROM::Mapper {
  private:
-    /// whether the cartridge use character RAM
+    /// whether the rom use character RAM
     bool has_character_ram;
     /// the pointer to the last bank
     std::size_t last_bank_pointer;
@@ -27,13 +27,13 @@ class MapperUNROM : public Cartridge::Mapper {
     std::vector<NES_Byte> character_ram;
 
  public:
-    /// Create a new mapper with a cartridge.
+    /// Create a new mapper with a rom.
     ///
-    /// @param cart a reference to a cartridge for the mapper to access
+    /// @param cart a reference to a rom for the mapper to access
     ///
-    explicit MapperUNROM(Cartridge& cart): Mapper(cart),
-        has_character_ram(cartridge.getVROM().size() == 0),
-        last_bank_pointer(cartridge.getROM().size() - 0x4000),
+    explicit MapperUNROM(ROM& cart): Mapper(cart),
+        has_character_ram(rom.getVROM().size() == 0),
+        last_bank_pointer(rom.getROM().size() - 0x4000),
         select_prg(0) {
         if (has_character_ram) {
             character_ram.resize(0x2000);
@@ -48,9 +48,9 @@ class MapperUNROM : public Cartridge::Mapper {
     ///
     inline NES_Byte readPRG(NES_Address address) override {
         if (address < 0xc000)
-            return cartridge.getROM()[((address - 0x8000) & 0x3fff) | (select_prg << 14)];
+            return rom.getROM()[((address - 0x8000) & 0x3fff) | (select_prg << 14)];
         else
-            return cartridge.getROM()[last_bank_pointer + (address & 0x3fff)];
+            return rom.getROM()[last_bank_pointer + (address & 0x3fff)];
     }
 
     /// Write a byte to an address in the PRG RAM.
@@ -71,7 +71,7 @@ class MapperUNROM : public Cartridge::Mapper {
         if (has_character_ram)
             return character_ram[address];
         else
-            return cartridge.getVROM()[address];
+            return rom.getVROM()[address];
     }
 
     /// Write a byte to an address in the CHR RAM.
