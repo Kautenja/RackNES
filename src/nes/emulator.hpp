@@ -43,8 +43,10 @@ class Emulator {
     /// The emulator's APU
     APU apu;
 
-
-
+    // ------------------------------------------------------------------------
+    // MARK: Backup state variables: TODO: improve organization, i.e., a
+    //       EmulatorData struct or something similar
+    // ------------------------------------------------------------------------
 
     /// the virtual cartridge with ROM and mapper data
     Cartridge* backup_cartridge = nullptr;
