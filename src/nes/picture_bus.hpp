@@ -132,11 +132,11 @@ class PictureBus {
             auto data_string = base64_encode(&ram[0], ram.size());
             json_object_set_new(rootJ, "ram", json_string(data_string.c_str()));
         }
-        // encode name_tables (TODO: fix for endian-ness cast std::size_t to char is not safe)
-        {
-            auto data_string = base64_encode((char*) &name_tables[0], sizeof(name_tables));
-            json_object_set_new(rootJ, "name_tables", json_string(data_string.c_str()));
-        }
+        // encode name_tables
+        json_object_set_new(rootJ, "name_tables[0]", json_integer(name_tables[0]));
+        json_object_set_new(rootJ, "name_tables[1]", json_integer(name_tables[1]));
+        json_object_set_new(rootJ, "name_tables[2]", json_integer(name_tables[2]));
+        json_object_set_new(rootJ, "name_tables[3]", json_integer(name_tables[3]));
         // encode palette
         {
             auto data_string = base64_encode(&palette[0], palette.size());
@@ -158,11 +158,27 @@ class PictureBus {
         }
         // load name_tables
         {
-            json_t* json_data = json_object_get(rootJ, "name_tables");
+            json_t* json_data = json_object_get(rootJ, "name_tables[0]");
             if (json_data) {
-                std::string data_string = json_string_value(json_data);
-                data_string = base64_decode(data_string);
-                name_tables = std::vector<std::size_t>(data_string.begin(), data_string.end());
+                name_tables[0] = json_integer_value(json_data);
+            }
+        }
+        {
+            json_t* json_data = json_object_get(rootJ, "name_tables[1]");
+            if (json_data) {
+                name_tables[1] = json_integer_value(json_data);
+            }
+        }
+        {
+            json_t* json_data = json_object_get(rootJ, "name_tables[2]");
+            if (json_data) {
+                name_tables[2] = json_integer_value(json_data);
+            }
+        }
+        {
+            json_t* json_data = json_object_get(rootJ, "name_tables[3]");
+            if (json_data) {
+                name_tables[3] = json_integer_value(json_data);
             }
         }
         // load palette
