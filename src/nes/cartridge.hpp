@@ -107,7 +107,7 @@ class Cartridge : public ROM {
     void dataFromJson(json_t* rootJ) {
         ROM::dataFromJson(rootJ);
         json_t* json_data = json_object_get(rootJ, "mapper");
-        if (json_data) mapper->dataFromJson(rootJ);
+        if (json_data) mapper->dataFromJson(json_data);
     }
 };
 
