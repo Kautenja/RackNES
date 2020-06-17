@@ -38,8 +38,17 @@ class MapperNROM : public ROM::Mapper {
         }
     }
 
+    /// Create a mapper as a copy of another mapper.
+    MapperNROM(const MapperNROM& other) : ROM::Mapper(*this),
+        is_one_bank(other.is_one_bank),
+        has_character_ram(other.has_character_ram),
+        character_ram(other.character_ram) { }
+
     /// Destroy this mapper.
-    inline ~MapperNROM() override { }
+    ~MapperNROM() override { }
+
+    /// Clone the mapper, i.e., the virtual copy constructor
+    MapperNROM* clone() override { return new MapperNROM(*this); }
 
     /// Read a byte from the PRG RAM.
     ///

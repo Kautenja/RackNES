@@ -41,8 +41,18 @@ class MapperUNROM : public ROM::Mapper {
         }
     }
 
+    /// Create a mapper as a copy of another mapper.
+    MapperUNROM(const MapperUNROM& other) : ROM::Mapper(*this),
+        has_character_ram(other.has_character_ram),
+        last_bank_pointer(other.last_bank_pointer),
+        select_prg(other.select_prg),
+        character_ram(other.character_ram) { }
+
     /// Destroy this mapper.
-    inline ~MapperUNROM() override { }
+    ~MapperUNROM() override { }
+
+    /// Clone the mapper, i.e., the virtual copy constructor
+    MapperUNROM* clone() override { return new MapperUNROM(*this); }
 
     /// Read a byte from the PRG RAM.
     ///
