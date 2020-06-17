@@ -30,6 +30,9 @@ class MapperCNROM : public ROM::Mapper {
         is_one_bank(rom.getROM().size() == 0x4000),
         select_chr(0) { }
 
+    /// Destroy this mapper.
+    inline ~MapperCNROM() override { }
+
     /// Read a byte from the PRG RAM.
     ///
     /// @param address the 16-bit address of the byte to read

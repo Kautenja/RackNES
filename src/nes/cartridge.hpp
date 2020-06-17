@@ -82,8 +82,8 @@ class Cartridge : public ROM {
         }
     }
 
-    // TODO: virtual deleter for ROM and ROM::Mapper
-    // ~Cartridge() { delete mapper; }
+    /// Destroy this cartridge.
+    ~Cartridge() { if (mapper != nullptr) delete mapper; }
 
     /// Return a pointer to the mapper for the cartridge.
     Mapper* get_mapper() { return mapper; }

@@ -38,6 +38,9 @@ class MapperNROM : public ROM::Mapper {
         }
     }
 
+    /// Destroy this mapper.
+    inline ~MapperNROM() override { }
+
     /// Read a byte from the PRG RAM.
     ///
     /// @param address the 16-bit address of the byte to read
