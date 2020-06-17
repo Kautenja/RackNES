@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <cstring>
 #include <string>
 #include <jansson.h>
 #include "plugin.hpp"
@@ -177,12 +178,12 @@ struct RackNES : Module {
 
     /// Initialize the screen with empty pixels.
     inline void initalizeScreen() {
-        memset(screen, 0, NES::Emulator::SCREEN_BYTES);
+        std::memset(screen, 0, NES::Emulator::SCREEN_BYTES);
     }
 
     /// Copy the screen buffer from the NES in BGR to the local buffer in RGBA.
     inline void copyScreen() {
-        memcpy(screen, emulator.get_screen_buffer(), NES::Emulator::SCREEN_BYTES);
+        std::memcpy(screen, emulator.get_screen_buffer(), NES::Emulator::SCREEN_BYTES);
     }
 
     /// Return the clock speed of the NES.
