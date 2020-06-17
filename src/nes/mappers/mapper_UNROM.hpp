@@ -9,13 +9,13 @@
 #define NES_MAPPERS_MAPPER_UNROM_HPP
 
 #include <vector>
-#include "../mapper.hpp"
+#include "../cartridge.hpp"
 #include "../log.hpp"
 
 namespace NES {
 
 /// The UxROM mapper (mapper #2).
-class MapperUNROM : public Mapper {
+class MapperUNROM : public Cartridge::Mapper {
  private:
     /// whether the cartridge use character RAM
     bool has_character_ram;
@@ -31,10 +31,9 @@ class MapperUNROM : public Mapper {
     ///
     /// @param cart a reference to a cartridge for the mapper to access
     ///
-    explicit MapperUNROM(Cartridge* cart):
-        Mapper(cart),
-        has_character_ram(cart->getVROM().size() == 0),
-        last_bank_pointer(cart->getROM().size() - 0x4000),
+    explicit MapperUNROM(Cartridge& cart): Mapper(cart),
+        has_character_ram(cartridge.getVROM().size() == 0),
+        last_bank_pointer(cartridge.getROM().size() - 0x4000),
         select_prg(0) {
         if (has_character_ram) {
             character_ram.resize(0x2000);
@@ -49,9 +48,9 @@ class MapperUNROM : public Mapper {
     ///
     inline NES_Byte readPRG(NES_Address address) override {
         if (address < 0xc000)
-            return cartridge->getROM()[((address - 0x8000) & 0x3fff) | (select_prg << 14)];
+            return cartridge.getROM()[((address - 0x8000) & 0x3fff) | (select_prg << 14)];
         else
-            return cartridge->getROM()[last_bank_pointer + (address & 0x3fff)];
+            return cartridge.getROM()[last_bank_pointer + (address & 0x3fff)];
     }
 
     /// Write a byte to an address in the PRG RAM.
@@ -72,7 +71,7 @@ class MapperUNROM : public Mapper {
         if (has_character_ram)
             return character_ram[address];
         else
-            return cartridge->getVROM()[address];
+            return cartridge.getVROM()[address];
     }
 
     /// Write a byte to an address in the CHR RAM.
