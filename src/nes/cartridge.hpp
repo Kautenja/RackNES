@@ -10,6 +10,7 @@
 
 #include <exception>
 #include <string>
+#include <jansson.h>
 #include "rom.hpp"
 #include "mappers/mapper_NROM.hpp"
 #include "mappers/mapper_MMC1.hpp"
