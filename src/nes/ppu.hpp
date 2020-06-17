@@ -8,6 +8,7 @@
 #ifndef NES_PPU_HPP
 #define NES_PPU_HPP
 
+#include <string>
 #include <functional>
 #include "picture_bus.hpp"
 
@@ -28,9 +29,9 @@ const int FRAME_END_SCANLINE = 261;
 class PPU {
  private:
     /// The callback to fire when entering vertical blanking mode
-    std::function<void(void)> vblank_callback;
+    Callback vblank_callback;
     /// The OAM memory (sprites)
-    std::vector<NES_Byte> sprite_memory;
+    std::vector<NES_Byte> sprite_memory = std::vector<NES_Byte>(64 * 4);
     /// OAM memory (sprites) for the next scanline
     std::vector<NES_Byte> scanline_sprites;
 
@@ -104,9 +105,6 @@ class PPU {
     NES_Pixel screen[VISIBLE_SCANLINES][SCANLINE_VISIBLE_DOTS];
 
  public:
-    /// Initialize a new PPU.
-    PPU() : sprite_memory(64 * 4) { }
-
     /// Perform a single cycle on the PPU.
     void cycle(PictureBus& bus);
 
@@ -114,9 +112,10 @@ class PPU {
     void reset();
 
     /// Set the interrupt callback for the CPU.
-    inline void set_interrupt_callback(std::function<void(void)> cb) {
-        vblank_callback = cb;
-    }
+    ///
+    /// @param callback the callback for handling interrupts from the PPU
+    ///
+    inline void set_interrupt_callback(Callback cb) { vblank_callback = cb; }
 
     /// TODO: doc
     void do_DMA(const NES_Byte* page_ptr);
@@ -182,6 +181,184 @@ class PPU {
 
     /// Return a pointer to the screen buffer.
     inline NES_Pixel* get_screen_buffer() { return *screen; }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = json_object();
+        // encode sprite_memory
+        {
+            auto data_string = base64_encode(&sprite_memory[0], sprite_memory.size());
+            json_object_set_new(rootJ, "sprite_memory", json_string(data_string.c_str()));
+        }
+        // encode scanline_sprites
+        {
+            auto data_string = base64_encode(&scanline_sprites[0], scanline_sprites.size());
+            json_object_set_new(rootJ, "scanline_sprites", json_string(data_string.c_str()));
+        }
+        json_object_set_new(rootJ, "pipeline_state", json_integer(pipeline_state));
+        json_object_set_new(rootJ, "cycles", json_integer(cycles));
+        json_object_set_new(rootJ, "scanline", json_integer(scanline));
+        json_object_set_new(rootJ, "is_even_frame", json_boolean(scanline));
+        json_object_set_new(rootJ, "is_vblank", json_boolean(scanline));
+        json_object_set_new(rootJ, "is_sprite_zero_hit", json_boolean(scanline));
+        json_object_set_new(rootJ, "data_address", json_integer(data_address));
+        json_object_set_new(rootJ, "temp_address", json_integer(temp_address));
+        json_object_set_new(rootJ, "fine_x_scroll", json_integer(fine_x_scroll));
+        json_object_set_new(rootJ, "is_first_write", json_boolean(is_first_write));
+        json_object_set_new(rootJ, "data_buffer", json_integer(data_buffer));
+        json_object_set_new(rootJ, "sprite_data_address", json_integer(sprite_data_address));
+        json_object_set_new(rootJ, "is_showing_sprites", json_boolean(is_showing_sprites));
+        json_object_set_new(rootJ, "is_showing_background", json_boolean(is_showing_background));
+        json_object_set_new(rootJ, "is_hiding_edge_sprites", json_boolean(is_hiding_edge_sprites));
+        json_object_set_new(rootJ, "is_hiding_edge_background", json_boolean(is_hiding_edge_background));
+        json_object_set_new(rootJ, "is_long_sprites", json_boolean(is_long_sprites));
+        json_object_set_new(rootJ, "is_interrupting", json_boolean(is_interrupting));
+        json_object_set_new(rootJ, "background_page", json_integer(background_page));
+        json_object_set_new(rootJ, "sprite_page", json_integer(sprite_page));
+        json_object_set_new(rootJ, "data_address_increment", json_integer(data_address_increment));
+        // encode screen
+        // {
+        //     auto data_string = base64_encode(&screen[0], screen.size());
+        //     json_object_set_new(rootJ, "screen", json_string(data_string.c_str()));
+        // }
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        // load sprite_memory
+        {
+            json_t* json_data = json_object_get(rootJ, "sprite_memory");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                sprite_memory = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            }
+        }
+        // load scanline_sprites
+        {
+            json_t* json_data = json_object_get(rootJ, "scanline_sprites");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                scanline_sprites = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            }
+        }
+        // load pipeline_state
+        {
+            json_t* json_data = json_object_get(rootJ, "pipeline_state");
+            if (json_data) pipeline_state = static_cast<State>(json_integer_value(json_data));
+        }
+        // load cycles
+        {
+            json_t* json_data = json_object_get(rootJ, "cycles");
+            if (json_data) cycles = json_integer_value(json_data);
+        }
+        // load scanline
+        {
+            json_t* json_data = json_object_get(rootJ, "scanline");
+            if (json_data) scanline = json_integer_value(json_data);
+        }
+        // load is_even_frame
+        {
+            json_t* json_data = json_object_get(rootJ, "is_even_frame");
+            if (json_data) is_even_frame = json_boolean_value(json_data);
+        }
+        // load is_vblank
+        {
+            json_t* json_data = json_object_get(rootJ, "is_vblank");
+            if (json_data) is_vblank = json_boolean_value(json_data);
+        }
+        // load is_sprite_zero_hit
+        {
+            json_t* json_data = json_object_get(rootJ, "is_sprite_zero_hit");
+            if (json_data) is_sprite_zero_hit = json_boolean_value(json_data);
+        }
+        // load data_address
+        {
+            json_t* json_data = json_object_get(rootJ, "data_address");
+            if (json_data) data_address = json_integer_value(json_data);
+        }
+        // load temp_address
+        {
+            json_t* json_data = json_object_get(rootJ, "temp_address");
+            if (json_data) temp_address = json_integer_value(json_data);
+        }
+        // load fine_x_scroll
+        {
+            json_t* json_data = json_object_get(rootJ, "fine_x_scroll");
+            if (json_data) fine_x_scroll = json_integer_value(json_data);
+        }
+        // load is_first_write
+        {
+            json_t* json_data = json_object_get(rootJ, "is_first_write");
+            if (json_data) is_first_write = json_boolean_value(json_data);
+        }
+        // load data_buffer
+        {
+            json_t* json_data = json_object_get(rootJ, "data_buffer");
+            if (json_data) data_buffer = json_integer_value(json_data);
+        }
+        // load sprite_data_address
+        {
+            json_t* json_data = json_object_get(rootJ, "sprite_data_address");
+            if (json_data) sprite_data_address = json_integer_value(json_data);
+        }
+        // load is_showing_sprites
+        {
+            json_t* json_data = json_object_get(rootJ, "is_showing_sprites");
+            if (json_data) is_showing_sprites = json_boolean_value(json_data);
+        }
+        // load is_showing_background
+        {
+            json_t* json_data = json_object_get(rootJ, "is_showing_background");
+            if (json_data) is_showing_background = json_boolean_value(json_data);
+        }
+        // load is_hiding_edge_sprites
+        {
+            json_t* json_data = json_object_get(rootJ, "is_hiding_edge_sprites");
+            if (json_data) is_hiding_edge_sprites = json_boolean_value(json_data);
+        }
+        // load is_hiding_edge_background
+        {
+            json_t* json_data = json_object_get(rootJ, "is_hiding_edge_background");
+            if (json_data) is_hiding_edge_background = json_boolean_value(json_data);
+        }
+        // load is_long_sprites
+        {
+            json_t* json_data = json_object_get(rootJ, "is_long_sprites");
+            if (json_data) is_long_sprites = json_boolean_value(json_data);
+        }
+        // load is_interrupting
+        {
+            json_t* json_data = json_object_get(rootJ, "is_interrupting");
+            if (json_data) is_interrupting = json_boolean_value(json_data);
+        }
+        // load background_page
+        {
+            json_t* json_data = json_object_get(rootJ, "background_page");
+            if (json_data) background_page = static_cast<CharacterPage>(json_integer_value(json_data));
+        }
+        // load sprite_page
+        {
+            json_t* json_data = json_object_get(rootJ, "sprite_page");
+            if (json_data) sprite_page = static_cast<CharacterPage>(json_integer_value(json_data));
+        }
+        // load data_address_increment
+        {
+            json_t* json_data = json_object_get(rootJ, "data_address_increment");
+            if (json_data) data_address_increment = json_integer_value(json_data);
+        }
+        // load screen
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "screen");
+        //     if (json_data) {
+        //         std::string data_string = json_string_value(json_data);
+        //         data_string = base64_decode(data_string);
+        //         screen = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+        //     }
+        // }
+    }
 };
 
 }  // namespace NES

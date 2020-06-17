@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <cstring>
 #include <string>
 #include <jansson.h>
 #include "plugin.hpp"
@@ -177,12 +178,12 @@ struct RackNES : Module {
 
     /// Initialize the screen with empty pixels.
     inline void initalizeScreen() {
-        memset(screen, 0, NES::Emulator::SCREEN_BYTES);
+        std::memset(screen, 0, NES::Emulator::SCREEN_BYTES);
     }
 
     /// Copy the screen buffer from the NES in BGR to the local buffer in RGBA.
     inline void copyScreen() {
-        memcpy(screen, emulator.get_screen_buffer(), NES::Emulator::SCREEN_BYTES);
+        std::memcpy(screen, emulator.get_screen_buffer(), NES::Emulator::SCREEN_BYTES);
     }
 
     /// Return the clock speed of the NES.
@@ -310,15 +311,27 @@ struct RackNES : Module {
     json_t* dataToJson() override {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "rom_path", json_string(rom_path.c_str()));
+        json_object_set_new(rootJ, "emulator", emulator.dataToJson());
         return rootJ;
     }
 
     /// Load the module's state from a JSON object.
     void dataFromJson(json_t* rootJ) override {
-        json_t* rom_path_ = json_object_get(rootJ, "rom_path");
-        if (rom_path_) {  // a ROM was loaded into the emulator
-            rom_path = json_string_value(rom_path_);
-            did_insert_game = !rom_path.empty();
+        {
+            json_t* json_data = json_object_get(rootJ, "rom_path");
+            if (json_data) {  // a ROM was loaded into the emulator
+                rom_path = json_string_value(json_data);
+                did_insert_game = !rom_path.empty();
+            }
+        }
+        {
+            json_t* json_data = json_object_get(rootJ, "emulator");
+            if (json_data) {
+                emulator.load_game(rom_path);
+                emulator.dataFromJson(json_data);
+                did_insert_game = false;
+                new_sample_rate = true;
+            }
         }
     }
 };

@@ -153,8 +153,8 @@ class MainBus {
             }
         } else if (address < 0x6000) {
             LOG(InfoVerbose) << "Expansion ROM read attempted. This is currently unsupported" << std::endl;
-        } else if (address < 0x8000 && mapper->hasExtendedRAM()) {
-            return extended_ram[address - 0x6000];
+        } else if (address < 0x8000) {
+            if (mapper->hasExtendedRAM()) return extended_ram[address - 0x6000];
         } else {
             return mapper->readPRG(address);
         }
@@ -187,10 +187,48 @@ class MainBus {
             }
         } else if (address < 0x6000) {
             LOG(InfoVerbose) << "Expansion ROM write access attempted. This is currently unsupported" << std::endl;
-        } else if (address < 0x8000 && mapper->hasExtendedRAM()) {
-            extended_ram[address - 0x6000] = value;
+        } else if (address < 0x8000) {
+            if (mapper->hasExtendedRAM()) extended_ram[address - 0x6000] = value;
         } else {
             mapper->writePRG(address, value);
+        }
+    }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = json_object();
+        // encode ram
+        {
+            auto data_string = base64_encode(&ram[0], ram.size());
+            json_object_set_new(rootJ, "ram", json_string(data_string.c_str()));
+        }
+        // encode extended_ram
+        {
+            auto data_string = base64_encode(&extended_ram[0], extended_ram.size());
+            json_object_set_new(rootJ, "extended_ram", json_string(data_string.c_str()));
+        }
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        // load ram
+        {
+            json_t* json_data = json_object_get(rootJ, "ram");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                ram = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            }
+        }
+        // load extended_ram
+        {
+            json_t* json_data = json_object_get(rootJ, "extended_ram");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                extended_ram = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            }
         }
     }
 };

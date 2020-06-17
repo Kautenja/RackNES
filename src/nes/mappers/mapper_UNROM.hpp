@@ -8,6 +8,7 @@
 #ifndef NES_MAPPERS_MAPPER_UNROM_HPP
 #define NES_MAPPERS_MAPPER_UNROM_HPP
 
+#include <string>
 #include <vector>
 #include "../rom.hpp"
 #include "../log.hpp"
@@ -98,6 +99,51 @@ class MapperUNROM : public ROM::Mapper {
         else
             LOG(Info) << "Read-only CHR memory write attempt at " <<
                 std::hex << address << std::endl;
+    }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() override {
+        json_t* rootJ = json_object();
+        json_object_set_new(rootJ, "has_character_ram", json_boolean(has_character_ram));
+        json_object_set_new(rootJ, "last_bank_pointer", json_integer(last_bank_pointer));
+        json_object_set_new(rootJ, "select_prg", json_integer(select_prg));
+        // encode character_ram
+        {
+            auto data_string = base64_encode(&character_ram[0], character_ram.size());
+            json_object_set_new(rootJ, "character_ram", json_string(data_string.c_str()));
+        }
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) override {
+        // load has_character_ram
+        {
+            json_t* json_data = json_object_get(rootJ, "has_character_ram");
+            if (json_data)
+                has_character_ram = json_boolean_value(json_data);
+        }
+        // load last_bank_pointer
+        {
+            json_t* json_data = json_object_get(rootJ, "last_bank_pointer");
+            if (json_data)
+                last_bank_pointer = json_integer_value(json_data);
+        }
+        // load select_prg
+        {
+            json_t* json_data = json_object_get(rootJ, "select_prg");
+            if (json_data)
+                select_prg = json_integer_value(json_data);
+        }
+        // load character_ram
+        {
+            json_t* json_data = json_object_get(rootJ, "character_ram");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                character_ram = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            }
+        }
     }
 };
 

@@ -8,6 +8,7 @@
 #ifndef NES_CONTROLLER_HPP
 #define NES_CONTROLLER_HPP
 
+#include <jansson.h>
 #include "common.hpp"
 
 namespace NES {
@@ -51,6 +52,34 @@ class Controller {
             joypad_bits >>= 1;
         }
         return ret | 0x40;
+    }
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = json_object();
+        json_object_set_new(rootJ, "is_strobe", json_boolean(is_strobe));
+        json_object_set_new(rootJ, "joypad_buttons", json_integer(joypad_buttons));
+        json_object_set_new(rootJ, "joypad_bits", json_integer(joypad_bits));
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        // load is_strobe
+        {
+            json_t* json_data = json_object_get(rootJ, "is_strobe");
+            if (json_data) is_strobe = json_boolean_value(json_data);
+        }
+        // load joypad_buttons
+        {
+            json_t* json_data = json_object_get(rootJ, "joypad_buttons");
+            if (json_data) joypad_buttons = json_boolean_value(json_data);
+        }
+        // load joypad_bits
+        {
+            json_t* json_data = json_object_get(rootJ, "joypad_bits");
+            if (json_data) joypad_bits = json_boolean_value(json_data);
+        }
     }
 };
 
