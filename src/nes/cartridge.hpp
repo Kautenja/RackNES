@@ -71,10 +71,8 @@ class Cartridge : public ROM {
     /// @param path the path to the ROM for the callback
     /// @param callback a callback to update nametable mirroring on the PPU
     ///
-    Cartridge(
-        const std::string& path,
-        std::function<void(void)> callback
-    ) : ROM(path) {
+    Cartridge(const std::string& path, std::function<void(void)> callback) :
+        ROM(path) {
         switch (static_cast<MapperID>(mapper_number)) {
             case MapperID::NROM:  mapper = new MapperNROM(*this);           break;
             case MapperID::MMC1:  mapper = new MapperMMC1(*this, callback); break;
