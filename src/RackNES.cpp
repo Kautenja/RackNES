@@ -214,7 +214,7 @@ struct RackNES : Module {
             handleNewROM(static_cast<int>(args.sampleRate));
             did_insert_game = false;
             // set the sample rate of the emulator
-            new_sample_rate = true
+            new_sample_rate = true;
         }
 
         // check for sample rate changes from the engine to send to the NES

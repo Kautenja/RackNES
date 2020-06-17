@@ -41,6 +41,9 @@ class MapperUNROM : public ROM::Mapper {
         }
     }
 
+    /// Destroy this mapper.
+    inline ~MapperUNROM() override { }
+
     /// Read a byte from the PRG RAM.
     ///
     /// @param address the 16-bit address of the byte to read
