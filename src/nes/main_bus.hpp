@@ -153,8 +153,8 @@ class MainBus {
             }
         } else if (address < 0x6000) {
             LOG(InfoVerbose) << "Expansion ROM read attempted. This is currently unsupported" << std::endl;
-        } else if (address < 0x8000 && mapper->hasExtendedRAM()) {
-            return extended_ram[address - 0x6000];
+        } else if (address < 0x8000) {
+            if (mapper->hasExtendedRAM()) return extended_ram[address - 0x6000];
         } else {
             return mapper->readPRG(address);
         }
@@ -187,8 +187,8 @@ class MainBus {
             }
         } else if (address < 0x6000) {
             LOG(InfoVerbose) << "Expansion ROM write access attempted. This is currently unsupported" << std::endl;
-        } else if (address < 0x8000 && mapper->hasExtendedRAM()) {
-            extended_ram[address - 0x6000] = value;
+        } else if (address < 0x8000) {
+            if (mapper->hasExtendedRAM()) extended_ram[address - 0x6000] = value;
         } else {
             mapper->writePRG(address, value);
         }
