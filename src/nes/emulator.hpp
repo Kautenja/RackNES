@@ -277,8 +277,8 @@ class Emulator {
     /// Convert the object's state to a JSON object.
     json_t* dataToJson() {
         json_t* rootJ = json_object();
-        // if (cartridge != nullptr)
-        //     json_object_set_new(rootJ, "cartridge", cartridge->dataToJson());
+        if (cartridge != nullptr)
+            json_object_set_new(rootJ, "cartridge", cartridge->dataToJson());
         json_object_set_new(rootJ, "controllers[0]", controllers[0].dataToJson());
         json_object_set_new(rootJ, "controllers[1]", controllers[1].dataToJson());
         json_object_set_new(rootJ, "has_backup", json_boolean(has_backup));
@@ -293,11 +293,11 @@ class Emulator {
     /// Load the object's state from a JSON object.
     void dataFromJson(json_t* rootJ) {
         // load cartridge
-        // {
-        //     json_t* json_data = json_object_get(rootJ, "cartridge");
-        //     if (json_data)
-        //         cartridge.dataFromJson(json_data);
-        // }
+        {
+            json_t* json_data = json_object_get(rootJ, "cartridge");
+            if (json_data)
+                cartridge->dataFromJson(json_data);
+        }
         // load controllers[0]
         {
             json_t* json_data = json_object_get(rootJ, "controllers[0]");
