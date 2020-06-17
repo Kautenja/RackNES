@@ -285,7 +285,8 @@ class Emulator {
             json_object_set_new(rootJ, "cartridge", cartridge->dataToJson());
         json_object_set_new(rootJ, "controllers[0]", controllers[0].dataToJson());
         json_object_set_new(rootJ, "controllers[1]", controllers[1].dataToJson());
-        json_object_set_new(rootJ, "has_backup", json_boolean(has_backup));
+        // TODO: serialize backups
+        // json_object_set_new(rootJ, "has_backup", json_boolean(has_backup));
         json_object_set_new(rootJ, "bus", bus.dataToJson());
         json_object_set_new(rootJ, "picture_bus", picture_bus.dataToJson());
         json_object_set_new(rootJ, "cpu", cpu.dataToJson());
@@ -311,11 +312,12 @@ class Emulator {
             json_t* json_data = json_object_get(rootJ, "controllers[1]");
             if (json_data) controllers[1].dataFromJson(json_data);
         }
-        // load has_backup
-        {
-            json_t* json_data = json_object_get(rootJ, "has_backup");
-            if (json_data) has_backup = json_boolean_value(json_data);
-        }
+        // TODO: serialize backups
+        // // load has_backup
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "has_backup");
+        //     if (json_data) has_backup = json_boolean_value(json_data);
+        // }
         // load bus
         {
             json_t* json_data = json_object_get(rootJ, "bus");
