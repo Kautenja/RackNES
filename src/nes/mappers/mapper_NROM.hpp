@@ -9,13 +9,13 @@
 #define NES_MAPPERS_MAPPER_NROM_HPP
 
 #include <vector>
-#include "../mapper.hpp"
+#include "../rom.hpp"
 #include "../log.hpp"
 
 namespace NES {
 
 /// The NROM mapper (mapper #0).
-class MapperNROM : public Mapper {
+class MapperNROM : public ROM::Mapper {
  private:
     /// whether there are 1 or 2 banks
     bool is_one_bank;
@@ -25,19 +25,30 @@ class MapperNROM : public Mapper {
     std::vector<NES_Byte> character_ram;
 
  public:
-    /// Create a new mapper with a cartridge.
+    /// Create a new mapper with a rom.
     ///
-    /// @param cart a reference to a cartridge for the mapper to access
+    /// @param cart a reference to a rom for the mapper to access
     ///
-    explicit MapperNROM(Cartridge* cart) :
-        Mapper(cart),
-        is_one_bank(cart->getROM().size() == 0x4000),
-        has_character_ram(cart->getVROM().size() == 0) {
+    explicit MapperNROM(ROM& cart) : Mapper(cart),
+        is_one_bank(rom.getROM().size() == 0x4000),
+        has_character_ram(rom.getVROM().size() == 0) {
         if (has_character_ram) {
             character_ram.resize(0x2000);
             LOG(Info) << "Uses character RAM" << std::endl;
         }
     }
+
+    /// Create a mapper as a copy of another mapper.
+    MapperNROM(const MapperNROM& other) : ROM::Mapper(*this),
+        is_one_bank(other.is_one_bank),
+        has_character_ram(other.has_character_ram),
+        character_ram(other.character_ram) { }
+
+    /// Destroy this mapper.
+    ~MapperNROM() override { }
+
+    /// Clone the mapper, i.e., the virtual copy constructor
+    MapperNROM* clone() override { return new MapperNROM(*this); }
 
     /// Read a byte from the PRG RAM.
     ///
@@ -46,9 +57,9 @@ class MapperNROM : public Mapper {
     ///
     inline NES_Byte readPRG(NES_Address address) override {
         if (!is_one_bank)
-            return cartridge->getROM()[address - 0x8000];
+            return rom.getROM()[address - 0x8000];
         else  // mirrored
-            return cartridge->getROM()[(address - 0x8000) & 0x3fff];
+            return rom.getROM()[(address - 0x8000) & 0x3fff];
     }
 
     /// Write a byte to an address in the PRG RAM.
@@ -70,7 +81,7 @@ class MapperNROM : public Mapper {
         if (has_character_ram)
             return character_ram[address];
         else
-            return cartridge->getVROM()[address];
+            return rom.getVROM()[address];
     }
 
     /// Write a byte to an address in the CHR RAM.
