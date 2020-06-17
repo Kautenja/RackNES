@@ -113,11 +113,15 @@ class ROM {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "rom_path", json_string(rom_path.c_str()));
         // encode prg_rom
-        auto prg_rom_string = base64_encode(&prg_rom[0], prg_rom.size());
-        json_object_set_new(rootJ, "prg_rom", json_string(prg_rom_string.c_str()));
+        {
+            auto data_string = base64_encode(&prg_rom[0], prg_rom.size());
+            json_object_set_new(rootJ, "prg_rom", json_string(data_string.c_str()));
+        }
         // encode chr_rom
-        auto chr_rom_string = base64_encode(&chr_rom[0], chr_rom.size());
-        json_object_set_new(rootJ, "chr_rom", json_string(chr_rom_string.c_str()));
+        {
+            auto data_string = base64_encode(&chr_rom[0], chr_rom.size());
+            json_object_set_new(rootJ, "chr_rom", json_string(data_string.c_str()));
+        }
         json_object_set_new(rootJ, "name_table_mirroring", json_integer(name_table_mirroring));
         json_object_set_new(rootJ, "mapper_number", json_integer(mapper_number));
         json_object_set_new(rootJ, "has_extended_ram", json_boolean(has_extended_ram));
@@ -127,35 +131,47 @@ class ROM {
     /// Load the object's state from a JSON object.
     void dataFromJson(json_t* rootJ) {
         // load rom_path
-        json_t* rom_path_ = json_object_get(rootJ, "rom_path");
-        if (rom_path_)
-            rom_path = json_string_value(rom_path_);
+        {
+            json_t* json_data = json_object_get(rootJ, "rom_path");
+            if (json_data)
+                rom_path = json_string_value(json_data);
+        }
         // load prg_rom
-        json_t* prg_rom_ = json_object_get(rootJ, "prg_rom");
-        if (prg_rom_) {
-            std::string prg_rom_string = json_string_value(prg_rom_);
-            prg_rom_string = base64_decode(prg_rom_string);
-            prg_rom = std::vector<NES_Byte>(prg_rom_string.begin(), prg_rom_string.end());
+        {
+            json_t* json_data = json_object_get(rootJ, "prg_rom");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                prg_rom = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+        }
         }
         // load chr_rom
-        json_t* chr_rom_ = json_object_get(rootJ, "chr_rom");
-        if (chr_rom_) {
-            std::string chr_rom_string = json_string_value(chr_rom_);
-            chr_rom_string = base64_decode(chr_rom_string);
-            chr_rom = std::vector<NES_Byte>(chr_rom_string.begin(), chr_rom_string.end());
+        {
+            json_t* json_data = json_object_get(rootJ, "chr_rom");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                chr_rom = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+        }
         }
         // load name_table_mirroring
-        json_t* name_table_mirroring_ = json_object_get(rootJ, "name_table_mirroring");
-        if (name_table_mirroring_)
-            name_table_mirroring = json_integer_value(name_table_mirroring_);
+        {
+            json_t* json_data = json_object_get(rootJ, "name_table_mirroring");
+            if (json_data)
+                name_table_mirroring = json_integer_value(json_data);
+        }
         // load mapper_number
-        json_t* mapper_number_ = json_object_get(rootJ, "mapper_number");
-        if (mapper_number_)
-            mapper_number = json_integer_value(mapper_number_);
+        {
+            json_t* json_data = json_object_get(rootJ, "mapper_number");
+            if (json_data)
+                mapper_number = json_integer_value(json_data);
+        }
         // load has_extended_ram
-        json_t* has_extended_ram_ = json_object_get(rootJ, "has_extended_ram");
-        if (has_extended_ram_)
-            has_extended_ram = json_boolean_value(has_extended_ram_);
+        {
+            json_t* json_data = json_object_get(rootJ, "has_extended_ram");
+            if (json_data)
+                has_extended_ram = json_boolean_value(json_data);
+        }
     }
 
     /// An ASIC mapper for different NES cartridges.
