@@ -246,7 +246,6 @@ class MapperMMC1 : public ROM::Mapper {
         json_object_set_new(rootJ, "second_bank_prg", json_integer(second_bank_prg));
         json_object_set_new(rootJ, "first_bank_chr", json_integer(first_bank_chr));
         json_object_set_new(rootJ, "second_bank_chr", json_integer(second_bank_chr));
-        // encode character_ram
         {
             auto data_string = base64_encode(&character_ram[0], character_ram.size());
             json_object_set_new(rootJ, "character_ram", json_string(data_string.c_str()));
@@ -271,8 +270,6 @@ class MapperMMC1 : public ROM::Mapper {
             json_t* json_data = json_object_get(rootJ, "mode_chr");
             if (json_data) mode_chr = json_integer_value(json_data);
         }
-
-
         // load mode_prg
         {
             json_t* json_data = json_object_get(rootJ, "mode_prg");
