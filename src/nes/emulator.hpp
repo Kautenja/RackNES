@@ -10,14 +10,13 @@
 
 #include <string>
 #include "common.hpp"
-#include "cartridge.hpp"
 #include "controller.hpp"
 #include "apu.hpp"
 #include "cpu.hpp"
 #include "ppu.hpp"
 #include "main_bus.hpp"
 #include "picture_bus.hpp"
-#include "mapper_factory.hpp"
+#include "cartridge.hpp"
 
 namespace NES {
 
