@@ -90,8 +90,8 @@ class MainBus {
     ///
     /// @param mapper the new mapper pointer for the bus to use
     ///
-    void set_mapper(ROM::Mapper* mapper) {
-        this->mapper = mapper;
+    void set_mapper(ROM::Mapper* mapper_) {
+        mapper = mapper_;
         if (mapper->hasExtendedRAM()) extended_ram.resize(0x2000);
     }
 
