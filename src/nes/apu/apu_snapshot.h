@@ -17,6 +17,7 @@
 #ifndef APU_SNAPSHOT_H
 #define APU_SNAPSHOT_H
 
+#include <string>
 #include <vector>
 #include <jansson.h>
 #include "../../base64.h"
@@ -322,7 +323,7 @@ struct apu_snapshot_t {
             if (json_data) {
                 std::string data_string = json_string_value(json_data);
                 data_string = base64_decode(data_string);
-                memcpy(&w40xx, data_string.c_str(), 0x14);
+                memcpy(&w40xx, data_string.c_str(), data_string.length());
             }
         }
         // load w4015
