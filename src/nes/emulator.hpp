@@ -27,7 +27,7 @@ class Emulator {
     /// the virtual cartridge with ROM and mapper data
     Cartridge cartridge;
     /// the mapper for the cartridge
-    Mapper* mapper;
+    Mapper* mapper = nullptr;
     /// the 2 controllers on the emulator
     Controller controllers[2];
 
@@ -114,14 +114,14 @@ class Emulator {
         bus.set_write_callback(JOY2,               [&](NES_Byte b) { apu.write(JOY2, b);               });
         // set the interrupt callback for the PPU
         ppu.set_interrupt_callback([&]() { cpu.interrupt(bus, CPU::NMI_INTERRUPT); });
+        // setup the DMC reader callback (for loading samples from RAM)
+        apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
+        apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
         // create the mapper based on the mapper ID in the iNES header of the ROM
         mapper = MapperFactory(&cartridge, [&](){ picture_bus.update_mirroring(); });
         // give the IO buses a pointer to the mapper
         bus.set_mapper(mapper);
         picture_bus.set_mapper(mapper);
-        // setup the DMC reader callback (for loading samples from RAM)
-        apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
-        apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
     }
 
     /// Set the sample rate to a new value.
