@@ -98,7 +98,7 @@ class MapperNROM : public ROM::Mapper {
     }
 
     /// Convert the object's state to a JSON object.
-    json_t* dataToJson() {
+    json_t* dataToJson() override {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "is_one_bank", json_boolean(is_one_bank));
         json_object_set_new(rootJ, "has_character_ram", json_boolean(has_character_ram));
@@ -111,7 +111,7 @@ class MapperNROM : public ROM::Mapper {
     }
 
     /// Load the object's state from a JSON object.
-    void dataFromJson(json_t* rootJ) {
+    void dataFromJson(json_t* rootJ) override {
         // load is_one_bank
         {
             json_t* json_data = json_object_get(rootJ, "is_one_bank");
