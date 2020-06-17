@@ -9,6 +9,7 @@
 #define NES_EMULATOR_HPP
 
 #include <string>
+#include <jansson.h>
 #include "common.hpp"
 #include "controller.hpp"
 #include "apu.hpp"

@@ -10,6 +10,7 @@
 
 #include <string>
 #include <functional>
+#include <jansson.h>
 #include "picture_bus.hpp"
 
 namespace NES {
@@ -216,11 +217,6 @@ class PPU {
         json_object_set_new(rootJ, "background_page", json_integer(background_page));
         json_object_set_new(rootJ, "sprite_page", json_integer(sprite_page));
         json_object_set_new(rootJ, "data_address_increment", json_integer(data_address_increment));
-        // encode screen
-        // {
-        //     auto data_string = base64_encode(&screen[0], screen.size());
-        //     json_object_set_new(rootJ, "screen", json_string(data_string.c_str()));
-        // }
         return rootJ;
     }
 
@@ -349,15 +345,6 @@ class PPU {
             json_t* json_data = json_object_get(rootJ, "data_address_increment");
             if (json_data) data_address_increment = json_integer_value(json_data);
         }
-        // load screen
-        // {
-        //     json_t* json_data = json_object_get(rootJ, "screen");
-        //     if (json_data) {
-        //         std::string data_string = json_string_value(json_data);
-        //         data_string = base64_decode(data_string);
-        //         screen = std::vector<NES_Byte>(data_string.begin(), data_string.end());
-        //     }
-        // }
     }
 };
 
