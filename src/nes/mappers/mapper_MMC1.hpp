@@ -19,7 +19,7 @@ namespace NES {
 class MapperMMC1 : public ROM::Mapper {
  private:
     /// The mirroring callback on the PPU
-    std::function<void(void)> mirroring_callback;
+    Callback mirroring_callback;
     /// the mirroring mode on the device
     NameTableMirroring mirroring;
     /// whether the rom uses character RAM
@@ -71,7 +71,7 @@ class MapperMMC1 : public ROM::Mapper {
     /// @param cart a reference to a rom for the mapper to access
     /// @param mirroring_cb the callback to change mirroring modes on the PPU
     ///
-    MapperMMC1(ROM& cart, std::function<void(void)> mirroring_cb) : Mapper(cart),
+    MapperMMC1(ROM& cart, Callback mirroring_cb) : Mapper(cart),
         mirroring_callback(mirroring_cb),
         mirroring(HORIZONTAL),
         mode_chr(0),
