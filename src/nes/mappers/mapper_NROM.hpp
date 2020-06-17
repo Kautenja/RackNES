@@ -9,7 +9,7 @@
 #define NES_MAPPERS_MAPPER_NROM_HPP
 
 #include <vector>
-#include "../cartridge.hpp"
+#include "../rom.hpp"
 #include "../log.hpp"
 
 namespace NES {
