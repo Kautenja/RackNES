@@ -92,8 +92,7 @@ class MainBus {
     ///
     void set_mapper(Mapper* mapper) {
         this->mapper = mapper;
-        if (mapper->hasExtendedRAM())
-            extended_ram.resize(0x2000);
+        if (mapper->hasExtendedRAM()) extended_ram.resize(0x2000);
     }
 
     /// Set a callback for when writes occur.
@@ -115,10 +114,8 @@ class MainBus {
             LOG(Error) << "Register address memory pointer access attempt" << std::endl;
         else if (address < 0x6000)
             LOG(Error) << "Expansion ROM access attempted, which is unsupported" << std::endl;
-        else if (address < 0x8000)
-            if (mapper->hasExtendedRAM())
-                return &extended_ram[address - 0x6000];
-
+        else if (address < 0x8000 && mapper->hasExtendedRAM())
+            return &extended_ram[address - 0x6000];
         return nullptr;
     }
 
@@ -191,9 +188,8 @@ class MainBus {
             }
         } else if (address < 0x6000) {
             LOG(InfoVerbose) << "Expansion ROM write access attempted. This is currently unsupported" << std::endl;
-        } else if (address < 0x8000) {
-            if (mapper->hasExtendedRAM())
-                extended_ram[address - 0x6000] = value;
+        } else if (address < 0x8000 && mapper->hasExtendedRAM()) {
+            extended_ram[address - 0x6000] = value;
         } else {
             mapper->writePRG(address, value);
         }
