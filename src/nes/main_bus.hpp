@@ -9,8 +9,10 @@
 #define NES_MAIN_BUS_HPP
 
 #include <functional>
+#include <string>
 #include <vector>
 #include <unordered_map>
+#include <jansson.h>
 #include "common.hpp"
 #include "cartridge.hpp"
 #include "log.hpp"
