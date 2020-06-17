@@ -286,7 +286,7 @@ class Emulator {
         json_object_set_new(rootJ, "picture_bus", picture_bus.dataToJson());
         json_object_set_new(rootJ, "cpu", cpu.dataToJson());
         json_object_set_new(rootJ, "ppu", ppu.dataToJson());
-        // json_object_set_new(rootJ, "apu", controllers.dataToJson());
+        json_object_set_new(rootJ, "apu", apu.dataToJson());
         return rootJ;
     }
 
@@ -340,12 +340,12 @@ class Emulator {
             if (json_data)
                 ppu.dataFromJson(json_data);
         }
-        // // load apu
-        // {
-        //     json_t* json_data = json_object_get(rootJ, "apu");
-        //     if (json_data)
-        //         apu.dataFromJson(json_data);
-        // }
+        // load apu
+        {
+            json_t* json_data = json_object_get(rootJ, "apu");
+            if (json_data)
+                apu.dataFromJson(json_data);
+        }
     }
 };
 
