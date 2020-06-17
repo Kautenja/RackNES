@@ -17,7 +17,9 @@
 #ifndef APU_SNAPSHOT_H
 #define APU_SNAPSHOT_H
 
+#include <vector>
 #include <jansson.h>
+#include "../../base64.h"
 #include "blargg_common.h"
 
 struct apu_snapshot_t {
@@ -291,6 +293,89 @@ struct apu_snapshot_t {
 
     enum { tag = 'APUR' };
     void swap();
+
+    /// Convert the object's state to a JSON object.
+    json_t* dataToJson() {
+        json_t* rootJ = json_object();
+        {
+            auto data_string = base64_encode(&w40xx[0], 0x14);
+            json_object_set_new(rootJ, "w40xx", json_string(data_string.c_str()));
+        }
+        json_object_set_new(rootJ, "w4015", json_integer(w4015));
+        json_object_set_new(rootJ, "w4017", json_integer(w4017));
+        json_object_set_new(rootJ, "delay", json_integer(delay));
+        json_object_set_new(rootJ, "step", json_integer(step));
+        json_object_set_new(rootJ, "irq_flag", json_integer(irq_flag));
+        json_object_set_new(rootJ, "square1", square1.dataToJson());
+        json_object_set_new(rootJ, "square2", square2.dataToJson());
+        json_object_set_new(rootJ, "triangle", triangle.dataToJson());
+        json_object_set_new(rootJ, "noise", noise.dataToJson());
+        json_object_set_new(rootJ, "dmc", dmc.dataToJson());
+        return rootJ;
+    }
+
+    /// Load the object's state from a JSON object.
+    void dataFromJson(json_t* rootJ) {
+        // load w40xx
+        {
+            json_t* json_data = json_object_get(rootJ, "w40xx");
+            if (json_data) {
+                std::string data_string = json_string_value(json_data);
+                data_string = base64_decode(data_string);
+                *w40xx = reinterpret_cast<char&>(data_string[0]);
+            }
+        }
+        // load w4015
+        {
+            json_t* json_data = json_object_get(rootJ, "w4015");
+            if (json_data) w4015 = json_integer_value(json_data);
+        }
+        // load w4017
+        {
+            json_t* json_data = json_object_get(rootJ, "w4017");
+            if (json_data) w4017 = json_integer_value(json_data);
+        }
+        // load delay
+        {
+            json_t* json_data = json_object_get(rootJ, "delay");
+            if (json_data) delay = json_integer_value(json_data);
+        }
+        // load step
+        {
+            json_t* json_data = json_object_get(rootJ, "step");
+            if (json_data) step = json_integer_value(json_data);
+        }
+        // load irq_flag
+        {
+            json_t* json_data = json_object_get(rootJ, "irq_flag");
+            if (json_data) irq_flag = json_integer_value(json_data);
+        }
+        // load square1
+        {
+            json_t* json_data = json_object_get(rootJ, "square1");
+            if (json_data) square1.dataFromJson(json_data);
+        }
+        // load square2
+        {
+            json_t* json_data = json_object_get(rootJ, "square2");
+            if (json_data) square2.dataFromJson(json_data);
+        }
+        // load triangle
+        {
+            json_t* json_data = json_object_get(rootJ, "triangle");
+            if (json_data) triangle.dataFromJson(json_data);
+        }
+        // load noise
+        {
+            json_t* json_data = json_object_get(rootJ, "noise");
+            if (json_data) noise.dataFromJson(json_data);
+        }
+        // load dmc
+        {
+            json_t* json_data = json_object_get(rootJ, "dmc");
+            if (json_data) dmc.dataFromJson(json_data);
+        }
+    }
 };
 BOOST_STATIC_ASSERT( sizeof (apu_snapshot_t) == 72 );
 
