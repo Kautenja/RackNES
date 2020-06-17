@@ -8,7 +8,7 @@
 #ifndef NES_MAPPERS_MAPPER_CNROM_HPP
 #define NES_MAPPERS_MAPPER_CNROM_HPP
 
-#include "../cartridge.hpp"
+#include "../rom.hpp"
 #include "../log.hpp"
 
 namespace NES {

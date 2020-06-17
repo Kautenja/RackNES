@@ -10,7 +10,7 @@
 
 #include <functional>
 #include <vector>
-#include "../cartridge.hpp"
+#include "../rom.hpp"
 #include "../log.hpp"
 
 namespace NES {
