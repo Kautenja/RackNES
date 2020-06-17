@@ -128,6 +128,9 @@ class Emulator {
         cartridge = new Cartridge(path, [&](){ picture_bus.update_mirroring(); });
         bus.set_mapper(cartridge->get_mapper());
         picture_bus.set_mapper(cartridge->get_mapper());
+        cpu.reset(bus);
+        ppu.reset();
+        apu.reset();
     }
 
     /// Set the sample rate to a new value.
