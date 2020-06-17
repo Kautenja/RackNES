@@ -322,7 +322,7 @@ struct apu_snapshot_t {
             if (json_data) {
                 std::string data_string = json_string_value(json_data);
                 data_string = base64_decode(data_string);
-                *w40xx = reinterpret_cast<char&>(data_string[0]);
+                memcpy(&w40xx, data_string.c_str(), 0x14);
             }
         }
         // load w4015
