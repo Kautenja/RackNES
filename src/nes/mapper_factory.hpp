@@ -9,7 +9,7 @@
 #define NES_MAPPER_FACTORY_HPP
 
 #include <string>
-#include "mapper.hpp"
+#include "cartridge.hpp"
 #include "mappers/mapper_NROM.hpp"
 #include "mappers/mapper_MMC1.hpp"
 #include "mappers/mapper_UNROM.hpp"
@@ -65,8 +65,8 @@ enum class MapperID : NES_Byte {
 /// @param game the cartridge to initialize a mapper for
 /// @param callback the callback function for the mapper (if necessary)
 ///
-static Mapper* MapperFactory(Cartridge* game, std::function<void(void)> callback) {
-    switch (static_cast<MapperID>(game->getMapper())) {
+static Cartridge::Mapper* MapperFactory(Cartridge& game, std::function<void(void)> callback) {
+    switch (static_cast<MapperID>(game.getMapper())) {
         case MapperID::NROM:  return new MapperNROM(game);
         case MapperID::MMC1:  return new MapperMMC1(game, callback);
         case MapperID::UNROM: return new MapperUNROM(game);
