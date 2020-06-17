@@ -108,7 +108,7 @@ class ROM {
     /// Return a boolean determining whether this cartridge uses extended RAM.
     inline bool hasExtendedRAM() const { return has_extended_ram; }
 
-    /// Convert the module's state to a JSON object.
+    /// Convert the object's state to a JSON object.
     json_t* dataToJson() {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "rom_path", json_string(rom_path.c_str()));
@@ -124,7 +124,7 @@ class ROM {
         return rootJ;
     }
 
-    /// Load the module's state from a JSON object.
+    /// Load the object's state from a JSON object.
     void dataFromJson(json_t* rootJ) {
         // load rom_path
         json_t* rom_path_ = json_object_get(rootJ, "rom_path");
