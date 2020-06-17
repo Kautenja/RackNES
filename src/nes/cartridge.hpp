@@ -82,11 +82,19 @@ class Cartridge : public ROM {
         }
     }
 
+    /// Copy this cartridge.
+    Cartridge(const Cartridge& other) : ROM(other) {
+        if (other.mapper != nullptr) mapper = other.mapper->clone();
+    }
+
     /// Destroy this cartridge.
     ~Cartridge() { if (mapper != nullptr) delete mapper; }
 
+    /// Clone the cartridge, i.e., the virtual copy constructor.
+    Cartridge* clone() { return new Cartridge(*this); }
+
     /// Return a pointer to the mapper for the cartridge.
-    Mapper* get_mapper() { return mapper; }
+    inline Mapper* get_mapper() { return mapper; }
 };
 
 }  // namespace NES

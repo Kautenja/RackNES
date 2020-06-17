@@ -30,8 +30,16 @@ class MapperCNROM : public ROM::Mapper {
         is_one_bank(rom.getROM().size() == 0x4000),
         select_chr(0) { }
 
+    /// Create a mapper as a copy of another mapper.
+    MapperCNROM(const MapperCNROM& other) : ROM::Mapper(*this),
+        is_one_bank(other.is_one_bank),
+        select_chr(other.select_chr) { }
+
     /// Destroy this mapper.
-    inline ~MapperCNROM() override { }
+    ~MapperCNROM() override { }
+
+    /// Clone the mapper, i.e., the virtual copy constructor
+    MapperCNROM* clone() override { return new MapperCNROM(*this); }
 
     /// Read a byte from the PRG RAM.
     ///

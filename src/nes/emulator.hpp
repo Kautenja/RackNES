@@ -218,8 +218,7 @@ class Emulator {
 
     /// Create a backup state on the emulator.
     inline void backup() {
-        // if (cartridge != nullptr)
-        //     (*backup_cartridge) = (*cartridge);
+        if (cartridge != nullptr) backup_cartridge = cartridge->clone();
         backup_controllers[0] = controllers[0];
         backup_controllers[1] = controllers[1];
         backup_bus = bus;
@@ -233,8 +232,7 @@ class Emulator {
     inline void restore() {
         // restore if there is a backup available
         if (!has_backup) return;
-        // if (backup_cartridge != nullptr)
-        //     (*cartridge) = (*backup_cartridge);
+        if (backup_cartridge != nullptr) cartridge = backup_cartridge->clone();
         controllers[0] = backup_controllers[0];
         controllers[1] = backup_controllers[1];
         bus = backup_bus;
