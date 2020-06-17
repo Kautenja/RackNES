@@ -8,7 +8,6 @@
 #ifndef NES_CARTRIDGE_HPP
 #define NES_CARTRIDGE_HPP
 
-#include <jansson.h>
 #include <fstream>
 #include <string>
 #include <vector>

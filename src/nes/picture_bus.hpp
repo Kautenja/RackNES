@@ -10,6 +10,8 @@
 
 #include <vector>
 #include <cstdlib>
+#include <string>
+#include <jansson.h>
 #include "common.hpp"
 #include "cartridge.hpp"
 #include "log.hpp"

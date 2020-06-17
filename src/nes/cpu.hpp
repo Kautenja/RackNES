@@ -8,6 +8,7 @@
 #ifndef NES_CPU_HPP
 #define NES_CPU_HPP
 
+#include <jansson.h>
 #include "common.hpp"
 #include "cpu_opcodes.hpp"
 #include "main_bus.hpp"
