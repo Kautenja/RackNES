@@ -23,5 +23,6 @@ information about the features of this module
 ## Acknowledgments
 
 The code for the module is derived from:
-1. the NES emulator, [SimpleNES](https://github.com/amhndu/SimpleNES), and
-2. the NES synthesis library, [Nes_Snd_Emu](https://github.com/jamesathey/Nes_Snd_Emu).
+1. the NES emulator, [SimpleNES](https://github.com/amhndu/SimpleNES);
+2. the NES synthesis library, [Nes_Snd_Emu](https://github.com/jamesathey/Nes_Snd_Emu); and
+3. the Base64 library, [cpp-base64](https://github.com/ReneNyffenegger/cpp-base64).
