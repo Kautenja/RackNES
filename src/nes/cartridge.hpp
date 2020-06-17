@@ -107,7 +107,7 @@ class Cartridge {
     /// Return a boolean determining whether this cartridge uses extended RAM.
     inline bool hasExtendedRAM() const { return has_extended_ram; }
 
-    /// An abstraction of a general hardware mapper for different NES cartridges
+    /// An ASIC mapper for different NES cartridges.
     class Mapper {
      protected:
         /// The cartridge this mapper associates with

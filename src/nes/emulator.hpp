@@ -25,9 +25,7 @@ namespace NES {
 class Emulator {
  private:
     /// the virtual cartridge with ROM and mapper data
-    Cartridge cartridge;
-    /// the mapper for the cartridge
-    Cartridge::Mapper* mapper = nullptr;
+    CartridgeMapper* cartridge = nullptr;
     /// the 2 controllers on the emulator
     Controller controllers[2];
 
@@ -71,7 +69,7 @@ class Emulator {
     ///
     /// @param rom_path the path to the ROM for the emulator to run
     ///
-    explicit Emulator(const std::string& rom_path) : cartridge(rom_path) {
+    explicit Emulator(const std::string& rom_path) {
         // set the read callbacks
         bus.set_read_callback(PPUSTATUS, [&](void) { return ppu.get_status();          });
         bus.set_read_callback(PPUDATA,   [&](void) { return ppu.get_data(picture_bus); });
@@ -117,11 +115,13 @@ class Emulator {
         // setup the DMC reader callback (for loading samples from RAM)
         apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
         apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
+
+        cartridge = new CartridgeMapper(rom_path, [&](){ picture_bus.update_mirroring(); });
         // create the mapper based on the mapper ID in the iNES header of the ROM
-        mapper = MapperFactory(cartridge, [&](){ picture_bus.update_mirroring(); });
+        // mapper = MapperFactory(cartridge, [&](){ picture_bus.update_mirroring(); });
         // give the IO buses a pointer to the mapper
-        bus.set_mapper(mapper);
-        picture_bus.set_mapper(mapper);
+        bus.set_mapper(cartridge->get_mapper());
+        picture_bus.set_mapper(cartridge->get_mapper());
     }
 
     /// Set the sample rate to a new value.
@@ -137,7 +137,7 @@ class Emulator {
     inline void set_frame_rate(float value) { apu.set_frame_rate(value); }
 
     /// Return the path to the ROM on disk.
-    inline std::string get_rom_path() const { return cartridge.get_rom_path(); }
+    inline std::string get_rom_path() const { return cartridge->get_rom_path(); }
 
     /// Return a 32-bit pointer to the screen buffer's first address.
     ///
