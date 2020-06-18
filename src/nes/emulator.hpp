@@ -69,8 +69,6 @@ class Emulator {
     APU backup_apu;
 
  public:
-    /// The number of cycles in 1 frame
-    static const int CYCLES_PER_FRAME = 29781;
     /// The width of the NES screen in pixels
     static const int WIDTH = SCANLINE_VISIBLE_DOTS;
     /// The height of the NES screen in pixels
@@ -157,7 +155,7 @@ class Emulator {
     ///
     /// @param value the frame rate, i.e., 96000Hz
     ///
-    inline void set_sample_rate(int value = 96000) {
+    inline void set_sample_rate(uint32_t value = APU::SAMPLE_RATE) {
         apu.set_sample_rate(value);
     }
 
@@ -165,7 +163,7 @@ class Emulator {
     ///
     /// @param value the frame rate, i.e., 1789773CPS
     ///
-    inline void set_clock_rate(float value = 1789773) {
+    inline void set_clock_rate(uint64_t value = CLOCK_RATE) {
         apu.set_clock_rate(value);
     }
 
