@@ -210,9 +210,13 @@ class Emulator {
     }
 
     /// Return an audio sample from the APU of the emulator.
-    inline int16_t get_audio_sample() { return apu.get_sample(); }
+    inline int16_t get_audio_sample() {
+        if (!has_game()) return 0;
+        return apu.get_sample();
+    }
 
     /// Return an audio sample from the APU of the emulator [-10.f, 10.f].
+    /// If there is no game in the emulator, returns 0V.
     inline float get_audio_voltage() {
         return 10.f * apu.get_sample() / static_cast<float>(1 << 15);
     }
@@ -250,14 +254,15 @@ class Emulator {
     /// Finish a frame.
     inline void end_frame() { cycles = 0; }
 
-    /// Perform a step on the emulator, i.e., a single frame.
-    inline void frame() {
-        // ignore the call if there is no game
-        if (!has_game()) return;
-        // render a single frame on the emulator
-        while (!is_frame_complete()) cycle();
-        end_frame();
-    }
+    // DEPRECATED
+    // /// Perform a step on the emulator, i.e., a single frame.
+    // inline void frame() {
+    //     // ignore the call if there is no game
+    //     if (!has_game()) return;
+    //     // render a single frame on the emulator
+    //     while (!is_frame_complete()) cycle();
+    //     end_frame();
+    // }
 
     /// Create a backup state on the emulator.
     inline void backup() {
