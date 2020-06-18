@@ -208,7 +208,7 @@ struct RackNES : Module {
 
         // check for sample rate changes from the engine to send to the NES
         if (new_sample_rate) {
-            emulator.set_sample_rate(static_cast<int>(args.sampleRate));
+            emulator.set_sample_rate(static_cast<uint32_t>(args.sampleRate));
             new_sample_rate = false;
         }
 
