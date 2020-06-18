@@ -256,16 +256,20 @@ struct RackNES : Module {
                 player2 += player2Triggers[button].isHigh() << button;
             }
         }
-
-        // set the frequency of the clock and back-end sound engine
-        auto frequency = getClockSpeed();
-        emulator.set_clock_rate(frequency);
         // set the controller values
         emulator.set_controllers(player1, player2);
 
-        // run a complete frame through the emulator
-        for (int i = 0; i < frequency / args.sampleRate; i++) {
+        // calculate the number of clock cycles on the NES per sample
+        uint32_t cycles_per_sample = getClockSpeed() / args.sampleRate;
+        // set the emulator's clock rate. recalculate the frequency by
+        // multiplying the integer value cycles_per_sample by the sample rate
+        // to account for truncation from the integer conversion.
+        emulator.set_clock_rate(cycles_per_sample * args.sampleRate);
+
+        // run the number of cycles through the NES that are required
+        for (int i = 0; i < cycles_per_sample; i++) {
             emulator.cycle();
+            // if the frame is complete, end the frame and copy the screen
             if (emulator.is_frame_complete())  {
                 emulator.end_frame();
                 copyScreen();
@@ -275,8 +279,7 @@ struct RackNES : Module {
         // set the clock output trigger based on the clock signal
         // outputs[CLOCK_OUTPUT].setVoltage(10.f * clockTrigger.isHigh());
         // get the sound output from the emulator
-        if (emulator.has_game())
-            outputs[SOUND_OUTPUT].setVoltage(getAudio());
+        outputs[SOUND_OUTPUT].setVoltage(getAudio());
     }
 
     /// Respond to the change of sample rate in the engine.
