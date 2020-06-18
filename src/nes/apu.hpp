@@ -8,6 +8,7 @@
 #ifndef NES_APU_HPP
 #define NES_APU_HPP
 
+#include <vector>
 #include <jansson.h>
 #include "common.hpp"
 #include "apu/Nes_Apu.h"
@@ -114,13 +115,17 @@ class APU {
 
     /// Return a 16-bit signed sample from the APU.
     inline int16_t get_sample() {
-        // get a single sample from the BLIP buffer
-        static constexpr int OUT_SIZE = 1;
-        blip_sample_t outBuf[OUT_SIZE] = {0};
-        std::cout << buf.samples_avail() << std::endl;
-        if (buf.samples_avail() >= OUT_SIZE)
-            buf.read_samples(outBuf, OUT_SIZE);
-        return outBuf[0];
+        if (buf.samples_avail() == 0) return 0;
+        // copy the buffer to  a local vector and return the first sample
+        std::vector<int16_t> output_buffer(buf.samples_avail());
+        buf.read_samples(&output_buffer[0], buf.samples_avail());
+        // usually there will only be one sample, but when the clock rate is
+        // at particular values or very fast, the buffer will begin to grow
+        // slowly. Because the audio turns to trash anyway, just ignore the
+        // overflowing values :)
+        return output_buffer[0];
+        // TODO: is there a more elegant way of handling this funcation? this
+        // buffer is not really necessary within the context of VCV Rack.
     }
 
     /// Convert the object's state to a JSON object.
