@@ -157,13 +157,17 @@ class Emulator {
     ///
     /// @param value the frame rate, i.e., 96000Hz
     ///
-    inline void set_sample_rate(int value) { apu.set_sample_rate(value); }
+    inline void set_sample_rate(int value = 96000) {
+        apu.set_sample_rate(value);
+    }
 
-    /// Set the frame-rate to a new value.
+    /// Set the clock-rate to a new value.
     ///
-    /// @param value the frame rate, i.e., 60FPS
+    /// @param value the frame rate, i.e., 1789773CPS
     ///
-    inline void set_frame_rate(float value) { apu.set_frame_rate(value); }
+    inline void set_clock_rate(float value = 1789773) {
+        apu.set_clock_rate(value);
+    }
 
     /// Return the path to the ROM on disk.
     inline std::string get_rom_path() const { return cartridge->get_rom_path(); }
@@ -236,6 +240,8 @@ class Emulator {
         cpu.cycle(bus);
         // 1 APU cycle per CPU step
         apu.cycle();
+        // end the frame because we're running in an audio pipeline
+        apu.end_frame();
         // increment the cycles counter
         ++cycles;
     }
@@ -244,11 +250,7 @@ class Emulator {
     inline bool is_frame_complete() { return cycles >= CYCLES_PER_FRAME; }
 
     /// Finish a frame.
-    inline void end_frame() {
-        apu.end_frame();
-        // reset the cycle counter back to 0
-        cycles = 0;
-    }
+    inline void end_frame() { cycles = 0; }
 
     /// Perform a step on the emulator, i.e., a single frame.
     inline void frame() {
