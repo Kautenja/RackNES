@@ -68,13 +68,17 @@ class APU {
     ///
     /// @param value the frame rate, i.e., 96000Hz
     ///
-    inline void set_sample_rate(int value) { buf.sample_rate(value); }
+    inline void set_sample_rate(int value = 96000) {
+        buf.sample_rate(value);
+    }
 
-    /// Set the frame-rate to a new value.
+    /// Set the clock-rate to a new value.
     ///
-    /// @param value the frame rate, i.e., 60FPS
+    /// @param value the clock rate, i.e., 1789773CPS
     ///
-    inline void set_frame_rate(float value) { buf.clock_rate(value * 29781); }
+    inline void set_clock_rate(uint64_t value = 1789773) {
+        buf.clock_rate(value);
+    }
 
     /// Reset the APU.
     inline void reset() { apu.reset(); buf.clear(); }
