@@ -117,6 +117,7 @@ class APU {
         // get a single sample from the BLIP buffer
         static constexpr int OUT_SIZE = 1;
         blip_sample_t outBuf[OUT_SIZE] = {0};
+        std::cout << buf.samples_avail() << std::endl;
         if (buf.samples_avail() >= OUT_SIZE)
             buf.read_samples(outBuf, OUT_SIZE);
         return outBuf[0];
