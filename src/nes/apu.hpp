@@ -20,6 +20,8 @@ class APU {
  private:
     /// The BLIP buffer to render audio samples from
     Blip_Buffer buf;
+    /// The NES APU instance to synthesize sound with
+    Nes_Apu apu;
     /// the number of elapsed cycles (set by the emulator)
     int cycles = 0;
 
@@ -28,9 +30,6 @@ class APU {
     static constexpr uint32_t SAMPLE_RATE = 96000;
     /// The default volume
     static constexpr float VOLUME = 2.f;
-
-    /// The NES APU instance to synthesize sound with
-    Nes_Apu apu;
 
     /// Initialize the APU.
     APU() {
