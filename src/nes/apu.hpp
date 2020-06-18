@@ -23,8 +23,6 @@ class APU {
     Blip_Buffer buf;
     /// The NES APU instance to synthesize sound with
     Nes_Apu apu;
-    /// the number of elapsed cycles (set by the emulator)
-    int cycles = 0;
 
  public:
     /// The default sample rate for the APU
@@ -42,7 +40,6 @@ class APU {
 
     /// Copy data from another instance of APU.
     void copy_from(const APU &other) {
-        cycles = other.cycles;
         apu_snapshot_t snapshot;
         other.apu.save_snapshot(&snapshot);
         apu.load_snapshot(snapshot);
@@ -91,7 +88,7 @@ class APU {
     inline void reset() { apu.reset(); buf.clear(); }
 
     /// Read the value from the APU status register.
-    inline NES_Byte read_status() { return apu.read_status(cycles); }
+    inline NES_Byte read_status() { return apu.read_status(0); }
 
     /// Write a value from to APU registers.
     ///
@@ -99,19 +96,11 @@ class APU {
     /// @oaram value the value to write to the register
     ///
     inline void write(NES_Address addr, NES_Byte value) {
-        apu.write_register(cycles, addr, value);
+        apu.write_register(0, addr, value);
     }
 
     /// Run a cycle on the APU (increment number of elapsed cycles).
-    inline void cycle() { ++cycles; }
-
-    /// Run a step on the APU.
-    inline void end_frame() {
-        apu.end_frame(cycles);
-        buf.end_frame(cycles);
-        // reset the number of elapsed cycles back to 0
-        cycles = 0;
-    }
+    inline void cycle() { apu.end_frame(1); buf.end_frame(1); }
 
     /// Return a 16-bit signed sample from the APU.
     inline int16_t get_sample() {
@@ -131,7 +120,6 @@ class APU {
     /// Convert the object's state to a JSON object.
     json_t* dataToJson() {
         json_t* rootJ = json_object();
-        json_object_set_new(rootJ, "cycles", json_integer(cycles));
         apu_snapshot_t snapshot;
         apu.save_snapshot(&snapshot);
         json_object_set_new(rootJ, "apu", snapshot.dataToJson());
@@ -140,19 +128,11 @@ class APU {
 
     /// Load the object's state from a JSON object.
     void dataFromJson(json_t* rootJ) {
-        // load cycles
-        {
-            json_t* json_data = json_object_get(rootJ, "cycles");
-            if (json_data) cycles = json_integer_value(json_data);
-        }
-        // load apu
-        {
-            json_t* json_data = json_object_get(rootJ, "apu");
-            if (json_data) {
-                apu_snapshot_t snapshot;
-                snapshot.dataFromJson(json_data);
-                apu.load_snapshot(snapshot);
-            }
+        json_t* json_data = json_object_get(rootJ, "apu");
+        if (json_data) {
+            apu_snapshot_t snapshot;
+            snapshot.dataFromJson(json_data);
+            apu.load_snapshot(snapshot);
         }
     }
 };
