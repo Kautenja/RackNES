@@ -281,7 +281,7 @@ struct RackNES : Module {
             // set the controller values
             emulator.set_controllers(player1, player2);
             // run a complete frame through the emulator
-            emulator.step();
+            emulator.frame();
             // copy the screen to the internal module buffer. this is necessary
             // because the emulator renders in BGR and we need RGBA. It also
             // prevents the UI thread from needing direct access to the emulator
