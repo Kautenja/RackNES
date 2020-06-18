@@ -232,7 +232,11 @@ class Emulator {
     }
 
     /// Run a single CPU cycle on the emulator.
-    inline void cycle() {
+    ///
+    /// @param callback a callback function for when a frame event occurs
+    ///
+    template<typename EndOfFrameCallback>
+    inline void cycle(EndOfFrameCallback callback) {
         // ignore the call if there is no game
         if (!has_game()) return;
         // 3 PPU steps per CPU step
@@ -246,23 +250,12 @@ class Emulator {
         apu.end_frame();
         // increment the cycles counter
         ++cycles;
+        // check for the end of the frame
+        if (cycles >= CYCLES_PER_FRAME) {
+            cycles = 0;
+            callback();
+        }
     }
-
-    /// Return true if the number of cycles to complete a frame has occurred.
-    inline bool is_frame_complete() { return cycles >= CYCLES_PER_FRAME; }
-
-    /// Finish a frame.
-    inline void end_frame() { cycles = 0; }
-
-    // DEPRECATED
-    // /// Perform a step on the emulator, i.e., a single frame.
-    // inline void frame() {
-    //     // ignore the call if there is no game
-    //     if (!has_game()) return;
-    //     // render a single frame on the emulator
-    //     while (!is_frame_complete()) cycle();
-    //     end_frame();
-    // }
 
     /// Create a backup state on the emulator.
     inline void backup() {
