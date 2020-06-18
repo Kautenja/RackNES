@@ -20,8 +20,8 @@ class APU {
  private:
     /// The BLIP buffer to render audio samples from
     Blip_Buffer buf;
-    /// the number of elapsed frames (set by the emulator)
-    int elapsedCycles = 0;
+    /// the number of elapsed cycles (set by the emulator)
+    int cycles = 0;
 
  public:
     /// The NES APU instance to synthesize sound with
@@ -37,6 +37,14 @@ class APU {
         buf.clock_rate(1789773);
         apu.output(&buf);
         apu.volume(2.0);
+    }
+
+    /// Copy data from another instance of APU.
+    void copy_from(const APU &other) {
+        cycles = other.cycles;
+        apu_snapshot_t snapshot;
+        other.apu.save_snapshot(&snapshot);
+        apu.load_snapshot(snapshot);
     }
 
     /// Set the DMC Reader on the APU. The DMC Reader is a callback for reading
@@ -72,7 +80,7 @@ class APU {
     inline void reset() { apu.reset(); buf.clear(); }
 
     /// Read the value from the APU status register.
-    inline NES_Byte read_status() { return apu.read_status(elapsedCycles); }
+    inline NES_Byte read_status() { return apu.read_status(cycles); }
 
     /// Write a value from to APU registers.
     ///
@@ -80,18 +88,18 @@ class APU {
     /// @oaram value the value to write to the register
     ///
     inline void write(NES_Address addr, NES_Byte value) {
-        apu.write_register(elapsedCycles, addr, value);
+        apu.write_register(cycles, addr, value);
     }
 
     /// Run a cycle on the APU (increment number of elapsed cycles).
-    inline void cycle() { ++elapsedCycles; }
+    inline void cycle() { ++cycles; }
 
     /// Run a step on the APU.
     inline void end_frame() {
-        apu.end_frame(elapsedCycles);
-        buf.end_frame(elapsedCycles);
+        apu.end_frame(cycles);
+        buf.end_frame(cycles);
         // reset the number of elapsed cycles back to 0
-        elapsedCycles = 0;
+        cycles = 0;
     }
 
     /// Return a 16-bit signed sample from the APU.
@@ -107,7 +115,7 @@ class APU {
     /// Convert the object's state to a JSON object.
     json_t* dataToJson() {
         json_t* rootJ = json_object();
-        json_object_set_new(rootJ, "elapsedCycles", json_integer(elapsedCycles));
+        json_object_set_new(rootJ, "cycles", json_integer(cycles));
         apu_snapshot_t snapshot;
         apu.save_snapshot(&snapshot);
         json_object_set_new(rootJ, "apu", snapshot.dataToJson());
@@ -116,10 +124,10 @@ class APU {
 
     /// Load the object's state from a JSON object.
     void dataFromJson(json_t* rootJ) {
-        // load elapsedCycles
+        // load cycles
         {
-            json_t* json_data = json_object_get(rootJ, "elapsedCycles");
-            if (json_data) elapsedCycles = json_integer_value(json_data);
+            json_t* json_data = json_object_get(rootJ, "cycles");
+            if (json_data) cycles = json_integer_value(json_data);
         }
         // load apu
         {
