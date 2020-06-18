@@ -24,19 +24,20 @@ class APU {
     int cycles = 0;
 
  public:
+    /// The default sample rate for the APU
+    static constexpr uint32_t SAMPLE_RATE = 96000;
+    /// The default volume
+    static constexpr float VOLUME = 2.f;
+
     /// The NES APU instance to synthesize sound with
     Nes_Apu apu;
 
     /// Initialize the APU.
     APU() {
-        // set the audio sample rate
-        buf.sample_rate(96000);
-        // set the clock rate of the processor (NES processor)
-        // CYCLES_PER_FRAME * FRAMES_PER_SECOND
-        // 29781 * 60
-        buf.clock_rate(1789773);
+        buf.sample_rate(SAMPLE_RATE);
+        buf.clock_rate(CLOCK_RATE);
         apu.output(&buf);
-        apu.volume(2.0);
+        apu.volume(VOLUME);
     }
 
     /// Copy data from another instance of APU.
@@ -64,19 +65,25 @@ class APU {
         apu.irq_notifier(callback);
     }
 
+    /// Set the volume to a new value.
+    ///
+    /// @param value the volume level
+    ///
+    inline void set_volume(float value = VOLUME) { apu.volume(value); }
+
     /// Set the sample rate to a new value.
     ///
-    /// @param value the frame rate, i.e., 96000Hz
+    /// @param value the frame rate, i.e., 96000 Hz
     ///
-    inline void set_sample_rate(int value = 96000) {
+    inline void set_sample_rate(uint32_t value = SAMPLE_RATE) {
         buf.sample_rate(value);
     }
 
     /// Set the clock-rate to a new value.
     ///
-    /// @param value the clock rate, i.e., 1789773CPS
+    /// @param value the clock rate, i.e., 1789773 CPS
     ///
-    inline void set_clock_rate(uint64_t value = 1789773) {
+    inline void set_clock_rate(uint64_t value = CLOCK_RATE) {
         buf.clock_rate(value);
     }
 
