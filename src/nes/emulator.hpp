@@ -24,6 +24,7 @@ namespace NES {
 /// An NES Emulator and OpenAI Gym interface
 class Emulator {
  private:
+    int cycles = 0;
     /// the virtual cartridge with ROM and mapper data
     Cartridge* cartridge = nullptr;
     /// the 2 controllers on the emulator
@@ -49,6 +50,7 @@ class Emulator {
     /// whether the emulator has a backup available
     bool has_backup = false;
 
+    int backup_cycles = 0;
     /// the virtual cartridge with ROM and mapper data
     Cartridge* backup_cartridge = nullptr;
     /// the 2 controllers on the emulator
@@ -234,16 +236,27 @@ class Emulator {
         cpu.cycle(bus);
         // 1 APU cycle per CPU step
         apu.cycle();
+        // increment the cycles counter
+        ++cycles;
+    }
+
+    /// Return true if the number of cycles to complete a frame has occurred.
+    inline bool is_frame_complete() { return cycles >= CYCLES_PER_FRAME; }
+
+    /// Finish a frame.
+    inline void end_frame() {
+        apu.end_frame();
+        // reset the cycle counter back to 0
+        cycles = 0;
     }
 
     /// Perform a step on the emulator, i.e., a single frame.
-    inline void step() {
+    inline void frame() {
         // ignore the call if there is no game
         if (!has_game()) return;
         // render a single frame on the emulator
-        for (int i = 0; i < CYCLES_PER_FRAME; i++) cycle();
-        // finish the frame on the APU
-        apu.end_frame();
+        while (!is_frame_complete()) cycle();
+        end_frame();
     }
 
     /// Create a backup state on the emulator.
@@ -251,6 +264,7 @@ class Emulator {
         // ignore the call if there is no game
         if (!has_game()) return;
         if (cartridge != nullptr) backup_cartridge = cartridge->clone();
+        backup_cycles = cycles;
         backup_controllers[0] = controllers[0];
         backup_controllers[1] = controllers[1];
         backup_bus = bus;
@@ -268,6 +282,7 @@ class Emulator {
         // restore if there is a backup available
         if (!has_backup) return;
         if (backup_cartridge != nullptr) cartridge = backup_cartridge->clone();
+        cycles = backup_cycles;
         controllers[0] = backup_controllers[0];
         controllers[1] = backup_controllers[1];
         bus = backup_bus;
