@@ -12,9 +12,9 @@
 #include <jansson.h>
 #include "common.hpp"
 #include "controller.hpp"
-#include "apu.hpp"
 #include "cpu.hpp"
 #include "ppu.hpp"
+#include "apu.hpp"
 #include "main_bus.hpp"
 #include "picture_bus.hpp"
 #include "cartridge.hpp"
@@ -257,8 +257,7 @@ class Emulator {
         backup_picture_bus = picture_bus;
         backup_cpu = cpu;
         backup_ppu = ppu;
-        // TODO: APU copy constructor
-        // backup_apu = apu;
+        backup_apu.copy_from(apu);
         has_backup = true;
     }
 
@@ -275,8 +274,7 @@ class Emulator {
         picture_bus = backup_picture_bus;
         cpu = backup_cpu;
         ppu = backup_ppu;
-        // TODO: APU copy constructor
-        // apu = backup_apu;
+        apu.copy_from(backup_apu);
     }
 
     /// Convert the object's state to a JSON object.
