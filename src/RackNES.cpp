@@ -266,15 +266,10 @@ struct RackNES : Module {
         // to account for truncation from the integer conversion.
         emulator.set_clock_rate(cycles_per_sample * args.sampleRate);
 
-        // run the number of cycles through the NES that are required
-        for (int i = 0; i < cycles_per_sample; i++) {
-            emulator.cycle();
-            // if the frame is complete, end the frame and copy the screen
-            if (emulator.is_frame_complete())  {
-                emulator.end_frame();
-                copyScreen();
-            }
-        }
+        // run the number of cycles through the NES that are required. pass a
+        // callback to copy the screen every time a new frame renders
+        for (int i = 0; i < cycles_per_sample; i++)
+            emulator.cycle([this]() { copyScreen(); });
 
         // set the clock output trigger based on the clock signal
         // outputs[CLOCK_OUTPUT].setVoltage(10.f * clockTrigger.isHigh());
