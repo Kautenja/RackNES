@@ -108,11 +108,6 @@ struct RackNES : Module {
     /// the RGBA pixels on the screen in binary representation
     uint8_t screen[NES::Emulator::SCREEN_BYTES];
 
-    /// the clock for maintaining the frame-rate of the NES (60Hz)
-    Clock clock;
-    /// a Schmitt Trigger for handling clock rising edges
-    rack::dsp::SchmittTrigger clockTrigger;
-
     /// triggers for handling button presses and CV inputs for the backup input
     CVButtonTrigger backupButton;
     /// triggers for handling button presses and CV inputs for the restore input
@@ -128,7 +123,7 @@ struct RackNES : Module {
     /// Initialize a new Nintendo Entertainment System (NES) module.
     RackNES() {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-        configParam(CLOCK_PARAM, -4.f, 4.f, 0.f, "Clock Speed", " Hz", 2.f, 60.f);
+        configParam(CLOCK_PARAM, -4.f, 4.f, 0.f, "Clock Speed", " Hz", 2.f, 1789773.f);
         configParam(CLOCK_ATT_PARAM, -1.f, 1.f, 0.f, "Clock Speed CV Attenuverter", "%", 0.f, 100.f);
         configParam(VOLUME_PARAM, 0.f, 2.f, 1.f, "Volume", "%", 0.f, 100.f);
         // buttons
@@ -151,8 +146,6 @@ struct RackNES : Module {
         configParam(PLAYER2_DOWN_PARAM,   0.f, 1.f, 0.f, "Player 2 Down");
         configParam(PLAYER2_LEFT_PARAM,   0.f, 1.f, 0.f, "Player 2 Left");
         configParam(PLAYER2_RIGHT_PARAM,  0.f, 1.f, 0.f, "Player 2 Right");
-        // the emulator is NTSC, which runs at 60Hz native
-        clock.setFrequency(60.f);
         // draw the initial screen
         initalizeScreen();
     }
@@ -187,10 +180,7 @@ struct RackNES : Module {
     }
 
     /// Return the clock speed of the NES.
-    inline float getClockSpeed() {
-        // the range of the clock's value in Hz
-        static const float CLOCK_RATE_MIN = 2.f;
-        static const float CLOCK_RATE_MAX = 1000.f;
+    inline uint64_t getClockSpeed() {
         // get the control voltage scaled in [-2, 2]
         auto cv = inputs[CLOCK_INPUT].getVoltage() / 5.f;
         // apply the attenuverter to the CV signal
@@ -198,9 +188,7 @@ struct RackNES : Module {
         // get the parameter in [-5, 5]
         auto param = params[CLOCK_PARAM].getValue();
         // calculate the exponential frequency
-        auto frequency = 60.f * powf(2.f, param + cv);
-        // return the clock speed clamped within the legal values
-        return rack::clamp(frequency, CLOCK_RATE_MIN, CLOCK_RATE_MAX);
+        return 1789773.f * powf(2.f, param + cv);
     }
 
     /// Return the output audio from the NES after applying the volume.
@@ -269,26 +257,23 @@ struct RackNES : Module {
             }
         }
 
-        // process the native clock of the module
-        clock.process(args.sampleTime);
-        auto clockVoltage = rescale(clock.getVoltage(), 0.1, 2.0f, 0.f, 1.f);
-        // run a frame on the emulator if the clock is high
-        if (clockTrigger.process(clockVoltage)) {
-            // set the frequency of the clock and back-end sound engine
-            auto frequency = getClockSpeed();
-            clock.setFrequency(frequency);
-            emulator.set_frame_rate(frequency);
-            // set the controller values
-            emulator.set_controllers(player1, player2);
-            // run a complete frame through the emulator
-            emulator.frame();
-            // copy the screen to the internal module buffer. this is necessary
-            // because the emulator renders in BGR and we need RGBA. It also
-            // prevents the UI thread from needing direct access to the emulator
-            copyScreen();
+        // set the frequency of the clock and back-end sound engine
+        auto frequency = getClockSpeed();
+        emulator.set_clock_rate(frequency);
+        // set the controller values
+        emulator.set_controllers(player1, player2);
+
+        // run a complete frame through the emulator
+        for (int i = 0; i < frequency / args.sampleRate; i++) {
+            emulator.cycle();
+            if (emulator.is_frame_complete())  {
+                emulator.end_frame();
+                copyScreen();
+            }
         }
+
         // set the clock output trigger based on the clock signal
-        outputs[CLOCK_OUTPUT].setVoltage(10.f * clockTrigger.isHigh());
+        // outputs[CLOCK_OUTPUT].setVoltage(10.f * clockTrigger.isHigh());
         // get the sound output from the emulator
         if (emulator.has_game())
             outputs[SOUND_OUTPUT].setVoltage(getAudio());
