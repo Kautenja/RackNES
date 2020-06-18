@@ -268,7 +268,7 @@ struct RackNES : Module {
 
         // run the number of cycles through the NES that are required. pass a
         // callback to copy the screen every time a new frame renders
-        for (int i = 0; i < cycles_per_sample; i++)
+        for (uint32_t i = 0; i < cycles_per_sample; i++)
             emulator.cycle([this]() { copyScreen(); });
 
         // set the clock output trigger based on the clock signal

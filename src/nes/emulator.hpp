@@ -24,7 +24,8 @@ namespace NES {
 /// An NES Emulator and OpenAI Gym interface
 class Emulator {
  private:
-    int cycles = 0;
+    /// the number of elapsed cycles
+    uint32_t cycles = 0;
     /// the virtual cartridge with ROM and mapper data
     Cartridge* cartridge = nullptr;
     /// the 2 controllers on the emulator
@@ -50,7 +51,8 @@ class Emulator {
     /// whether the emulator has a backup available
     bool has_backup = false;
 
-    int backup_cycles = 0;
+    /// the number of elapsed cycles
+    uint32_t backup_cycles = 0;
     /// the virtual cartridge with ROM and mapper data
     Cartridge* backup_cartridge = nullptr;
     /// the 2 controllers on the emulator
@@ -244,10 +246,7 @@ class Emulator {
         ppu.cycle(picture_bus);
         ppu.cycle(picture_bus);
         cpu.cycle(bus);
-        // 1 APU cycle per CPU step
         apu.cycle();
-        // end the frame because we're running in an audio pipeline
-        apu.end_frame();
         // increment the cycles counter
         ++cycles;
         // check for the end of the frame
