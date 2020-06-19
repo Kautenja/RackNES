@@ -91,52 +91,15 @@
   labelsep=colon,
   justification=raggedright,
   singlelinecheck=false}
+\captionsetup[algorithm2e]{%
+  labelfont={bf},
+  name={Figure},
+  labelsep=colon,
+  justification=raggedright,
+  singlelinecheck=false}
 
 % set the graphics path to the img directory
 \graphicspath{{img/}}
-
-% a macro for making vectors, matrices, and tensors
-\newcommand{\CKvector}[1]{\boldsymbol{\MakeLowercase{#1}}}
-\newcommand{\CKmatrix}[1]{\boldsymbol{\MakeUppercase{#1}}}
-\newcommand{\CKtensor}[1]{\mathbf{\MakeUppercase{#1}}}
-% a macro for standard neural network theta
-\newcommand{\NNtheta}{\boldsymbol{\theta}}
-% operators for ArgMax and ArgMin
-\DeclareMathOperator*{\argmax}{arg\,max}
-\DeclareMathOperator*{\argmin}{arg\,min}
-
-% a command for coloring a cell gray (siunitx friendly, i.e., {} enclosed)
-\def\graycell{{\cellcolor[gray]{0.85}}}
-
-% a command to run shell commands
-% USAGE:
-% \app@exe{<command>}
-% where:
-% - <command> is a shell command to run
-%
-\makeatletter
-\def\app@exe{\immediate\write18}
-\makeatother
-
-% a command to include bibliographies from a directory.
-% USAGE:
-% \bibliographies{<directory>}
-% where:
-% - <directory> is a directory with .bib files to include
-%
-\makeatletter
-\def\bibliographies#1{%
-% compile all the bibliography files into a single references file
-  \app@exe{find #1 -regex ".*bib" | xargs cat | egrep -v "(\%|^$|^\s*$)" > \jobname.references.bib}
-% include the compiled bibliography file
-  \bibliography{\jobname.references.bib}
-}
-\makeatother
-
-% include the list of acronyms
-% \begin{acronym}
-% \acro{CV}
-% \end{acronym}
 
 % -----------------------------------------------------------------------------
 % MARK: Algorithm stuff
@@ -166,7 +129,6 @@
 % fancyhdr directive to remove headers from this title page
 \thispagestyle{empty}
 % center the title page contents
-\topskip0pt
 \vspace*{\fill}
 \begin{center}
 \includegraphics[width=0.8\textwidth]{RackNES-Logo}
@@ -224,6 +186,7 @@ control voltage inputs and outputs. RackNES offers several key features, namely,
 \end{enumerate}
 
 % References
+\clearpage
 \nocite{*}
 \bibliographystyle{apalike}
 \bibliography{references}
