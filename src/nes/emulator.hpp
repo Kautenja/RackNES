@@ -257,7 +257,7 @@ class Emulator {
     }
 
     /// Convert the object's state to a JSON object.
-    json_t* dataToJson() {
+    json_t* dataToJson() const {
         json_t* rootJ = json_object();
         if (cartridge != nullptr)
             json_object_set_new(rootJ, "cartridge", cartridge->dataToJson());

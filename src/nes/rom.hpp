@@ -109,7 +109,7 @@ class ROM {
     inline bool hasExtendedRAM() const { return has_extended_ram; }
 
     /// Convert the object's state to a JSON object.
-    json_t* dataToJson() {
+    json_t* dataToJson() const {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "rom_path", json_string(rom_path.c_str()));
         // // encode prg_rom
@@ -200,7 +200,7 @@ class ROM {
         inline bool hasExtendedRAM() const { return rom.hasExtendedRAM(); }
 
         /// Return the name table mirroring mode of this mapper.
-        inline virtual NameTableMirroring getNameTableMirroring() {
+        inline virtual NameTableMirroring getNameTableMirroring() const {
             return rom.getNameTableMirroring();
         }
 
