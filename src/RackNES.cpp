@@ -482,7 +482,7 @@ struct RackNESWidget : ModuleWidget {
         // add a ROM selection menu item
         menu->addChild(construct<MenuLabel>());
         menu->addChild(construct<RomSelectItem>(
-            &MenuItem::text,
+            &RomSelectItem::text,
             "Load ROM",
             &RomSelectItem::module,
             module
