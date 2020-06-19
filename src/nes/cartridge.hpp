@@ -99,7 +99,7 @@ class Cartridge : public ROM {
     inline Mapper* get_mapper() { return mapper; }
 
     /// Convert the object's state to a JSON object.
-    json_t* dataToJson() {
+    json_t* dataToJson() const {
         json_t* rootJ = ROM::dataToJson();
         json_object_set_new(rootJ, "mapper", mapper->dataToJson());
         return rootJ;
