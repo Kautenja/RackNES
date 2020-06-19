@@ -29,6 +29,7 @@ static constexpr uint64_t CYCLES_PER_FRAME = 29781;
 /// The default clock rate of the NES
 /// CYCLES_PER_FRAME * FRAMES_PER_SECOND = 29781 * 60
 static constexpr uint64_t CLOCK_RATE = 1789773;
+// static constexpr uint64_t CLOCK_RATE = 1662607;
 
 }  // namespace NES
 
