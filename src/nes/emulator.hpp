@@ -24,6 +24,8 @@ namespace NES {
 /// An NES Emulator and OpenAI Gym interface
 class Emulator {
  private:
+    /// the number of elapsed cycles
+    uint32_t cycles = 0;
     /// the virtual cartridge with ROM and mapper data
     Cartridge* cartridge = nullptr;
     /// the 2 controllers on the emulator
@@ -49,6 +51,8 @@ class Emulator {
     /// whether the emulator has a backup available
     bool has_backup = false;
 
+    /// the number of elapsed cycles
+    uint32_t backup_cycles = 0;
     /// the virtual cartridge with ROM and mapper data
     Cartridge* backup_cartridge = nullptr;
     /// the 2 controllers on the emulator
@@ -67,8 +71,6 @@ class Emulator {
     APU backup_apu;
 
  public:
-    /// The number of cycles in 1 frame
-    static const int CYCLES_PER_FRAME = 29781;
     /// The width of the NES screen in pixels
     static const int WIDTH = SCANLINE_VISIBLE_DOTS;
     /// The height of the NES screen in pixels
@@ -155,13 +157,17 @@ class Emulator {
     ///
     /// @param value the frame rate, i.e., 96000Hz
     ///
-    inline void set_sample_rate(int value) { apu.set_sample_rate(value); }
+    inline void set_sample_rate(uint32_t value = APU::SAMPLE_RATE) {
+        apu.set_sample_rate(value);
+    }
 
-    /// Set the frame-rate to a new value.
+    /// Set the clock-rate to a new value.
     ///
-    /// @param value the frame rate, i.e., 60FPS
+    /// @param value the frame rate, i.e., 1789773CPS
     ///
-    inline void set_frame_rate(float value) { apu.set_frame_rate(value); }
+    inline void set_clock_rate(uint64_t value = CLOCK_RATE) {
+        apu.set_clock_rate(value);
+    }
 
     /// Return the path to the ROM on disk.
     inline std::string get_rom_path() const { return cartridge->get_rom_path(); }
@@ -206,9 +212,13 @@ class Emulator {
     }
 
     /// Return an audio sample from the APU of the emulator.
-    inline int16_t get_audio_sample() { return apu.get_sample(); }
+    inline int16_t get_audio_sample() {
+        if (!has_game()) return 0;
+        return apu.get_sample();
+    }
 
     /// Return an audio sample from the APU of the emulator [-10.f, 10.f].
+    /// If there is no game in the emulator, returns 0V.
     inline float get_audio_voltage() {
         return 10.f * apu.get_sample() / static_cast<float>(1 << 15);
     }
@@ -224,7 +234,11 @@ class Emulator {
     }
 
     /// Run a single CPU cycle on the emulator.
-    inline void cycle() {
+    ///
+    /// @param callback a callback function for when a frame event occurs
+    ///
+    template<typename EndOfFrameCallback>
+    inline void cycle(EndOfFrameCallback callback) {
         // ignore the call if there is no game
         if (!has_game()) return;
         // 3 PPU steps per CPU step
@@ -232,18 +246,14 @@ class Emulator {
         ppu.cycle(picture_bus);
         ppu.cycle(picture_bus);
         cpu.cycle(bus);
-        // 1 APU cycle per CPU step
         apu.cycle();
-    }
-
-    /// Perform a step on the emulator, i.e., a single frame.
-    inline void step() {
-        // ignore the call if there is no game
-        if (!has_game()) return;
-        // render a single frame on the emulator
-        for (int i = 0; i < CYCLES_PER_FRAME; i++) cycle();
-        // finish the frame on the APU
-        apu.end_frame();
+        // increment the cycles counter
+        ++cycles;
+        // check for the end of the frame
+        if (cycles >= CYCLES_PER_FRAME) {
+            cycles = 0;
+            callback();
+        }
     }
 
     /// Create a backup state on the emulator.
@@ -251,6 +261,7 @@ class Emulator {
         // ignore the call if there is no game
         if (!has_game()) return;
         if (cartridge != nullptr) backup_cartridge = cartridge->clone();
+        backup_cycles = cycles;
         backup_controllers[0] = controllers[0];
         backup_controllers[1] = controllers[1];
         backup_bus = bus;
@@ -268,6 +279,7 @@ class Emulator {
         // restore if there is a backup available
         if (!has_backup) return;
         if (backup_cartridge != nullptr) cartridge = backup_cartridge->clone();
+        cycles = backup_cycles;
         controllers[0] = backup_controllers[0];
         controllers[1] = backup_controllers[1];
         bus = backup_bus;
