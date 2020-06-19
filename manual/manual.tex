@@ -6,8 +6,6 @@
 
 % import geometry package to update the document margins
 \usepackage[margin=1in]{geometry}
-% set the font to Times New Roman
-% \usepackage{mathptmx}
 % set the font to helvectica
 \usepackage[scaled]{helvet}
 \renewcommand\familydefault{\sfdefault}
@@ -30,8 +28,6 @@
  \def\BIBand{and}%
 % for graphics and figures
 \usepackage{graphicx, subfig, tikz}
-% a package for adding footnotes to figures
-\usepackage[capposition=bottom]{floatrow}
 % force figures to stay in their sections
 \usepackage[section]{placeins}
 % for tables
@@ -47,29 +43,16 @@
 % linesnumbered: print line numbers for each line
 \usepackage[ruled,lined,linesnumbered]{algorithm2e}
 \DontPrintSemicolon % don't print the semicolon that \; usually prints
-% for acronyms
-\usepackage[nolist]{acronym}
-% import a nice author management package
-\usepackage{authblk}
-% import a package for double spacing
-\usepackage{setspace}
-\singlespacing
-% for creating sub-figures within figures
-% for combining multiple LaTeX files
-\usepackage{subfiles}
 % fix overfull hbox errors from oddities like using
 % quotes (``foo'') and etc.
 \usepackage{microtype}
 
 % -------------------
-% MARK: Debugging Packages (Comment out for final submission)
+% MARK: Debugging Packages
 % -------------------
 
 % import a debugging package to show the margin boxes
 % \usepackage{showframe}
-% put "Draft" as a watermark behind pages
-% \usepackage{draftwatermark}
-% \SetWatermarkLightness{0.95}
 
 % -------------------
 % MARK: Declarations
@@ -99,7 +82,7 @@
 \graphicspath{{img/}}
 
 % -----------------------------------------------------------------------------
-% MARK: Algorithm stuff
+% MARK: algorithm2e stuff
 % -----------------------------------------------------------------------------
 
 % params
@@ -107,7 +90,7 @@
 % \SetKwInOut{Weights}{$\CKvector{w}$}
 
 % -------------------
-% MARK: Front Matter
+% MARK: Headers
 % -------------------
 
 % headers and footers
@@ -118,11 +101,13 @@
 \rhead{\itshape RackNES}
 \cfoot{\thepage}
 
+% start the document
+\begin{document}
+
 % -------------------
-% MARK: Document
+% MARK: Title Page
 % -------------------
 
-\begin{document}
 % fancyhdr directive to remove headers from this title page
 \thispagestyle{empty}
 % center the title page contents
@@ -141,8 +126,7 @@
 % MARK: Overview
 % -------------------
 
-RackNES is a Nintendo Entertainment System (NES) emulator for VCV Rack with
-control voltage inputs and outputs. RackNES offers several key features, namely,
+RackNES is a Nintendo Entertainment System (NES) emulator for VCV Rack with control voltage inputs and outputs. RackNES offers several key features, namely,
 
 \begin{itemize}
   \item \textbf{Clock Source:} Use NES frame-rate (FPS) as a clock source for downstream modules;
@@ -162,30 +146,25 @@ control voltage inputs and outputs. RackNES offers several key features, namely,
 \begin{enumerate}
   \item Player 1 controller input triggers; high at $2V$
   \item Player 2 controller input triggers; high at $2V$
-  \item NES Clock rate control. Controls the frame rate of the emulation from
-    $2Hz$ to $1KHz$.
-  \item NES Clock output. Pulse wave with $50\%$ duty cycle; high at $10V$,
-    low at $0V$.
-  \item NES Clock rate CV modulation. Modulates the clock rate parameter according
-    to CV with half the range of the clock rate control knob.
-  \item NES Clock rate CV attenuverter. Controls strength and polarity of
-    clock rate CV input.
+  \item NES Clock rate control. Controls the frame rate of the emulation from $2Hz$ to $1KHz$.
+  \item NES Clock output. Pulse wave with $50\%$ duty cycle; high at $10V$, low at $0V$.
+  \item NES Clock rate CV modulation. Modulates the clock rate parameter according to CV with half the range of the clock rate control knob.
+  \item NES Clock rate CV attenuverter. Controls strength and polarity of clock rate CV input.
   \item Save state trigger; high at $2V$. Saves the current state of emulation.
-  \item Load state trigger; high at $2V$. Loads the existing save state back
-    into the emulation.
-  \item Reset emulator trigger; high at $2V$. Equal to pressing "Reset" on the
-    NES, resets the game.
-  \item NES Audio output; $10V_{pp}$. Audio output from the internal mixer of
-    the NES.
-  \item NES Audio output volume level; $[0\%,200\%]$. Controls the gain of the
-    audio output signal. $100\%$ is roughly $5V_{pp}$ and $200\%$ is roughly
-    $10V_{pp}$ (though some clipping may occur).
+  \item Load state trigger; high at $2V$. Loads the existing save state back into the emulation.
+  \item Reset emulator trigger; high at $2V$. Equal to pressing "Reset" on the NES, resets the game.
+  \item NES Audio output; $10V_{pp}$. Audio output from the internal mixer of the NES.
+  \item NES Audio output volume level; $[0\%,200\%]$. Controls the gain of the audio output signal. $100\%$ is $\approx 2.5V_{pp}$ and $200\%$ is $\approx 5V_{pp}$.
 \end{enumerate}
 
-% References
+% -------------------
+% MARK: References
+% -------------------
+
 \clearpage
 \renewcommand\refname{References \& Acknowledgments}
 \nocite{*}
 \bibliographystyle{apalike}
 \bibliography{references}
+
 \end{document}
