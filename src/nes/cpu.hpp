@@ -15,25 +15,25 @@
 
 namespace NES {
 
-/// The MOS6502 CPU for the Nintendo Entertainment System (NES)
+/// The MOS6502 CPU for the Nintendo Entertainment System (NES).
 class CPU {
  private:
     /// The program counter register
-    NES_Address register_PC;
+    NES_Address register_PC = 0x34;
     /// The stack pointer register
-    NES_Byte register_SP;
+    NES_Byte register_SP = 0xFD;
     /// The A register
-    NES_Byte register_A;
+    NES_Byte register_A = 0;
     /// The X register
-    NES_Byte register_X;
+    NES_Byte register_X = 0;
     /// The Y register
-    NES_Byte register_Y;
+    NES_Byte register_Y = 0;
     /// The flags register
-    CPU_Flags flags;
+    CPU_Flags flags = {.byte = 0b00110100};
     /// The number of cycles to skip
-    int skip_cycles;
+    int skip_cycles = 0;
     /// The number of cycles the CPU has run
-    int cycles;
+    int cycles = 0;
 
     /// Set the zero and negative flags based on the given value.
     ///
@@ -134,9 +134,6 @@ class CPU {
         NMI_INTERRUPT,
         BRK_INTERRUPT,
     };
-
-    /// Initialize a new CPU.
-    CPU() { };
 
     /// Reset using the given main bus to lookup a starting address.
     ///
