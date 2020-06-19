@@ -123,7 +123,7 @@ class MapperMMC1 : public ROM::Mapper {
     MapperMMC1* clone() override { return new MapperMMC1(*this); }
 
     /// Return the name table mirroring mode of this mapper.
-    inline NameTableMirroring getNameTableMirroring() override {
+    inline NameTableMirroring getNameTableMirroring() const override {
         return mirroring;
     }
 

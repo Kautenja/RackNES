@@ -184,7 +184,7 @@ class PPU {
     inline NES_Pixel* get_screen_buffer() { return *screen; }
 
     /// Convert the object's state to a JSON object.
-    json_t* dataToJson() {
+    json_t* dataToJson() const {
         json_t* rootJ = json_object();
         // encode sprite_memory
         {

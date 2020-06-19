@@ -55,7 +55,7 @@ class Controller {
     }
 
     /// Convert the object's state to a JSON object.
-    json_t* dataToJson() {
+    json_t* dataToJson() const {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "is_strobe", json_boolean(is_strobe));
         json_object_set_new(rootJ, "joypad_buttons", json_integer(joypad_buttons));
