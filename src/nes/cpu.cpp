@@ -498,21 +498,14 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
 }
 
 void CPU::reset(NES_Address start_address) {
-    skip_cycles = 0;
-    cycles = 0;
+    register_PC = start_address;
+    register_SP = 0xfd;
     register_A = 0;
     register_X = 0;
     register_Y = 0;
-    // flags.bits.I = true;
-    // flags.bits.C = false;
-    // flags.bits.D = false;
-    // flags.bits.N = false;
-    // flags.bits.V = false;
-    // flags.bits.Z = false;
     flags.byte = 0b00110100;
-    register_PC = start_address;
-    // documented startup state
-    register_SP = 0xfd;
+    skip_cycles = 0;
+    cycles = 0;
 }
 
 void CPU::interrupt(MainBus &bus, InterruptType type) {
