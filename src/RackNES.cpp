@@ -103,6 +103,8 @@ struct RackNES : Module {
     bool new_sample_rate = false;
     /// the RGBA pixels on the screen in binary representation
     uint8_t screen[NES::Emulator::SCREEN_BYTES];
+    /// a pulse generator for generating pulses every frame event
+    dsp::PulseGenerator clockGenerator;
 
     /// triggers for handling button presses and CV inputs for the backup input
     CVButtonTrigger backupButton;
@@ -277,10 +279,10 @@ struct RackNES : Module {
         // run the number of cycles through the NES that are required. pass a
         // callback to copy the screen every time a new frame renders
         for (uint32_t i = 0; i < cycles_per_sample; i++)
-            emulator.cycle([this]() { copyScreen(); });
+            emulator.cycle([&]() { copyScreen(); });
 
         // set the clock output trigger based on the clock signal
-        // outputs[CLOCK_OUTPUT].setVoltage(10.f * clockTrigger.isHigh());
+        outputs[CLOCK_OUTPUT].setVoltage(10.f * emulator.is_clock_high());
         // get the sound output from the emulator
         outputs[SOUND_OUTPUT].setVoltage(getAudio());
     }
