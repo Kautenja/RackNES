@@ -17,6 +17,9 @@ manual:
 	mkdir -p ${BUILD}
 	cp -r img ${BUILD}
 	cp *.tex ${BUILD}
+	cp *.bib ${BUILD}
 	cd ${BUILD} && ${PDFLATEX} ${SOURCE} | grep -a3 "^!" || true
+	cd ${BUILD} && ${PDFLATEX} ${SOURCE} | grep -a3 "^!" || true
+	cd ${BUILD} && bibtex ${SOURCE}
 	cd ${BUILD} && ${PDFLATEX} ${SOURCE} | grep -a3 "^!" || true
 	cd ${BUILD} && rm -f ${CLEAN}
