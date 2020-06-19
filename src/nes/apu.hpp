@@ -59,12 +59,6 @@ class APU {
         apu.irq_notifier(callback);
     }
 
-    /// Set the volume to a new value.
-    ///
-    /// @param value the volume level
-    ///
-    inline void set_volume(float value = VOLUME) { apu.volume(value); }
-
     /// Set the sample rate to a new value.
     ///
     /// @param value the frame rate, i.e., 96000 Hz
