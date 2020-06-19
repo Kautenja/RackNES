@@ -99,9 +99,6 @@ struct RackNES : Module {
     NES::Emulator emulator;
     /// the path to the ROM for the emulator
     std::string rom_path = "";
-    /// a signal determining if a game was inserted into the emulator, i.e.,
-    /// from the widget on the UI thread
-    bool did_insert_game = false;
     /// a signal flag for detecting sample rate changes in the process loop
     bool new_sample_rate = false;
     /// the RGBA pixels on the screen in binary representation
@@ -118,6 +115,16 @@ struct RackNES : Module {
     CVButtonTrigger player1Triggers[8];
     /// a Schmitt Trigger for handling player 2 button inputs
     CVButtonTrigger player2Triggers[8];
+
+    /// a signal determining if a game was inserted into the emulator, i.e.,
+    /// from the widget on the UI thread
+    bool did_insert_game_signal = false;
+    /// a flag for telling the widget that a ROM file load was attempted for a
+    /// ROM with a mapper that has not been implemented yet
+    bool mapper_not_found_signal = false;
+    /// a flag for telling the widget that a ROM file load failed for an
+    /// unknown reason
+    bool rom_load_failed_signal = false;
 
     /// Initialize a new Nintendo Entertainment System (NES) module.
     RackNES() {
@@ -160,13 +167,13 @@ struct RackNES : Module {
                 emulator.load_game(rom_path);
             } catch (const NES::MapperNotFound& e) {  // ROM failed to load
                 initalizeScreen();
-                // osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, "ASIC mapper not implemented yet for given ROM!");
                 rom_path = emulator.get_rom_path();
+                mapper_not_found_signal = true;
             }
         } else {  // ROM file not valid
             initalizeScreen();
-            // osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, "ROM file failed to load!");
             rom_path = emulator.get_rom_path();
+            rom_load_failed_signal = true;
         }
     }
 
@@ -200,9 +207,9 @@ struct RackNES : Module {
     /// Process a sample.
     void process(const ProcessArgs &args) override {
         // check for a new ROM to load
-        if (did_insert_game) {
+        if (did_insert_game_signal) {
             handleNewROM(static_cast<int>(args.sampleRate));
-            did_insert_game = false;
+            did_insert_game_signal = false;
             // set the sample rate of the emulator
             new_sample_rate = true;
         }
@@ -305,20 +312,20 @@ struct RackNES : Module {
             json_t* json_data = json_object_get(rootJ, "rom_path");
             if (json_data) {  // a ROM was loaded into the emulator
                 rom_path = json_string_value(json_data);
-                did_insert_game = !rom_path.empty();
+                did_insert_game_signal = !rom_path.empty();
             }
         }
         {
             json_t* json_data = json_object_get(rootJ, "emulator");
-            // we need to check did_insert_game because the rom_path must be
-            // defined. this is because the ROM is not serialized with the rest
-            // of the emulation state...
+            // we need to check did insert game signal because the rom path
+            // must be defined. this is because the ROM is not serialized
+            // with the rest of the emulation state...
             // TODO: serialize ROM with emulation state for guaranteed state
             // recall between sessions of VCV Rack
-            if (json_data && did_insert_game) {
+            if (json_data && did_insert_game_signal) {
                 emulator.load_game(rom_path);
                 emulator.dataFromJson(json_data);
-                did_insert_game = false;
+                did_insert_game_signal = false;
                 new_sample_rate = true;
             }
         }
@@ -437,6 +444,21 @@ struct RackNESWidget : ModuleWidget {
         // paint the rectangle's fill from the screen
         nvgFillPaint(args.vg, imgPaint);
         nvgFill(args.vg);
+
+        // handle signal from module that ROM file has unimplemented mapper
+        if (nesModule->mapper_not_found_signal) {
+            nesModule->mapper_not_found_signal = false;
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK,
+                "ASIC mapper not implemented yet for given ROM!"
+            );
+        }
+        // handle signal from module the a ROM load failed for unknown reason
+        if (nesModule->rom_load_failed_signal) {
+            nesModule->rom_load_failed_signal = false;
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK,
+                "ROM file failed to load!"
+            );
+        }
     }
 
     /// A menu item for loading ROMs into the emulator.
@@ -456,7 +478,7 @@ struct RackNESWidget : ModuleWidget {
             osdialog_filters_free(filters);
             if (path) {  // a path was selected
                 module->rom_path = path;
-                module->did_insert_game = true;
+                module->did_insert_game_signal = true;
                 free(path);
             }
         }
