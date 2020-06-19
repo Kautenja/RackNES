@@ -10,3 +10,4 @@
 
 - clock controls CPU rate directly
 - OS dialogs shown when ROMs fail to load
+- fix clock to properly output pulses at the frame rate (PW=50%)
