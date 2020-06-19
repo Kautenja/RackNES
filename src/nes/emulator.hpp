@@ -117,13 +117,26 @@ class Emulator {
     /// Load a new game into the emulator.
     ///
     /// @param path a path to the ROM to load into the emulator
+    /// @returns true if the load succeeded, false otherwise
+    /// @note when returning false, the emulator remains in its current state
+    /// @note the boolean output answers the question: is the ASIC mapper
+    ///       implemented for the ROM at given path?
     ///
-    inline void load_game(const std::string& path) {
+    bool load_game(const std::string& path) {
+        // load the new game, but don't overwrite the cartridge yet
+        auto game = Cartridge::create(path, [&](){ picture_bus.update_mirroring(); });
+        // if the game is nullptr the load failed, return false
+        if (game == nullptr) return false;
+        // check for an existing game and delete it if it exists
         if (cartridge != nullptr) delete cartridge;
-        cartridge = new Cartridge(path, [&](){ picture_bus.update_mirroring(); });
+        // assign the game pointer to the cartridge slot
+        cartridge = game;
+        // setup the buses and reset the machine
         bus.set_mapper(cartridge->get_mapper());
         picture_bus.set_mapper(cartridge->get_mapper());
         reset();
+        // load succeeded, return true
+        return true;
     }
 
     /// Remove the inserted game from the emulator.
