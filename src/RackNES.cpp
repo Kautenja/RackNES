@@ -159,12 +159,14 @@ struct RackNES : Module {
             try {
                 emulator.load_game(rom_path);
             } catch (const NES::MapperNotFound& e) {  // ROM failed to load
-                // (TODO: error screen)
                 initalizeScreen();
+                // osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, "ASIC mapper not implemented yet for given ROM!");
+                rom_path = emulator.get_rom_path();
             }
         } else {  // ROM file not valid
-            // (TODO: error screen)
             initalizeScreen();
+            // osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, "ROM file failed to load!");
+            rom_path = emulator.get_rom_path();
         }
     }
 
@@ -308,7 +310,12 @@ struct RackNES : Module {
         }
         {
             json_t* json_data = json_object_get(rootJ, "emulator");
-            if (json_data) {
+            // we need to check did_insert_game because the rom_path must be
+            // defined. this is because the ROM is not serialized with the rest
+            // of the emulation state...
+            // TODO: serialize ROM with emulation state for guaranteed state
+            // recall between sessions of VCV Rack
+            if (json_data && did_insert_game) {
                 emulator.load_game(rom_path);
                 emulator.dataFromJson(json_data);
                 did_insert_game = false;
