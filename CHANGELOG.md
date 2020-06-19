@@ -9,4 +9,4 @@
 ### 1.1.0 (2020-06-19)
 
 - clock controls CPU rate directly
-
+- OS dialogs shown when ROMs fail to load
