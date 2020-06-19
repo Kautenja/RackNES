@@ -8,7 +8,6 @@
 #ifndef NES_MAPPER_FACTORY_HPP
 #define NES_MAPPER_FACTORY_HPP
 
-#include <exception>
 #include <string>
 #include <jansson.h>
 #include "rom.hpp"
@@ -19,44 +18,17 @@
 
 namespace NES {
 
-/// An exception that is raised when a mapper cannot be found for a ROM.
-class MapperNotFound: public std::exception {
- protected:
-    /// Error message.
-    std::string msg_;
-
- public:
-    /// Constructor (C strings).
-    /// @param message C-style string error message.
-    ///                The string contents are copied upon construction.
-    ///                Hence, responsibility for deleting the char* lies
-    ///                with the caller.
-    ///
-    explicit MapperNotFound(const char* message) : msg_(message) { }
-
-    /// Constructor (C++ STL strings).
-    /// @param message The error message.
-    ///
-    explicit MapperNotFound(const std::string& message) : msg_(message) { }
-
-    /// Destructor.
-    /// Virtual to allow for subclassing.
-    ///
-    virtual ~MapperNotFound() throw() { }
-
-    /// Returns a pointer to the (constant) error description.
-    /// @return A pointer to a const char*. The underlying memory
-    ///         is in posession of the Exception object. Callers must
-    ///         not attempt to free the memory.
-    ///
-    virtual const char* what() const throw() { return msg_.c_str(); }
-};
-
 /// An NES cartridge including ROM and mapper.
 class Cartridge : public ROM {
  protected:
     /// the mapper for the cartridge
     Mapper* mapper = nullptr;
+
+    /// Create a new Cartridge.
+    ///
+    /// @param path the path to the ROM for the callback
+    ///
+    explicit Cartridge(const std::string& path) : ROM(path) { }
 
  public:
     /// an enumeration of supported mapper IDs
@@ -70,18 +42,22 @@ class Cartridge : public ROM {
     /// Create a new Cartridge.
     ///
     /// @param path the path to the ROM for the callback
-    /// @param callback a callback to update nametable mirroring on the PPU
+    /// @param callback a callback to update name-table mirroring on the PPU
     ///
-    Cartridge(const std::string& path, Callback callback) :
-        ROM(path) {
-        LOG(INFO) << "loading mapper with ID " << static_cast<int>(mapper_number) << std::endl;
-        switch (static_cast<MapperID>(mapper_number)) {
-            case MapperID::NROM:  mapper = new MapperNROM(*this);           break;
-            case MapperID::MMC1:  mapper = new MapperMMC1(*this, callback); break;
-            case MapperID::UNROM: mapper = new MapperUNROM(*this);          break;
-            case MapperID::CNROM: mapper = new MapperCNROM(*this);          break;
-            default: throw MapperNotFound("mapper not implemented");
+    static inline Cartridge* create(const std::string& path, Callback callback) {
+        // initialize a new cartridge
+        auto cartridge = new Cartridge(path);
+        // load the mapper
+        LOG(INFO) << "loading mapper with ID " << static_cast<int>(cartridge->mapper_number) << std::endl;
+        switch (static_cast<MapperID>(cartridge->mapper_number)) {
+            case MapperID::NROM:  cartridge->mapper = new MapperNROM(*cartridge);           break;
+            case MapperID::MMC1:  cartridge->mapper = new MapperMMC1(*cartridge, callback); break;
+            case MapperID::UNROM: cartridge->mapper = new MapperUNROM(*cartridge);          break;
+            case MapperID::CNROM: cartridge->mapper = new MapperCNROM(*cartridge);          break;
+            default: delete cartridge; cartridge = nullptr;
         }
+        // return the cartridge
+        return cartridge;
     }
 
     /// Copy this cartridge.
