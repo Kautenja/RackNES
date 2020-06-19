@@ -43,33 +43,6 @@ class Emulator {
     /// The emulator's APU
     APU apu;
 
-    // ------------------------------------------------------------------------
-    // MARK: Backup state variables: TODO: improve organization, i.e., a
-    //       EmulatorData struct or something similar
-    // ------------------------------------------------------------------------
-
-    /// whether the emulator has a backup available
-    bool has_backup = false;
-
-    /// the number of elapsed cycles
-    uint32_t backup_cycles = 0;
-    /// the virtual cartridge with ROM and mapper data
-    Cartridge* backup_cartridge = nullptr;
-    /// the 2 controllers on the emulator
-    Controller backup_controllers[2];
-
-    /// the main data bus of the emulator
-    MainBus backup_bus;
-    /// the picture bus from the PPU of the emulator
-    PictureBus backup_picture_bus;
-
-    /// The emulator's CPU
-    CPU backup_cpu;
-    /// the emulators' PPU
-    PPU backup_ppu;
-    /// The emulator's APU
-    APU backup_apu;
-
  public:
     /// The width of the NES screen in pixels
     static const int WIDTH = SCANLINE_VISIBLE_DOTS;
@@ -129,7 +102,7 @@ class Emulator {
         apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
     }
 
-    // Destroy this emulator
+    // Destroy this emulator.
     ~Emulator() { if (cartridge != nullptr) delete cartridge; }
 
     /// Return true if the emulator has a game inserted.
@@ -265,41 +238,23 @@ class Emulator {
         }
     }
 
-    /// Create a backup state on the emulator.
-    inline void backup() {
-        // ignore the call if there is no game
-        if (!has_game()) return;
-        if (cartridge != nullptr) backup_cartridge = cartridge->clone();
-        backup_cycles = cycles;
-        backup_controllers[0] = controllers[0];
-        backup_controllers[1] = controllers[1];
-        backup_bus = bus;
-        backup_picture_bus = picture_bus;
-        backup_cpu = cpu;
-        backup_ppu = ppu;
-        backup_apu.copy_from(apu);
-        has_backup = true;
+    /// Copy data from another instance of APU.
+    void copy_from(const Emulator &other) {
+        if (other.cartridge != nullptr) {  // other has cartridge to clone
+            cartridge = other.cartridge->clone();
+        } else if (cartridge != nullptr) {  // other has no cartridge, this does
+            delete cartridge;
+            cartridge = nullptr;
+        }
+        cycles = other.cycles;
+        controllers[0] = other.controllers[0];
+        controllers[1] = other.controllers[1];
+        bus = other.bus;
+        picture_bus = other.picture_bus;
+        cpu = other.cpu;
+        ppu = other.ppu;
+        apu.copy_from(other.apu);
     }
-
-    /// Restore the backup state on the emulator.
-    inline void restore() {
-        // ignore the call if there is no game
-        if (!has_game()) return;
-        // restore if there is a backup available
-        if (!has_backup) return;
-        if (backup_cartridge != nullptr) cartridge = backup_cartridge->clone();
-        cycles = backup_cycles;
-        controllers[0] = backup_controllers[0];
-        controllers[1] = backup_controllers[1];
-        bus = backup_bus;
-        picture_bus = backup_picture_bus;
-        cpu = backup_cpu;
-        ppu = backup_ppu;
-        apu.copy_from(backup_apu);
-    }
-
-    /// Remove the backup state.
-    inline void clear_backup() { has_backup = false; }
 
     /// Convert the object's state to a JSON object.
     json_t* dataToJson() {
@@ -308,8 +263,6 @@ class Emulator {
             json_object_set_new(rootJ, "cartridge", cartridge->dataToJson());
         json_object_set_new(rootJ, "controllers[0]", controllers[0].dataToJson());
         json_object_set_new(rootJ, "controllers[1]", controllers[1].dataToJson());
-        // TODO: serialize backups
-        // json_object_set_new(rootJ, "has_backup", json_boolean(has_backup));
         json_object_set_new(rootJ, "bus", bus.dataToJson());
         json_object_set_new(rootJ, "picture_bus", picture_bus.dataToJson());
         json_object_set_new(rootJ, "cpu", cpu.dataToJson());
@@ -335,12 +288,6 @@ class Emulator {
             json_t* json_data = json_object_get(rootJ, "controllers[1]");
             if (json_data) controllers[1].dataFromJson(json_data);
         }
-        // TODO: serialize backups
-        // // load has_backup
-        // {
-        //     json_t* json_data = json_object_get(rootJ, "has_backup");
-        //     if (json_data) has_backup = json_boolean_value(json_data);
-        // }
         // load bus
         {
             json_t* json_data = json_object_get(rootJ, "bus");
