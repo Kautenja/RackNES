@@ -98,7 +98,7 @@
 \setlength{\headheight}{15pt}
 \pagestyle{fancy}
 \lhead{KautenjaDSP}
-\rhead{\itshape RackNES}
+\rhead{\itshape RackNES v1.1.1}
 \cfoot{\thepage}
 
 % start the document
@@ -126,6 +126,8 @@
 % MARK: Overview
 % -------------------
 
+\section{Overview}
+
 RackNES is a Nintendo Entertainment System (NES) emulator for VCV Rack with control voltage inputs and outputs. RackNES offers several key features, namely,
 
 \begin{itemize}
@@ -137,17 +139,59 @@ RackNES is a Nintendo Entertainment System (NES) emulator for VCV Rack with cont
 \end{itemize}
 
 % -------------------
+% MARK: Loading ROMs
+% -------------------
+
+\section{Loading ROMs}
+
+To load a game into RackNES:
+\begin{enumerate}
+  \item acquire a ROM dump of the desired game in the iNES format, the file-type will be \texttt{.NES} or \texttt{.nes};
+  \item bring up the RackNES context menu by right-clicking the module and selecting ``\textbf{Load ROM}'';
+  \item use the resulting file explorer to locate the ROM file from (1) and load it into RackNES$^{1}$;
+  \item if the ROM file is invalid or cannot be loaded, RackNES will inform you using a pop-up dialog.
+\end{enumerate}
+
+% -------------------
+% MARK: Mappers
+% -------------------
+
+\section{Mappers}
+
+NES cartridges contain application specific integrated circuits (ASICs), called mappers, to provide special functionality for certain games. Oftentimes, these mappers provide some additional resources, like ROM or RAM. These mappers must be accounted for in the NES emulation in order to support the games that use them, otherwise the logic of the game will not execute correctly, if at all. RackNES supports many of the common mappers, with plans to support more in the future. Table~\ref{tab:mappers} outlines which mappers are supported by the current stable release of RackNES.
+
+\begin{table}[!htp]
+\centering
+\begin{tabular}{|l|l|}
+ \hline
+ ID & Name   \\
+ \hline\hline
+ 0  & NROM   \\
+ \hline
+ 1  & MMC1   \\
+ \hline
+ 2  & UNROM  \\
+ \hline
+ 3  & CNROM  \\
+ \hline
+\end{tabular}
+\caption{NES mappers supported by the current release of RackNES.}
+\label{tab:mappers}
+\end{table}
+
+% -------------------
 % MARK: Panel Layout
 % -------------------
 
+\section{Panel Layout}
+
 \includegraphics[width=\textwidth]{RackNES-Manual}
-\clearpage
 
 \begin{enumerate}
   \item Player 1 controller input triggers; high at $2V$
   \item Player 2 controller input triggers; high at $2V$
-  \item NES Clock rate control. Controls the frame rate of the emulation from $2Hz$ to $1KHz$.
-  \item NES Clock output. Pulse wave with $50\%$ duty cycle; high at $10V$, low at $0V$.
+  \item NES Clock rate control. Controls the clock rate of the NES starting at a base rate of $f_{clock} = 1.7898MHz$.
+  \item NES Clock output. A pulse wave with $50\%$ duty cycle; high at $10V$, low at $0V$. Rising edge follows the frame-rate of the NES where a frame occurs once every $29781$ CPU cycles, i.e., $f_{output} = \frac{f_{clock}}{29781}$
   \item NES Clock rate CV modulation. Modulates the clock rate parameter according to CV with half the range of the clock rate control knob.
   \item NES Clock rate CV attenuverter. Controls strength and polarity of clock rate CV input.
   \item Save state trigger; high at $2V$. Saves the current state of emulation.
