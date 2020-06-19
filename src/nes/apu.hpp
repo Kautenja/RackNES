@@ -27,15 +27,12 @@ class APU {
  public:
     /// The default sample rate for the APU
     static constexpr uint32_t SAMPLE_RATE = 96000;
-    /// The default volume
-    static constexpr float VOLUME = 2.f;
 
     /// Initialize the APU.
     APU() {
         buf.sample_rate(SAMPLE_RATE);
         buf.clock_rate(CLOCK_RATE);
         apu.output(&buf);
-        apu.volume(VOLUME);
     }
 
     /// Copy data from another instance of APU.
