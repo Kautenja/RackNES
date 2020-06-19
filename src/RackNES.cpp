@@ -97,6 +97,8 @@ struct RackNES : Module {
 
     /// the NES emulator
     NES::Emulator emulator;
+    /// the NES emulator backup state
+    NES::Emulator backup;
     /// the path to the ROM for the emulator
     std::string rom_path = "";
     /// a signal flag for detecting sample rate changes in the process loop
@@ -167,8 +169,6 @@ struct RackNES : Module {
         if (NES::Cartridge::is_valid_rom(rom_path)) {  // ROM file valid
             try {
                 emulator.load_game(rom_path);
-                // clear the backup state bc the ROM and mapper will be unloaded
-                emulator.clear_backup();
             } catch (const NES::MapperNotFound& e) {  // ROM failed to load
                 initalizeScreen();
                 // reset the ROM path to the ROM path in the emulator
@@ -237,7 +237,7 @@ struct RackNES : Module {
         if (backupButton.process(
             params[BACKUP_PARAM].getValue(),
             inputs[BACKUP_INPUT].getVoltage()
-        )) emulator.backup();
+        )) backup.copy_from(emulator);
         // handle inputs to the reset button and CV
         if (resetButton.process(
             params[RESET_PARAM].getValue(),
@@ -247,7 +247,7 @@ struct RackNES : Module {
         if (restoreButton.process(
             params[RESTORE_PARAM].getValue(),
             inputs[RESTORE_INPUT].getVoltage()
-        )) emulator.restore();
+        )) emulator.copy_from(backup);
 
         // get the controller for both players as a byte where each bit
         // represents the gate signal for whether one of the 8 buttons are
