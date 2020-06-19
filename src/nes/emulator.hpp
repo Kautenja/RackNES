@@ -133,7 +133,7 @@ class Emulator {
     ~Emulator() { if (cartridge != nullptr) delete cartridge; }
 
     /// Return true if the emulator has a game inserted.
-    inline bool has_game() { return cartridge != nullptr; }
+    inline bool has_game() const { return cartridge != nullptr; }
 
     /// Load a new game into the emulator.
     ///
@@ -170,7 +170,10 @@ class Emulator {
     }
 
     /// Return the path to the ROM on disk.
-    inline std::string get_rom_path() const { return cartridge->get_rom_path(); }
+    inline std::string get_rom_path() const {
+        if (has_game()) return cartridge->get_rom_path();
+        return "";
+    }
 
     /// Return a 32-bit pointer to the screen buffer's first address.
     ///
