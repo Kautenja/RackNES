@@ -23,19 +23,6 @@
 #include "components.hpp"
 #include "nes/emulator.hpp"
 
-// the values of buttons on the NES
-// enum class NESButtons {
-//     NoOp =   0b00000000,
-//     A =      0b00000001,
-//     B =      0b00000010,
-//     Select = 0b00000100,
-//     Start =  0b00001000,
-//     Up =     0b00010000,
-//     Down =   0b00100000,
-//     Left =   0b01000000,
-//     Right =  0b10000000,
-// };
-
 /// a trigger for a button with a CV input.
 struct CVButtonTrigger {
     /// the trigger for the button
@@ -60,6 +47,19 @@ struct CVButtonTrigger {
         return buttonTrigger.isHigh() or cvTrigger.isHigh();
     }
 };
+
+// the values of buttons on the NES
+// enum class NESButtons {
+//     NoOp =   0b00000000,
+//     A =      0b00000001,
+//     B =      0b00000010,
+//     Select = 0b00000100,
+//     Start =  0b00001000,
+//     Up =     0b00010000,
+//     Down =   0b00100000,
+//     Left =   0b01000000,
+//     Right =  0b10000000,
+// };
 
 // ---------------------------------------------------------------------------
 // MARK: Module
@@ -97,29 +97,29 @@ struct RackNES : Module {
 
     /// the NES emulator
     NES::Emulator emulator;
-    /// the NES emulator backup state
-    json_t* backup = nullptr;
-    /// a signal flag for detecting sample rate changes in the process loop
-    bool new_sample_rate = false;
     /// the RGBA pixels on the screen in binary representation
     uint8_t screen[NES::Emulator::SCREEN_BYTES];
     /// a pulse generator for generating pulses every frame event
     dsp::PulseGenerator clockGenerator;
-
-    /// triggers for handling button presses and CV inputs for the backup input
-    CVButtonTrigger backupButton;
-    /// triggers for handling button presses and CV inputs for the restore input
-    CVButtonTrigger restoreButton;
-    /// triggers for handling button presses and CV inputs for the reset input
-    CVButtonTrigger resetButton;
 
     /// a Schmitt Trigger for handling player 1 button inputs
     CVButtonTrigger player1Triggers[8];
     /// a Schmitt Trigger for handling player 2 button inputs
     CVButtonTrigger player2Triggers[8];
 
-    /// the path to the ROM for the emulator
+    /// triggers for handling button presses and CV inputs for the reset input
+    CVButtonTrigger resetButton;
+    /// triggers for handling button presses and CV inputs for the backup input
+    CVButtonTrigger backupButton;
+    /// triggers for handling button presses and CV inputs for the restore input
+    CVButtonTrigger restoreButton;
+    /// the NES emulator backup state
+    json_t* backup = nullptr;
+
+    /// a data signal from the widget for when the user selects a new ROM
     std::string rom_path_signal = "";
+    /// a signal flag for detecting sample rate changes
+    bool new_sample_rate = false;
     /// a flag for telling the widget that a ROM file load was attempted for a
     /// ROM with a mapper that has not been implemented yet
     bool mapper_not_found_signal = false;
@@ -158,10 +158,7 @@ struct RackNES : Module {
     }
 
     /// Handle a new ROM being loaded into the emulator.
-    ///
-    /// @param sampleRate the sample rate the engine is running at
-    ///
-    void handleNewROM(int sampleRate) {
+    void handleNewROM() {
         // create a new emulator with the specified ROM and reset it
         if (NES::Cartridge::is_valid_rom(rom_path_signal)) {  // ROM file valid
             try {
@@ -211,7 +208,8 @@ struct RackNES : Module {
     void process(const ProcessArgs &args) override {
         // check for a new ROM to load
         if (!rom_path_signal.empty()) {
-            handleNewROM(static_cast<int>(args.sampleRate));
+            handleNewROM();
+            // clear the ROM path signal from the widget
             rom_path_signal = "";
             // set the sample rate of the emulator
             new_sample_rate = true;
@@ -298,9 +296,8 @@ struct RackNES : Module {
 
     /// Respond to the user resetting the module with the "Initialize" action
     void onReset() override {
-        // deallocate the emulator from RAM
         emulator.remove_game();
-        // reset the screen to an initial state
+        if (backup != nullptr) { delete backup; backup = nullptr; }
         initalizeScreen();
     }
 
@@ -308,21 +305,27 @@ struct RackNES : Module {
     json_t* dataToJson() override {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "emulator", emulator.dataToJson());
+        // make sure there is a backup JSON before trying to save it
+        if (backup != nullptr) json_object_set_new(rootJ, "backup", backup);
         return rootJ;
     }
 
     /// Load the module's state from a JSON object.
     void dataFromJson(json_t* rootJ) override {
-        json_t* json_data = json_object_get(rootJ, "emulator");
-        // we need to check did insert game signal because the rom path
-        // must be defined. this is because the ROM is not serialized
-        // with the rest of the emulation state...
-        // TODO: serialize ROM with emulation state for guaranteed state
-        // recall between sessions of VCV Rack
-        if (json_data) {
-            emulator.dataFromJson(json_data);
+        json_t* emulator_data = json_object_get(rootJ, "emulator");
+        // load emulator
+        if (emulator_data) {
+            emulator.dataFromJson(emulator_data);
             new_sample_rate = true;
         }
+        // load backup
+        json_t* backup_data = json_object_get(rootJ, "backup");
+        // delete any existing backup before overwriting
+        if (backup != nullptr) delete backup;
+        // set the backup data if there is one, otherwise just nullptr it.
+        // the initial JSON that is passed in is dynamically allocated by the
+        // caller, so deep copy it.
+        backup = backup_data ? json_deep_copy(backup_data) : nullptr;
     }
 };
 
@@ -410,13 +413,13 @@ struct RackNESWidget : ModuleWidget {
         // call the super call to get all default behaviors of the superclass
         ModuleWidget::draw(args);
         // the x position of the screen
-        static const int x = 112;
+        static constexpr int x = 112;
         // the y position of the screen
-        static const int y = 18;
+        static constexpr int y = 18;
         // the width of the screen
-        static const int w = NES::Emulator::WIDTH;
+        static constexpr int w = NES::Emulator::WIDTH;
         // the height of the screen
-        static const int h = NES::Emulator::HEIGHT;
+        static constexpr int h = NES::Emulator::HEIGHT;
         // make sure the module has been initialized before proceeding. module
         // will be null when viewing the module in the browser
         if (module == nullptr)
@@ -442,36 +445,34 @@ struct RackNESWidget : ModuleWidget {
         // handle signal from module that ROM file has unimplemented mapper
         if (nesModule->mapper_not_found_signal) {
             nesModule->mapper_not_found_signal = false;
-            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK,
-                "ASIC mapper not implemented yet for given ROM!"
-            );
+            static constexpr auto MSG = "ASIC mapper not implemented for ROM!";
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, MSG);
         }
         // handle signal from module the a ROM load failed for unknown reason
         if (nesModule->rom_load_failed_signal) {
             nesModule->rom_load_failed_signal = false;
-            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK,
-                "ROM file failed to load!"
-            );
+            static constexpr auto MSG = "ROM file failed to load!";
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, MSG);
         }
     }
 
     /// A menu item for loading ROMs into the emulator.
-    struct RomSelectItem : MenuItem {
+    struct ROMItem : MenuItem {
         /// the module associated with the menu item
         RackNES* module;
 
-        /// Respond to an action on the menu item
+        /// Respond to an action on the menu item.
         void onAction(const event::Action &e) override {
-            // get the path from the OS dialog window (use the directory from
-            // last path if it is available)
-            std::string rom_path = module->emulator.get_rom_path();
-            std::string dir = rom_path.empty() ?
+            // check for a ROM path to use as an existing directory
+            auto rom_path = module->emulator.get_rom_path();
+            // if the ROM path is empty, fall back on the user's home directory
+            auto dir = rom_path.empty() ?
                 asset::user("") : rack::string::directory(rom_path);
-            // filter to only allow files with a ".nes" or ".NES" extension
-            osdialog_filters *filters = osdialog_filters_parse("NES ROM:nes,NES");
-            char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, filters);
-            osdialog_filters_free(filters);
-            if (path) {  // a path was selected
+            // filter to for files with a ".nes" or ".NES" extension
+            auto filter = osdialog_filters_parse("NES ROM:nes,NES");
+            auto path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, filter);
+            osdialog_filters_free(filter);
+            if (path) {  // the user selected a path
                 module->rom_path_signal = path;
                 free(path);
             }
@@ -480,19 +481,12 @@ struct RackNESWidget : ModuleWidget {
 
     /// Add a content menu to the module widget.
     void appendContextMenu(ui::Menu *menu) override {
-        RackNES* module = dynamic_cast<RackNES*>(this->module);
-        assert(module);
-        // add a ROM selection menu item
+        static constexpr auto TEXT = "Load ROM";
+        auto module = dynamic_cast<RackNES*>(this->module);
         menu->addChild(construct<MenuLabel>());
-        menu->addChild(construct<RomSelectItem>(
-            &RomSelectItem::text,
-            "Load ROM",
-            &RomSelectItem::module,
-            module
-        ));
+        menu->addChild(construct<ROMItem>(&ROMItem::text, TEXT, &ROMItem::module, module));
     }
-
 };
 
-/// the global instance of the model
+
 Model *modelRackNES = createModel<RackNES, RackNESWidget>("RackNES");
