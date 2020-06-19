@@ -169,6 +169,8 @@ struct RackNES : Module {
         if (NES::Cartridge::is_valid_rom(rom_path)) {  // ROM file valid
             try {
                 emulator.load_game(rom_path);
+                // remove the game from backup after loading the new game
+                backup.remove_game();
             } catch (const NES::MapperNotFound& e) {  // ROM failed to load
                 initalizeScreen();
                 // reset the ROM path to the ROM path in the emulator
@@ -247,7 +249,10 @@ struct RackNES : Module {
         if (restoreButton.process(
             params[RESTORE_PARAM].getValue(),
             inputs[RESTORE_INPUT].getVoltage()
-        )) emulator.copy_from(backup);
+        ) && backup.has_game()) {
+            emulator.copy_from(backup);
+            rom_path = emulator.get_rom_path();
+        }
 
         // get the controller for both players as a byte where each bit
         // represents the gate signal for whether one of the 8 buttons are
