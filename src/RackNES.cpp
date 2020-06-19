@@ -123,7 +123,7 @@ struct RackNES : Module {
     /// Initialize a new Nintendo Entertainment System (NES) module.
     RackNES() {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-        configParam(CLOCK_PARAM, -4.f, 4.f, 0.f, "Clock Speed", " Hz", 2.f, 1789773.f);
+        configParam(CLOCK_PARAM, -4.f, 4.f, 0.f, "Clock Speed", " Hz", 2.f, NES::CLOCK_RATE);
         configParam(CLOCK_ATT_PARAM, -1.f, 1.f, 0.f, "Clock Speed CV Attenuverter", "%", 0.f, 100.f);
         configParam(VOLUME_PARAM, 0.f, 2.f, 1.f, "Volume", "%", 0.f, 100.f);
         // buttons
@@ -188,7 +188,7 @@ struct RackNES : Module {
         // get the parameter in [-5, 5]
         auto param = params[CLOCK_PARAM].getValue();
         // calculate the exponential frequency
-        return 1789773.f * powf(2.f, param + cv);
+        return NES::CLOCK_RATE * powf(2.f, param + cv);
     }
 
     /// Return the output audio from the NES after applying the volume.
