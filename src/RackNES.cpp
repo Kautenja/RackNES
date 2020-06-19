@@ -99,8 +99,6 @@ struct RackNES : Module {
     NES::Emulator emulator;
     /// the NES emulator backup state
     NES::Emulator backup;
-    /// the path to the ROM for the emulator
-    std::string rom_path = "";
     /// a signal flag for detecting sample rate changes in the process loop
     bool new_sample_rate = false;
     /// the RGBA pixels on the screen in binary representation
@@ -120,6 +118,8 @@ struct RackNES : Module {
     /// a Schmitt Trigger for handling player 2 button inputs
     CVButtonTrigger player2Triggers[8];
 
+    /// the path to the ROM for the emulator
+    std::string rom_path_signal = "";
     /// a signal determining if a game was inserted into the emulator, i.e.,
     /// from the widget on the UI thread
     bool did_insert_game_signal = false;
@@ -166,23 +166,19 @@ struct RackNES : Module {
     ///
     void handleNewROM(int sampleRate) {
         // create a new emulator with the specified ROM and reset it
-        if (NES::Cartridge::is_valid_rom(rom_path)) {  // ROM file valid
+        if (NES::Cartridge::is_valid_rom(rom_path_signal)) {  // ROM file valid
             try {
-                emulator.load_game(rom_path);
+                emulator.load_game(rom_path_signal);
                 // remove the game from backup after loading the new game
                 backup.remove_game();
             } catch (const NES::MapperNotFound& e) {  // ROM failed to load
                 initalizeScreen();
-                // reset the ROM path to the ROM path in the emulator
-                rom_path = emulator.get_rom_path();
                 // send a mapper not found signal to the widget to display a
                 // UI dialog to the user
                 mapper_not_found_signal = true;
             }
         } else {  // ROM file not valid
             initalizeScreen();
-            // reset the ROM path to the ROM path in the emulator
-            rom_path = emulator.get_rom_path();
             // send a ROM load failure signal to the widget to display a
             // UI dialog to the user
             rom_load_failed_signal = true;
@@ -249,10 +245,7 @@ struct RackNES : Module {
         if (restoreButton.process(
             params[RESTORE_PARAM].getValue(),
             inputs[RESTORE_INPUT].getVoltage()
-        ) && backup.has_game()) {
-            emulator.copy_from(backup);
-            rom_path = emulator.get_rom_path();
-        }
+        ) && backup.has_game()) emulator.copy_from(backup);
 
         // get the controller for both players as a byte where each bit
         // represents the gate signal for whether one of the 8 buttons are
@@ -305,8 +298,6 @@ struct RackNES : Module {
 
     /// Respond to the user resetting the module with the "Initialize" action
     void onReset() override {
-        // remove the path to the current ROM
-        rom_path = "";
         // deallocate the emulator from RAM
         emulator.remove_game();
         // reset the screen to an initial state
@@ -316,33 +307,21 @@ struct RackNES : Module {
     /// Convert the module's state to a JSON object.
     json_t* dataToJson() override {
         json_t* rootJ = json_object();
-        json_object_set_new(rootJ, "rom_path", json_string(rom_path.c_str()));
         json_object_set_new(rootJ, "emulator", emulator.dataToJson());
         return rootJ;
     }
 
     /// Load the module's state from a JSON object.
     void dataFromJson(json_t* rootJ) override {
-        {
-            json_t* json_data = json_object_get(rootJ, "rom_path");
-            if (json_data) {  // a ROM was loaded into the emulator
-                rom_path = json_string_value(json_data);
-                did_insert_game_signal = !rom_path.empty();
-            }
-        }
-        {
-            json_t* json_data = json_object_get(rootJ, "emulator");
-            // we need to check did insert game signal because the rom path
-            // must be defined. this is because the ROM is not serialized
-            // with the rest of the emulation state...
-            // TODO: serialize ROM with emulation state for guaranteed state
-            // recall between sessions of VCV Rack
-            if (json_data && did_insert_game_signal) {
-                emulator.load_game(rom_path);
-                emulator.dataFromJson(json_data);
-                did_insert_game_signal = false;
-                new_sample_rate = true;
-            }
+        json_t* json_data = json_object_get(rootJ, "emulator");
+        // we need to check did insert game signal because the rom path
+        // must be defined. this is because the ROM is not serialized
+        // with the rest of the emulation state...
+        // TODO: serialize ROM with emulation state for guaranteed state
+        // recall between sessions of VCV Rack
+        if (json_data) {
+            emulator.dataFromJson(json_data);
+            new_sample_rate = true;
         }
     }
 };
@@ -485,14 +464,15 @@ struct RackNESWidget : ModuleWidget {
         void onAction(const event::Action &e) override {
             // get the path from the OS dialog window (use the directory from
             // last path if it is available)
-            std::string dir = module->rom_path.empty() ?
-                asset::user("") : rack::string::directory(module->rom_path);
+            std::string rom_path = module->emulator.get_rom_path();
+            std::string dir = rom_path.empty() ?
+                asset::user("") : rack::string::directory(rom_path);
             // filter to only allow files with a ".nes" or ".NES" extension
             osdialog_filters *filters = osdialog_filters_parse("NES ROM:nes,NES");
             char *path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, filters);
             osdialog_filters_free(filters);
             if (path) {  // a path was selected
-                module->rom_path = path;
+                module->rom_path_signal = path;
                 module->did_insert_game_signal = true;
                 free(path);
             }
