@@ -120,9 +120,6 @@ struct RackNES : Module {
 
     /// the path to the ROM for the emulator
     std::string rom_path_signal = "";
-    /// a signal determining if a game was inserted into the emulator, i.e.,
-    /// from the widget on the UI thread
-    bool did_insert_game_signal = false;
     /// a flag for telling the widget that a ROM file load was attempted for a
     /// ROM with a mapper that has not been implemented yet
     bool mapper_not_found_signal = false;
@@ -215,9 +212,9 @@ struct RackNES : Module {
     /// Process a sample.
     void process(const ProcessArgs &args) override {
         // check for a new ROM to load
-        if (did_insert_game_signal) {
+        if (!rom_path_signal.empty()) {
             handleNewROM(static_cast<int>(args.sampleRate));
-            did_insert_game_signal = false;
+            rom_path_signal = "";
             // set the sample rate of the emulator
             new_sample_rate = true;
         }
@@ -473,7 +470,6 @@ struct RackNESWidget : ModuleWidget {
             osdialog_filters_free(filters);
             if (path) {  // a path was selected
                 module->rom_path_signal = path;
-                module->did_insert_game_signal = true;
                 free(path);
             }
         }
