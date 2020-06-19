@@ -11,3 +11,7 @@
 - clock controls CPU rate directly
 - OS dialogs shown when ROMs fail to load
 - fix clock to properly output pulses at the frame rate (PW=50%)
+
+### 1.1.1 (2020-06-19)
+
+- fix issue where backup / restore was freezing the emulation state
