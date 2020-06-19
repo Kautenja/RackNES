@@ -11,14 +11,14 @@ A Nintendo Entertainment System (NES) emulator with Control Voltage (CV) for VCV
 
 ## Features
 
-- **Clock Source:** Use NES as a clock source for downstream modules
+- **Clock Source:** Use NES frame-rate (FPS) as a clock source for downstream modules
 - **Clock Rate Modulation:** Control the clock rate of the NES with direct knob and CV
 - **NES Audio Output:** Sample audio from the NES in real-time at any sampling rate
 - **Sampling/Ratcheting:** Save and restore the NES state for interesting musical effects
 - **Full CV Control:** CV inputs for Reset, Player 1, Player 2, and more
 
 See the [Manual](https://kautenja.github.io/manuals/RackNES.pdf) for more
-information about the features of this module
+information about the features of this module.
 
 ## Acknowledgments
 
