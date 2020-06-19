@@ -165,7 +165,7 @@ class CPU {
     inline void skip_DMA_cycles() { skip_cycles += 513 + (cycles & 1); }
 
     /// Convert the object's state to a JSON object.
-    json_t* dataToJson() {
+    json_t* dataToJson() const {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "register_PC", json_integer(register_PC));
         json_object_set_new(rootJ, "register_SP", json_integer(register_SP));
