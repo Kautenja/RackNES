@@ -88,7 +88,7 @@ class APU {
     inline void reset() { apu.reset(); buf.clear(); }
 
     /// Read the value from the APU status register.
-    inline NES_Byte read_status() { return apu.read_status(0); }
+    inline NES_Byte read_status() { return apu.read_status(1); }
 
     /// Write a value from to APU registers.
     ///
@@ -96,7 +96,7 @@ class APU {
     /// @oaram value the value to write to the register
     ///
     inline void write(NES_Address addr, NES_Byte value) {
-        apu.write_register(0, addr, value);
+        apu.write_register(1, addr, value);
     }
 
     /// Run a cycle on the APU (increment number of elapsed cycles).
