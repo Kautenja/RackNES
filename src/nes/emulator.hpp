@@ -105,14 +105,14 @@ class Emulator {
     // Destroy this emulator.
     ~Emulator() { if (cartridge != nullptr) delete cartridge; }
 
-    /// Return true if the emulator has a game inserted.
-    inline bool has_game() const { return cartridge != nullptr; }
-
     /// Return true if the clock is high, false otherwise.
     inline bool is_clock_high() {
         static constexpr float CLOCK_PW = 0.5;
         return cycles < CYCLES_PER_FRAME / (1.f / CLOCK_PW);
     }
+
+    /// Return true if the emulator has a game inserted.
+    inline bool has_game() const { return cartridge != nullptr; }
 
     /// Load a new game into the emulator.
     ///
@@ -124,7 +124,9 @@ class Emulator {
     ///
     bool load_game(const std::string& path) {
         // load the new game, but don't overwrite the cartridge yet
-        auto game = Cartridge::create(path, [&](){ picture_bus.update_mirroring(); });
+        auto game = Cartridge::create(path, [&](){
+            picture_bus.update_mirroring();
+        });
         // if the game is nullptr the load failed, return false
         if (game == nullptr) return false;
         // check for an existing game and delete it if it exists
