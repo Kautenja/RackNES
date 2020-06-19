@@ -276,7 +276,17 @@ class Emulator {
         // load cartridge
         {
             json_t* json_data = json_object_get(rootJ, "cartridge");
-            if (json_data) cartridge->dataFromJson(json_data);
+            // if there is not cartridge data, there is no emulator state to
+            // load, return
+            if (!json_data) return;
+            json_t* rom_path_data = json_object_get(json_data, "rom_path");
+            // if the cartridge does not have a ROM, there is no emulator
+            // state to load, return
+            if (!rom_path_data) return;
+            // load the game into the machine before loading the cartridge
+            // data (because cartridge may be nullptr)
+            load_game(json_string_value(rom_path_data));
+            cartridge->dataFromJson(json_data);
         }
         // load controllers[0]
         {
