@@ -298,6 +298,9 @@ class Emulator {
         apu.copy_from(backup_apu);
     }
 
+    /// Remove the backup state.
+    inline void clear_backup() { has_backup = false; }
+
     /// Convert the object's state to a JSON object.
     json_t* dataToJson() {
         json_t* rootJ = json_object();
