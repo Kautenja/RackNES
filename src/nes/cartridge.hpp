@@ -74,6 +74,7 @@ class Cartridge : public ROM {
     ///
     Cartridge(const std::string& path, Callback callback) :
         ROM(path) {
+        LOG(INFO) << "loading mapper with ID " << static_cast<int>(mapper_number) << std::endl;
         switch (static_cast<MapperID>(mapper_number)) {
             case MapperID::NROM:  mapper = new MapperNROM(*this);           break;
             case MapperID::MMC1:  mapper = new MapperMMC1(*this, callback); break;
