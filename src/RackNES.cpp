@@ -171,12 +171,18 @@ struct RackNES : Module {
                 emulator.clear_backup();
             } catch (const NES::MapperNotFound& e) {  // ROM failed to load
                 initalizeScreen();
+                // reset the ROM path to the ROM path in the emulator
                 rom_path = emulator.get_rom_path();
+                // send a mapper not found signal to the widget to display a
+                // UI dialog to the user
                 mapper_not_found_signal = true;
             }
         } else {  // ROM file not valid
             initalizeScreen();
+            // reset the ROM path to the ROM path in the emulator
             rom_path = emulator.get_rom_path();
+            // send a ROM load failure signal to the widget to display a
+            // UI dialog to the user
             rom_load_failed_signal = true;
         }
     }
