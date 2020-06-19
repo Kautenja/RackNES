@@ -123,7 +123,7 @@ struct RackNES : Module {
     /// Initialize a new Nintendo Entertainment System (NES) module.
     RackNES() {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
-        configParam(CLOCK_PARAM, -4.f, 4.f, 0.f, "Clock Speed", " Hz", 2.f, NES::CLOCK_RATE);
+        configParam(CLOCK_PARAM, -4.f, 4.f, 0.f, "Clock Speed", " MHz", 2.f, NES::CLOCK_RATE / 1000000.f);
         configParam(CLOCK_ATT_PARAM, -1.f, 1.f, 0.f, "Clock Speed CV Attenuverter", "%", 0.f, 100.f);
         configParam(VOLUME_PARAM, 0.f, 2.f, 1.f, "Volume", "%", 0.f, 100.f);
         // buttons
