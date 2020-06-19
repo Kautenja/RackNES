@@ -159,7 +159,7 @@ struct RackNES : Module {
         if (NES::Cartridge::is_valid_rom(rom_path)) {  // ROM file valid
             try {
                 emulator.load_game(rom_path);
-            } catch (std::exception e) {  // ROM failed to load
+            } catch (const NES::MapperNotFound& e) {  // ROM failed to load
                 // (TODO: error screen)
                 initalizeScreen();
             }
