@@ -130,11 +130,9 @@ void Nes_Apu::irq_changed()
 }
 
 // frames
-#include <iostream>
 
 void Nes_Apu::run_until( cpu_time_t end_time )
 {
-	std::cout << "last_time " << last_time << " end_time " << end_time << std::endl;
 	require( end_time >= last_time );
 
 	if ( end_time == last_time )
