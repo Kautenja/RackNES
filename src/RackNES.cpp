@@ -149,6 +149,9 @@ struct RackNES : Module {
         initalizeScreen();
     }
 
+    bool mapper_not_found_signal = false;
+    bool rom_load_failed_signal = false;
+
     /// Handle a new ROM being loaded into the emulator.
     ///
     /// @param sampleRate the sample rate the engine is running at
@@ -160,13 +163,13 @@ struct RackNES : Module {
                 emulator.load_game(rom_path);
             } catch (const NES::MapperNotFound& e) {  // ROM failed to load
                 initalizeScreen();
-                // osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, "ASIC mapper not implemented yet for given ROM!");
-                rom_path = emulator.get_rom_path();
+                // rom_path = emulator.get_rom_path();
+                mapper_not_found_signal = true;
             }
         } else {  // ROM file not valid
             initalizeScreen();
-            // osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, "ROM file failed to load!");
-            rom_path = emulator.get_rom_path();
+            // rom_path = emulator.get_rom_path();
+            rom_load_failed_signal = true;
         }
     }
 
@@ -437,6 +440,15 @@ struct RackNESWidget : ModuleWidget {
         // paint the rectangle's fill from the screen
         nvgFillPaint(args.vg, imgPaint);
         nvgFill(args.vg);
+
+        // if (nesModule->mapper_not_found_signal) {
+        //     nesModule->mapper_not_found_signal = false;
+        //     osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, "ASIC mapper not implemented yet for given ROM!");
+        // }
+        // if (nesModule->rom_load_failed_signal) {
+        //     nesModule->rom_load_failed_signal = false;
+        //     osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, "ROM file failed to load!");
+        // }
     }
 
     /// A menu item for loading ROMs into the emulator.
