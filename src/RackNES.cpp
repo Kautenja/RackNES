@@ -21,7 +21,6 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "components.hpp"
-#include "clock.hpp"
 #include "nes/emulator.hpp"
 
 // the values of buttons on the NES
