@@ -293,11 +293,17 @@ struct RackNES : Module {
     /// Respond to the change of sample rate in the engine.
     void onSampleRateChange() override { new_sample_rate = true; }
 
-    /// Respond to the user resetting the module with the "Initialize" action
+    /// Respond to the user resetting the module with the "Initialize" action.
     void onReset() override {
         emulator.remove_game();
         if (backup != nullptr) { delete backup; backup = nullptr; }
         initalizeScreen();
+    }
+
+    /// Respond to the module being removed from the rack.
+    void onRemove() override {
+        emulator.remove_game();
+        if (backup != nullptr) { delete backup; backup = nullptr; }
     }
 
     /// Convert the module's state to a JSON object.
