@@ -135,6 +135,12 @@ class Emulator {
     /// Return true if the emulator has a game inserted.
     inline bool has_game() const { return cartridge != nullptr; }
 
+    /// Return true if the clock is high, false otherwise.
+    inline bool is_clock_high() {
+        static constexpr float CLOCK_PW = 0.5;
+        return cycles < CYCLES_PER_FRAME / (1.f / CLOCK_PW);
+    }
+
     /// Load a new game into the emulator.
     ///
     /// @param path a path to the ROM to load into the emulator
