@@ -98,7 +98,7 @@ struct RackNES : Module {
     /// the NES emulator
     NES::Emulator emulator;
     /// the NES emulator backup state
-    NES::Emulator backup;
+    json_t* backup = nullptr;
     /// a signal flag for detecting sample rate changes in the process loop
     bool new_sample_rate = false;
     /// the RGBA pixels on the screen in binary representation
@@ -166,8 +166,6 @@ struct RackNES : Module {
         if (NES::Cartridge::is_valid_rom(rom_path_signal)) {  // ROM file valid
             try {
                 emulator.load_game(rom_path_signal);
-                // remove the game from backup after loading the new game
-                backup.remove_game();
             } catch (const NES::MapperNotFound& e) {  // ROM failed to load
                 initalizeScreen();
                 // send a mapper not found signal to the widget to display a
@@ -232,7 +230,12 @@ struct RackNES : Module {
         if (backupButton.process(
             params[BACKUP_PARAM].getValue(),
             inputs[BACKUP_INPUT].getVoltage()
-        )) backup.copy_from(emulator);
+        )) {
+            // delete existing backup
+            if (backup != nullptr) delete backup;
+            // create a new backup of the NES state
+            backup = emulator.dataToJson();
+        }
         // handle inputs to the reset button and CV
         if (resetButton.process(
             params[RESET_PARAM].getValue(),
@@ -242,7 +245,7 @@ struct RackNES : Module {
         if (restoreButton.process(
             params[RESTORE_PARAM].getValue(),
             inputs[RESTORE_INPUT].getVoltage()
-        ) && backup.has_game()) emulator.copy_from(backup);
+        ) && backup != nullptr) emulator.dataFromJson(backup);
 
         // get the controller for both players as a byte where each bit
         // represents the gate signal for whether one of the 8 buttons are
