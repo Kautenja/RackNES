@@ -176,7 +176,7 @@ struct RackNES : Module {
         std::memset(screen, 0, NES::Emulator::SCREEN_BYTES);
     }
 
-    /// Copy the screen buffer from the NES in BGR to the local buffer in RGBA.
+    /// Copy the RGBA screen buffer from the NES to the local screen buffer.
     inline void copyScreen() {
         std::memcpy(screen, emulator.get_screen_buffer(), NES::Emulator::SCREEN_BYTES);
     }
@@ -187,7 +187,7 @@ struct RackNES : Module {
         auto cv = inputs[CLOCK_INPUT].getVoltage() / 5.f;
         // apply the attenuverter to the CV signal
         cv *= params[CLOCK_ATT_PARAM].getValue();
-        // get the parameter in [-5, 5]
+        // get the parameter in [-4, 4]
         auto param = params[CLOCK_PARAM].getValue();
         // calculate the exponential frequency
         return NES::CLOCK_RATE * powf(2.f, param + cv);
@@ -267,7 +267,7 @@ struct RackNES : Module {
         // set the controller values
         emulator.set_controllers(player1, player2);
 
-        // calculate the number of clock cycles on the NES per sample
+        // calculate the number of clock cycles on the NES per audio sample
         uint32_t cycles_per_sample = getClockSpeed() / args.sampleRate;
         // set the emulator's clock rate. recalculate the frequency by
         // multiplying the integer value cycles_per_sample by the sample rate
@@ -279,7 +279,7 @@ struct RackNES : Module {
         for (uint32_t i = 0; i < cycles_per_sample; i++)
             emulator.cycle([&]() { copyScreen(); });
 
-        // set the clock output trigger based on the clock signal
+        // set the clock output based on the NES frame-rate
         outputs[CLOCK_OUTPUT].setVoltage(10.f * emulator.is_clock_high());
         // get the sound output from the emulator
         outputs[SOUND_OUTPUT].setVoltage(getAudio());
@@ -341,7 +341,7 @@ struct RackNESWidget : ModuleWidget {
     ///
     RackNESWidget(RackNES* module) {
         setModule(module);
-        static const auto panel = "res/RackNES.svg";
+        static constexpr auto panel = "res/RackNES.svg";
         setPanel(APP->window->loadSvg(asset::plugin(plugin_instance, panel)));
         // panel screws
         addChild(createWidget<ScrewSilver>(Vec(7 * RACK_GRID_WIDTH, 0)));
