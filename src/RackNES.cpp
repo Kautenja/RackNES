@@ -310,7 +310,9 @@ struct RackNES : Module {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "emulator", emulator.dataToJson());
         // make sure there is a backup JSON before trying to save it
-        if (backup != nullptr) json_object_set_new(rootJ, "backup", backup);
+        if (backup != nullptr) {
+            json_object_set_new(rootJ, "backup", json_deep_copy(backup));
+        }
         return rootJ;
     }
 
@@ -326,10 +328,11 @@ struct RackNES : Module {
         json_t* backup_data = json_object_get(rootJ, "backup");
         // delete any existing backup before overwriting
         if (backup != nullptr) delete backup;
+        backup = nullptr;
         // set the backup data if there is one, otherwise just nullptr it.
         // the initial JSON that is passed in is dynamically allocated by the
         // caller, so deep copy it.
-        backup = backup_data ? json_deep_copy(backup_data) : nullptr;
+        if (backup_data) backup = json_deep_copy(backup_data);
     }
 };
 
