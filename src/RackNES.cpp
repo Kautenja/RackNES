@@ -164,7 +164,8 @@ struct RackNES : Module {
             // if load game returns true, the load succeeded
             if (emulator.load_game(rom_path_signal)) {
                 // remove the existing backup if there is one
-                if (backup != nullptr) { delete backup; backup = nullptr; }
+                if (backup != nullptr) delete backup;
+                backup = nullptr;
                 return;
             }
             // ROM load failed, initialize screen and send error signal
@@ -304,12 +305,6 @@ struct RackNES : Module {
         initalizeScreen();
     }
 
-    /// Respond to the module being removed from the rack.
-    void onRemove() override {
-        emulator.remove_game();
-        if (backup != nullptr) { delete backup; backup = nullptr; }
-    }
-
     /// Convert the module's state to a JSON object.
     json_t* dataToJson() override {
         json_t* rootJ = json_object();
@@ -351,7 +346,7 @@ struct RackNESWidget : ModuleWidget {
     ///
     /// @param module the module to create a widget for
     ///
-    RackNESWidget(RackNES *module) {
+    RackNESWidget(RackNES* module) {
         setModule(module);
         static const auto panel = "res/RackNES.svg";
         setPanel(APP->window->loadSvg(asset::plugin(plugin_instance, panel)));
@@ -468,7 +463,7 @@ struct RackNESWidget : ModuleWidget {
     /// A menu item for loading ROMs into the emulator.
     struct ROMItem : MenuItem {
         /// the module associated with the menu item
-        RackNES* module;
+        RackNES* module = nullptr;
 
         /// Respond to an action on the menu item.
         void onAction(const event::Action &e) override {
@@ -489,7 +484,7 @@ struct RackNESWidget : ModuleWidget {
     };
 
     /// Add a content menu to the module widget.
-    void appendContextMenu(ui::Menu *menu) override {
+    void appendContextMenu(ui::Menu* menu) override {
         static constexpr auto TEXT = "Load ROM";
         auto module = dynamic_cast<RackNES*>(this->module);
         menu->addChild(construct<MenuLabel>());

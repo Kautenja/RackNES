@@ -143,8 +143,10 @@ class Emulator {
 
     /// Remove the inserted game from the emulator.
     inline void remove_game() {
-        if (cartridge != nullptr) delete cartridge;
-        cartridge = nullptr;
+        if (cartridge != nullptr) {
+            delete cartridge;
+            cartridge = nullptr;
+        }
     }
 
     /// Set the sample rate to a new value.
