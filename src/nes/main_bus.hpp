@@ -38,11 +38,11 @@ enum IORegisters {
     SQ2_LO =      0x4006,
     SQ2_HI =      0x4007,
     TRI_LINEAR =  0x4008,
-    APU_UNUSED1 = 0x4009,
+    APU_UNUSED1 = 0x4009,  // unused for APU, but may be used for APU stuff
     TRI_LO =      0x400A,
     TRI_HI =      0x400B,
     NOISE_VOL =   0x400C,
-    APU_UNUSED2 = 0x400D,
+    APU_UNUSED2 = 0x400D,  // unused for APU, but may be used for APU stuff
     NOISE_LO =    0x400E,
     NOISE_HI =    0x400F,
     DMC_FREQ =    0x4010,
