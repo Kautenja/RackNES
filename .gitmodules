@@ -1,3 +1,0 @@
-[submodule "dep/robin-map"]
-	path = dep/robin-map
-	url = https://github.com/Tessil/robin-map
