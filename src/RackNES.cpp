@@ -23,6 +23,9 @@
 #include "components.hpp"
 #include "nes/emulator.hpp"
 
+// TODO: resolve segmentation fault from loading emulator state where the ROM
+//       path has moved
+
 /// a trigger for a button with a CV input.
 struct CVButtonTrigger {
     /// the trigger for the button
@@ -47,19 +50,6 @@ struct CVButtonTrigger {
         return buttonTrigger.isHigh() or cvTrigger.isHigh();
     }
 };
-
-// the values of buttons on the NES
-// enum class NESButtons {
-//     NoOp =   0b00000000,
-//     A =      0b00000001,
-//     B =      0b00000010,
-//     Select = 0b00000100,
-//     Start =  0b00001000,
-//     Up =     0b00010000,
-//     Down =   0b00100000,
-//     Left =   0b01000000,
-//     Right =  0b10000000,
-// };
 
 // ---------------------------------------------------------------------------
 // MARK: Module
