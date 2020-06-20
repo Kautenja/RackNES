@@ -158,7 +158,7 @@ To load a game into RackNES:
 
 \section{Mappers}
 
-NES cartridges contain application specific integrated circuits (ASICs), called mappers, to provide special functionality for certain games. Oftentimes, these mappers provide some additional resources, like ROM or RAM. These mappers must be accounted for in the NES emulation in order to support the games that use them, otherwise the logic of the game will not execute correctly, if at all. RackNES supports many of the common mappers, with plans to support more in the future. Table~\ref{tab:mappers} outlines which mappers are supported by the current stable release of RackNES.
+Unlike digital media, NES games were deployed using cartridges based on functioning circuits. These cartridges often had special logical mappings, or else employed additional resources (e.g., ROM, RAM, ASICs) to extend the capabilities of the NES. These mappers must be individually accounted for in the emulation of the NES in order to support the games that use them. Otherwise, the code for those games will not execute correctly, if at all. RackNES supports many of the common mappers, with plans to support more in the future. Table~\ref{tab:mappers} outlines which mappers are supported by the current stable release of RackNES.
 
 \begin{table}[!htp]
 \centering
