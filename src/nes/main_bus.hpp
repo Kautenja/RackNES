@@ -21,7 +21,7 @@ namespace NES {
 
 /// The IO registers on the main bus
 enum IORegisters {
-    PPUCTRL = 0x2000,
+    PPUCTRL =     0x2000,
     PPUMASK,
     PPUSTATUS,
     OAMADDR,
@@ -29,30 +29,31 @@ enum IORegisters {
     PPUSCROL,
     PPUADDR,
     PPUDATA,
-    APU0 = 0x4000,
-    APU1 = 0x4001,
-    APU2 = 0x4002,
-    APU3 = 0x4003,
-    APU4 = 0x4004,
-    APU5 = 0x4005,
-    APU6 = 0x4006,
-    APU7 = 0x4007,
-    APU8 = 0x4008,
-    APU9 = 0x4009,
-    APUA = 0x400A,
-    APUB = 0x400B,
-    APUC = 0x400C,
-    APUD = 0x400D,
-    APUE = 0x400E,
-    APUF = 0x400F,
-    DMC_STATUS = 0x4010,
-    DMC_LOAD_COUNTER = 0x4011,
-    DMC_SAMPLE_ADDRESS = 0x4012,
-    DMC_SAMPLE_LENGTH = 0x4013,
-    OAMDMA = 0x4014,
-    APUSTATUS = 0x4015,
-    JOY1 = 0x4016,
-    JOY2 = 0x4017,
+    SQ1_VOL =     0x4000,
+    SQ1_SWEEP =   0x4001,
+    SQ1_LO =      0x4002,
+    SQ1_HI =      0x4003,
+    SQ2_VOL =     0x4004,
+    SQ2_SWEEP =   0x4005,
+    SQ2_LO =      0x4006,
+    SQ2_HI =      0x4007,
+    TRI_LINEAR =  0x4008,
+    APU_UNUSED1 = 0x4009,
+    TRI_LO =      0x400A,
+    TRI_HI =      0x400B,
+    NOISE_VOL =   0x400C,
+    APU_UNUSED2 = 0x400D,
+    NOISE_LO =    0x400E,
+    NOISE_HI =    0x400F,
+    DMC_FREQ =    0x4010,
+    DMC_RAW =     0x4011,
+    DMC_START =   0x4012,
+    DMC_LEN =     0x4013,
+    OAMDMA =      0x4014,
+    SND_CHN =     0x4015,
+    JOY1 =        0x4016,
+    JOY2 =        0x4017,
+    // $4018-$401F -> APU and I/O functionality that is normally disabled
 };
 
 // TODO: test potential performance improvements from alternate map hash algos
@@ -108,7 +109,7 @@ class MainBus {
     }
 
     /// Return a pointer to the page in memory.
-    const NES_Byte* get_page_pointer(NES_Byte page) {
+    const NES_Byte* get_page_pointer(NES_Byte page) const {
         NES_Address address = page << 8;
         if (address < 0x2000)
             return &ram[address & 0x7ff];
