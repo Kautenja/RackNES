@@ -24,6 +24,19 @@ class Controller {
     NES_Byte joypad_bits = 0;
 
  public:
+    // /// the values of buttons on the NES
+    // enum class NESButtons {
+    //     NoOp =   0b00000000,
+    //     A =      0b00000001,
+    //     B =      0b00000010,
+    //     Select = 0b00000100,
+    //     Start =  0b00001000,
+    //     Up =     0b00010000,
+    //     Down =   0b00100000,
+    //     Left =   0b01000000,
+    //     Right =  0b10000000,
+    // };
+
     /// Return a pointer to the joypad buffer.
     inline NES_Byte* get_joypad_buffer() { return &joypad_buttons; }
 
