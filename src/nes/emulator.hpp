@@ -61,7 +61,7 @@ class Emulator {
         bus.set_read_callback(JOY1,      [&](void) { return controllers[0].read();     });
         bus.set_read_callback(JOY2,      [&](void) { return controllers[1].read();     });
         bus.set_read_callback(OAMDATA,   [&](void) { return ppu.get_OAM_data();        });
-        bus.set_read_callback(APUSTATUS, [&](void) { return apu.read_status();         });
+        bus.set_read_callback(SND_CHN,   [&](void) { return apu.read_status();         });
         // set the write callbacks
         bus.set_write_callback(PPUCTRL,  [&](NES_Byte b) { ppu.control(b);                                             });
         bus.set_write_callback(PPUMASK,  [&](NES_Byte b) { ppu.set_mask(b);                                            });
@@ -73,28 +73,28 @@ class Emulator {
         bus.set_write_callback(JOY1,     [&](NES_Byte b) { controllers[0].strobe(b); controllers[1].strobe(b);         });
         bus.set_write_callback(OAMDATA,  [&](NES_Byte b) { ppu.set_OAM_data(b);                                        });
         // APU
-        bus.set_write_callback(APU0,               [&](NES_Byte b) { apu.write(APU0, b);               });
-        bus.set_write_callback(APU1,               [&](NES_Byte b) { apu.write(APU1, b);               });
-        bus.set_write_callback(APU2,               [&](NES_Byte b) { apu.write(APU2, b);               });
-        bus.set_write_callback(APU3,               [&](NES_Byte b) { apu.write(APU3, b);               });
-        bus.set_write_callback(APU4,               [&](NES_Byte b) { apu.write(APU4, b);               });
-        bus.set_write_callback(APU5,               [&](NES_Byte b) { apu.write(APU5, b);               });
-        bus.set_write_callback(APU6,               [&](NES_Byte b) { apu.write(APU6, b);               });
-        bus.set_write_callback(APU7,               [&](NES_Byte b) { apu.write(APU7, b);               });
-        bus.set_write_callback(APU8,               [&](NES_Byte b) { apu.write(APU8, b);               });
-        bus.set_write_callback(APU9,               [&](NES_Byte b) { apu.write(APU9, b);               });
-        bus.set_write_callback(APUA,               [&](NES_Byte b) { apu.write(APUA, b);               });
-        bus.set_write_callback(APUB,               [&](NES_Byte b) { apu.write(APUB, b);               });
-        bus.set_write_callback(APUC,               [&](NES_Byte b) { apu.write(APUC, b);               });
-        bus.set_write_callback(APUD,               [&](NES_Byte b) { apu.write(APUD, b);               });
-        bus.set_write_callback(APUE,               [&](NES_Byte b) { apu.write(APUE, b);               });
-        bus.set_write_callback(APUF,               [&](NES_Byte b) { apu.write(APUF, b);               });
-        bus.set_write_callback(DMC_STATUS,         [&](NES_Byte b) { apu.write(DMC_STATUS, b);         });
-        bus.set_write_callback(DMC_LOAD_COUNTER,   [&](NES_Byte b) { apu.write(DMC_LOAD_COUNTER, b);   });
-        bus.set_write_callback(DMC_SAMPLE_ADDRESS, [&](NES_Byte b) { apu.write(DMC_SAMPLE_ADDRESS, b); });
-        bus.set_write_callback(DMC_SAMPLE_LENGTH,  [&](NES_Byte b) { apu.write(DMC_SAMPLE_LENGTH, b);  });
-        bus.set_write_callback(APUSTATUS,          [&](NES_Byte b) { apu.write(APUSTATUS, b);          });
-        bus.set_write_callback(JOY2,               [&](NES_Byte b) { apu.write(JOY2, b);               });
+        bus.set_write_callback(SQ1_VOL,     [&](NES_Byte b) { apu.write(SQ1_VOL, b);     });
+        bus.set_write_callback(SQ1_SWEEP,   [&](NES_Byte b) { apu.write(SQ1_SWEEP, b);   });
+        bus.set_write_callback(SQ1_LO,      [&](NES_Byte b) { apu.write(SQ1_LO, b);      });
+        bus.set_write_callback(SQ1_HI,      [&](NES_Byte b) { apu.write(SQ1_HI, b);      });
+        bus.set_write_callback(SQ2_VOL,     [&](NES_Byte b) { apu.write(SQ2_VOL, b);     });
+        bus.set_write_callback(SQ2_SWEEP,   [&](NES_Byte b) { apu.write(SQ2_SWEEP, b);   });
+        bus.set_write_callback(SQ2_LO,      [&](NES_Byte b) { apu.write(SQ2_LO, b);      });
+        bus.set_write_callback(SQ2_HI,      [&](NES_Byte b) { apu.write(SQ2_HI, b);      });
+        bus.set_write_callback(TRI_LINEAR,  [&](NES_Byte b) { apu.write(TRI_LINEAR, b);  });
+        bus.set_write_callback(APU_UNUSED1, [&](NES_Byte b) { apu.write(APU_UNUSED1, b); });
+        bus.set_write_callback(TRI_LO,      [&](NES_Byte b) { apu.write(TRI_LO, b);      });
+        bus.set_write_callback(TRI_HI,      [&](NES_Byte b) { apu.write(TRI_HI, b);      });
+        bus.set_write_callback(NOISE_VOL,   [&](NES_Byte b) { apu.write(NOISE_VOL, b);   });
+        bus.set_write_callback(APU_UNUSED2, [&](NES_Byte b) { apu.write(APU_UNUSED2, b); });
+        bus.set_write_callback(NOISE_LO,    [&](NES_Byte b) { apu.write(NOISE_LO, b);    });
+        bus.set_write_callback(NOISE_HI,    [&](NES_Byte b) { apu.write(NOISE_HI, b);    });
+        bus.set_write_callback(DMC_FREQ,    [&](NES_Byte b) { apu.write(DMC_FREQ, b);    });
+        bus.set_write_callback(DMC_RAW,     [&](NES_Byte b) { apu.write(DMC_RAW, b);     });
+        bus.set_write_callback(DMC_START,   [&](NES_Byte b) { apu.write(DMC_START, b);   });
+        bus.set_write_callback(DMC_LEN,     [&](NES_Byte b) { apu.write(DMC_LEN, b);     });
+        bus.set_write_callback(SND_CHN,     [&](NES_Byte b) { apu.write(SND_CHN, b);     });
+        bus.set_write_callback(JOY2,        [&](NES_Byte b) { apu.write(JOY2, b);        });
         // set the interrupt callback for the PPU
         ppu.set_interrupt_callback([&]() { cpu.interrupt(bus, CPU::NMI_INTERRUPT); });
         // setup the DMC reader callback (for loading samples from RAM)
