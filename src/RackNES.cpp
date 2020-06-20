@@ -161,8 +161,12 @@ struct RackNES : Module {
     void handleNewROM() {
         // create a new emulator with the specified ROM and reset it
         if (NES::Cartridge::is_valid_rom(rom_path_signal)) {  // ROM file valid
-            // if load game returns true, the load succeeded, return
-            if (emulator.load_game(rom_path_signal)) return;
+            // if load game returns true, the load succeeded
+            if (emulator.load_game(rom_path_signal)) {
+                // remove the existing backup if there is one
+                if (backup != nullptr) { delete backup; backup = nullptr; }
+                return;
+            }
             // ROM load failed, initialize screen and send error signal
             initalizeScreen();
             // send a mapper not found signal to the widget to display a
