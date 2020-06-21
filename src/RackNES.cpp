@@ -192,7 +192,7 @@ struct RackNES : Module {
         // get the parameter in [-4, 4]
         auto param = params[CLOCK_PARAM].getValue();
         // calculate the exponential frequency
-        return NES::CLOCK_RATE * powf(2.f, param + cv);
+        return NES::CLOCK_RATE * powf(2.f, rack::clamp(param + cv, -4.f, 4.f));
     }
 
     /// Return the output audio from the NES after applying the volume.
