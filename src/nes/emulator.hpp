@@ -289,20 +289,28 @@ class Emulator {
     }
 
     /// Load the object's state from a JSON object.
-    void dataFromJson(json_t* rootJ) {
+    ///
+    /// @param rootJ the JSON object containing the emulator data
+    /// @return true if no errors occurred, false if the ROM path existed, but
+    ///              points to an invalid ROM file
+    ///
+    bool dataFromJson(json_t* rootJ) {
         // load cartridge
         {
             json_t* json_data = json_object_get(rootJ, "cartridge");
             // if there is not cartridge data, there is no emulator state to
             // load, return
-            if (!json_data) return;
+            if (!json_data) return true;
             json_t* rom_path_data = json_object_get(json_data, "rom_path");
             // if the cartridge does not have a ROM, there is no emulator
             // state to load, return
-            if (!rom_path_data) return;
+            if (!rom_path_data) return true;
+            // make sure the ROM file still exists and is still valid
+            auto rom_path_string = json_string_value(rom_path_data);
+            if (!ROM::is_valid_rom(rom_path_string)) return false;
             // load the game into the machine before loading the cartridge
             // data (because cartridge may be nullptr)
-            load_game(json_string_value(rom_path_data));
+            load_game(rom_path_string);
             cartridge->dataFromJson(json_data);
         }
         // load controllers[0]
@@ -340,6 +348,7 @@ class Emulator {
             json_t* json_data = json_object_get(rootJ, "apu");
             if (json_data) apu.dataFromJson(json_data);
         }
+        return true;
     }
 };
 
