@@ -25,3 +25,8 @@
 
 -   resolve bug where RackNES would cause a segmentation fault when attempting
     to load a ROM from a JSON state where the ROM file pointed to is invalid
+
+### 1.1.4 (2020-06-21)
+
+-   resolve bug where RackNES would crash when the clock frequency was set to
+    absolute minimum value through CV
