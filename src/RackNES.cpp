@@ -116,6 +116,8 @@ struct RackNES : Module {
     /// a flag for telling the widget that a ROM file load failed for an
     /// unknown reason
     bool rom_load_failed_signal = false;
+    /// a flag for telling the widget that a ROM file load (from JSON) failed
+    bool rom_reload_failed_signal = false;
 
     /// Initialize a new Nintendo Entertainment System (NES) module.
     RackNES() {
@@ -311,7 +313,11 @@ struct RackNES : Module {
         json_t* emulator_data = json_object_get(rootJ, "emulator");
         // load emulator
         if (emulator_data) {
-            emulator.dataFromJson(emulator_data);
+            // set the reload signal based on whether the reload from JSON
+            // succeeded. dataFromJson returns true for success, false for fail
+            rom_reload_failed_signal = !emulator.dataFromJson(emulator_data);
+            // if the reload failed, get out of here
+            if (rom_reload_failed_signal) return;
             new_sample_rate = true;
         }
         // load backup
@@ -445,10 +451,16 @@ struct RackNESWidget : ModuleWidget {
             static constexpr auto MSG = "ASIC mapper not implemented for ROM!";
             osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, MSG);
         }
-        // handle signal from module the a ROM load failed for unknown reason
+        // handle signal from module that ROM load failed for unknown reason
         if (nesModule->rom_load_failed_signal) {
             nesModule->rom_load_failed_signal = false;
             static constexpr auto MSG = "ROM file failed to load!";
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, MSG);
+        }
+        // handle signal from module that ROM in JSON was not found
+        if (nesModule->rom_reload_failed_signal) {
+            nesModule->rom_reload_failed_signal = false;
+            static constexpr auto MSG = "ROM file was not found!";
             osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, MSG);
         }
     }
