@@ -20,3 +20,8 @@
 
 -   resolve potential memory leak: deallocate emulator and backup state when
     module is removed from the rack
+
+### 1.1.3 (2020-06-20)
+
+-   resolve bug where RackNES would cause a segmentation fault when attempting
+    to load a ROM from a JSON state where the ROM file pointed to is invalid
