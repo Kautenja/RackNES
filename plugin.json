@@ -16,7 +16,7 @@
       "slug": "RackNES",
       "name": "RackNES",
       "description": "A Nintendo Entertainment System emulator with CV",
-      "manualUrl": "https://kautenja.github.io/manuals/RackNES.pdf",
+      "manualUrl": "https://kautenja.github.io/modules/RackNES/manual.pdf",
       "tags": [
         "Clock generator",
         "Hardware clone",
