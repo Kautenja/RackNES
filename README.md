@@ -7,7 +7,9 @@
 
 A Nintendo Entertainment System (NES) emulator with Control Voltage (CV) for VCV Rack.
 
-![RackNES](img/RackNES.png)
+<p align="center">
+<img alt="2A03" src="img/RackNES.png" height="380px">
+</p>
 
 ## Features
 
