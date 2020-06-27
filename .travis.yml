@@ -2,54 +2,58 @@
 language: cpp
 matrix:
   include:
-  - os: linux
-    dist: bionic
-  - os: osx
-    osx_image: xcode11
-  - os: windows
-    before_install:
-    - choco install make -y
-    - choco install zip -y
+    - os: linux
+      dist: xenial
+    - os: linux
+      dist: bionic
+    - os: osx
+      osx_image: xcode11
+    - os: osx
+      osx_image: xcode12
+    - os: windows
+      before_install:
+        - choco install make -y
+        - choco install zip -y
 addons:
   apt:
     packages:
-    - git
-    - gdb
-    - curl
-    - cmake
-    - libx11-dev
-    - libglu1-mesa-dev
-    - libxrandr-dev
-    - libxinerama-dev
-    - libxcursor-dev
-    - libxi-dev
-    - zlib1g-dev
-    - libasound2-dev
-    - libgtk2.0-dev
-    - libjack-jackd2-dev
-    - jq
+      - git
+      - gdb
+      - curl
+      - cmake
+      - libx11-dev
+      - libglu1-mesa-dev
+      - libxrandr-dev
+      - libxinerama-dev
+      - libxcursor-dev
+      - libxi-dev
+      - zlib1g-dev
+      - libasound2-dev
+      - libgtk2.0-dev
+      - libjack-jackd2-dev
+      - jq
   homebrew:
     packages:
-    - git
-    - wget
-    - cmake
-    - autoconf
-    - automake
-    - libtool
-    - jq
-    - python
+      - git
+      - wget
+      - cmake
+      - autoconf
+      - automake
+      - libtool
+      - jq
+      - python
 git:
   submodules: true
 env:
   global:
-  - MAKEFLAGS="-j 2"
+    - MAKEFLAGS="-j 2"
 install:
-- mkdir -p "${HOME}"/Rack
-- pushd "${HOME}"/Rack
-- curl -o Rack-SDK.zip https://vcvrack.com/downloads/Rack-SDK-1.1.4.zip
-- unzip Rack-SDK.zip
-- popd
+  - mkdir -p "${HOME}"/Rack
+  - pushd "${HOME}"/Rack
+  - curl -o Rack-SDK.zip https://vcvrack.com/downloads/Rack-SDK-1.1.4.zip
+  - unzip Rack-SDK.zip
+  - popd
 script:
-- export RACK_DIR="${HOME}"/Rack/Rack-SDK
-- make dep
-- make dist
+  - export RACK_DIR="${HOME}"/Rack/Rack-SDK
+  - make dep
+  - make dist
