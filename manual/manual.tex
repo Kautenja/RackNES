@@ -188,8 +188,8 @@ Unlike digital media, NES games were deployed using cartridges based on function
 \includegraphics[width=\textwidth]{RackNES-Manual}
 
 \begin{enumerate}
-  \item Player 1 controller input triggers; high at $2V$
-  \item Player 2 controller input triggers; high at $2V$
+  \item Player 1 controller input gates; high at $2V$
+  \item Player 2 controller input gates; high at $2V$
   \item NES Clock rate control. Controls the clock rate of the NES starting at a base rate of $f_{clock} = 1.7898MHz$.
   \item NES Clock output. A pulse wave with $50\%$ duty cycle; high at $10V$, low at $0V$. Rising edge follows the frame-rate of the NES where a frame occurs once every $29781$ CPU cycles, i.e., $f_{output} = \frac{f_{clock}}{29781}$
   \item NES Clock rate CV modulation. Modulates the clock rate parameter according to CV with half the range of the clock rate control knob.
