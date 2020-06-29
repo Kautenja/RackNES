@@ -7,7 +7,7 @@
   "author": "Christian Kauten",
   "authorEmail": "kautenja@auburn.edu",
   "authorUrl": "https://kautenja.github.io/",
-  "manualUrl": "https://kautenja.github.io/modules/RackNES/manual.pdf",
+  "manualUrl": "https://github.com/Kautenja/RackNES/blob/master/manual/RackNES.pdf",
   "sourceUrl": "https://github.com/Kautenja/RackNES",
   "changelogUrl": "https://github.com/Kautenja/RackNES/blob/master/CHANGELOG.md",
   "modules": [
@@ -15,7 +15,6 @@
       "slug": "RackNES",
       "name": "RackNES",
       "description": "A Nintendo Entertainment System emulator with CV",
-      "manualUrl": "https://kautenja.github.io/modules/RackNES/manual.pdf",
       "tags": [
         "Clock generator",
         "Sampler",
