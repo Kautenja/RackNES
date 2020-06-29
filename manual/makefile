@@ -23,3 +23,4 @@ manual:
 	cd ${BUILD} && bibtex ${SOURCE}
 	cd ${BUILD} && ${PDFLATEX} ${SOURCE} | grep -a3 "^!" || true
 	cd ${BUILD} && rm -f ${CLEAN}
+	cp ${BUILD}/${SOURCE}.pdf RackNES.pdf
