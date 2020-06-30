@@ -8,8 +8,6 @@
 #ifndef NES_EMULATOR_HPP
 #define NES_EMULATOR_HPP
 
-#include <string>
-#include <jansson.h>
 #include "common.hpp"
 #include "controller.hpp"
 #include "cpu.hpp"
@@ -18,6 +16,9 @@
 #include "main_bus.hpp"
 #include "picture_bus.hpp"
 #include "cartridge.hpp"
+#include <jansson.h>
+#include <string>
+#include <limits>
 
 namespace NES {
 
@@ -31,16 +32,16 @@ class Emulator {
     /// the 2 controllers on the emulator
     Controller controllers[2];
 
-    /// the main data bus of the emulator
+    /// the main data bus (RAM and data passing / IO registers)
     MainBus bus;
-    /// the picture bus from the PPU of the emulator
+    /// the picture bus (graphic data passing / IO registers)
     PictureBus picture_bus;
 
-    /// The emulator's CPU
+    /// the central processing unit
     CPU cpu;
-    /// the emulators' PPU
+    /// the picture processing unit
     PPU ppu;
-    /// The emulator's APU
+    /// the audio processing unit
     APU apu;
 
  public:
@@ -53,7 +54,7 @@ class Emulator {
     /// the number of bytes in the screen (RGBx)
     static const int SCREEN_BYTES = PIXELS * 4;
 
-    /// Initialize a new emulator.
+    /// @brief Initialize a new emulator.
     Emulator() {
         // set the read callbacks
         bus.set_read_callback(PPUSTATUS, [&](void) { return ppu.get_status();          });
@@ -102,25 +103,36 @@ class Emulator {
         apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
     }
 
-    // Destroy this emulator.
+    // @brief Destroy this emulator.
     ~Emulator() { if (cartridge != nullptr) delete cartridge; }
 
-    /// Return true if the clock is high, false otherwise.
+    /// @brief Return true if the clock is high, false otherwise.
+    ///
+    /// @returns true if the frame clock is high for the PPU
+    /// @details
+    /// A rising edge of this clock indicates that a new frame is ready to be
+    /// rendered from the PPU
+    ///
     inline bool is_clock_high() {
         static constexpr float CLOCK_PW = 0.5;
         return cycles < CYCLES_PER_FRAME / (1.f / CLOCK_PW);
     }
 
-    /// Return true if the emulator has a game inserted.
+    /// @brief Return true if the emulator has a game inserted.
+    ///
+    /// @returns true if there is a game loaded, false otherwise
+    ///
     inline bool has_game() const { return cartridge != nullptr; }
 
-    /// Load a new game into the emulator.
+    /// @brief Load a new game into the emulator.
     ///
     /// @param path a path to the ROM to load into the emulator
     /// @returns true if the load succeeded, false otherwise
-    /// @note when returning false, the emulator remains in its current state
-    /// @note the boolean output answers the question: is the ASIC mapper
-    ///       implemented for the ROM at given path?
+    /// @details
+    /// When returning false, the emulator remains in its current state.
+    ///
+    /// The boolean output answers the question: is the ASIC mapper
+    /// implemented for the ROM at given path?
     ///
     bool load_game(const std::string& path) {
         // load the new game, but don't overwrite the cartridge yet
@@ -141,7 +153,7 @@ class Emulator {
         return true;
     }
 
-    /// Remove the inserted game from the emulator.
+    /// @brief Remove the inserted game from the emulator.
     inline void remove_game() {
         if (cartridge != nullptr) {
             delete cartridge;
@@ -149,7 +161,7 @@ class Emulator {
         }
     }
 
-    /// Set the sample rate to a new value.
+    /// @brief Set the sample rate to a new value.
     ///
     /// @param value the frame rate, i.e., 96000Hz
     ///
@@ -157,7 +169,7 @@ class Emulator {
         apu.set_sample_rate(value);
     }
 
-    /// Set the clock-rate to a new value.
+    /// @brief Set the clock-rate to a new value.
     ///
     /// @param value the frame rate, i.e., 1789773CPS
     ///
@@ -165,34 +177,38 @@ class Emulator {
         apu.set_clock_rate(value);
     }
 
-    /// Return the path to the ROM on disk.
+    /// @brief Return the path to the ROM on disk.
+    ///
+    /// @returns the path to the cartridge ROM if there is a game in the NES,
+    /// an empty string otherwise
+    ///
     inline std::string get_rom_path() const {
         if (has_game()) return cartridge->get_rom_path();
         return "";
     }
 
-    /// Return a 32-bit pointer to the screen buffer's first address.
+    /// @brief Return a 32-bit pointer to the screen buffer's first address.
     ///
-    /// @return a 32-bit pointer to the screen buffer's first address
+    /// @returns a 32-bit pointer to the screen buffer's first address
     ///
     inline NES_Pixel* get_screen_buffer() { return ppu.get_screen_buffer(); }
 
-    /// Return a 8-bit pointer to the RAM buffer's first address.
+    /// @brief Return a 8-bit pointer to the RAM buffer's first address.
     ///
-    /// @return a 8-bit pointer to the RAM buffer's first address
+    /// @returns a 8-bit pointer to the RAM buffer's first address
     ///
     inline NES_Byte* get_memory_buffer() { return bus.get_memory_buffer(); }
 
-    /// Return a pointer to a controller port
+    /// @brief Return a pointer to a controller port
     ///
     /// @param port the port of the controller to return the pointer to
-    /// @return a pointer to the byte buffer for the controller state
+    /// @returns a pointer to the byte buffer for the controller state
     ///
     inline NES_Byte* get_controller(int port) {
         return controllers[port].get_joypad_buffer();
     }
 
-    /// Write buttons to the virtual controller.
+    /// @brief Write buttons to the virtual controller.
     ///
     /// @param buttons the button bitmap to write to the controller
     ///
@@ -200,7 +216,7 @@ class Emulator {
         controllers[port].write_buttons(buttons);
     }
 
-    /// Write buttons to the virtual controller.
+    /// @brief Write buttons to the virtual controller.
     ///
     /// @param player1 the button bitmap to write to port 1 controller
     /// @param player2 the button bitmap to write to port 2 controller
@@ -210,19 +226,33 @@ class Emulator {
         controllers[1].write_buttons(player2);
     }
 
-    /// Return an audio sample from the APU of the emulator.
-    inline int16_t get_audio_sample() {
+    /// @brief Return an audio sample from the APU of the emulator.
+    ///
+    /// @param channel the channel to get a sample from
+    /// @returns a 16-bit audio sample for the given channel
+    ///
+    inline int16_t get_audio_sample(std::size_t channel) {
         if (!has_game()) return 0;
-        return apu.get_sample();
+        return apu.get_sample(channel);
     }
 
-    /// Return an audio sample from the APU of the emulator [-10.f, 10.f].
-    /// If there is no game in the emulator, returns 0V.
-    inline float get_audio_voltage() {
-        return 10.f * apu.get_sample() / static_cast<float>(1 << 15);
+    /// @brief Return an audio sample from the APU of the emulator in volts
+    /// [-10.f, 10.f].
+    ///
+    /// @param channel the channel to get a sample from
+    /// @returns an audio sample for the given channel measure in volts
+    /// @details
+    /// If there is no game in the emulator return 0V.
+    ///
+    inline float get_audio_voltage(std::size_t channel) {
+        // the peak to peak output of the voltage
+        static constexpr float Vpp = 10.f;
+        // the amount of voltage per increment of 16-bit fidelity volume
+        static constexpr float divisor = std::numeric_limits<int16_t>::max();
+        return Vpp * apu.get_sample(channel) / divisor;
     }
 
-    /// Load the ROM into the NES.
+    /// @brief Emulate pressing the reset button on the NES.
     inline void reset() {
         // ignore the call if there is no game
         if (!has_game()) return;
@@ -232,7 +262,7 @@ class Emulator {
         apu.reset();
     }
 
-    /// Run a single CPU cycle on the emulator.
+    /// @brief Run a single CPU cycle on the emulator.
     ///
     /// @param callback a callback function for when a frame event occurs
     ///
@@ -255,7 +285,10 @@ class Emulator {
         }
     }
 
-    /// Copy data from another instance of APU.
+    /// @brief Copy data from another instance.
+    ///
+    /// @param other the other instance to copy the data from into this
+    ///
     void copy_from(const Emulator &other) {
         if (other.cartridge != nullptr) {  // other has cartridge to clone
             cartridge = other.cartridge->clone();
@@ -273,7 +306,10 @@ class Emulator {
         apu.copy_from(other.apu);
     }
 
-    /// Convert the object's state to a JSON object.
+    /// @brief Convert the object's state to a JSON object.
+    ///
+    /// @returns a JSON object with the serialized contents of this object
+    ///
     json_t* dataToJson() const {
         json_t* rootJ = json_object();
         if (cartridge != nullptr)
@@ -288,11 +324,11 @@ class Emulator {
         return rootJ;
     }
 
-    /// Load the object's state from a JSON object.
+    /// @brief Load the object's state from a JSON object.
     ///
     /// @param rootJ the JSON object containing the emulator data
-    /// @return true if no errors occurred, false if the ROM path existed, but
-    ///              points to an invalid ROM file
+    /// @returns true if no errors occurred, false if the ROM path existed, but
+    /// points to an invalid ROM file
     ///
     bool dataFromJson(json_t* rootJ) {
         // load cartridge
