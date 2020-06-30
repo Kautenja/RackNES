@@ -78,7 +78,7 @@ struct RackNES : Module {
     };
     enum OutputIds {
         OUTPUT_CLOCK,
-        ENUMS(OUTPUT_CH, 5),
+        ENUMS(OUTPUT_CH, NES::APU::NUM_CHANNELS),
         OUTPUT_MIX,
         NUM_OUTPUTS
     };
@@ -196,11 +196,6 @@ struct RackNES : Module {
         return NES::CLOCK_RATE * powf(2.f, rack::clamp(param + cv, -4.f, 4.f));
     }
 
-    /// Return the output audio from the NES after applying the volume.
-    inline float getAudio() {
-        return params[PARAM_VOLUME].getValue() * emulator.get_audio_voltage();
-    }
-
     /// Process a sample.
     void process(const ProcessArgs &args) override {
         // check for a new ROM to load
@@ -284,8 +279,20 @@ struct RackNES : Module {
 
         // set the clock output based on the NES frame-rate
         outputs[OUTPUT_CLOCK].setVoltage(10.f * emulator.is_clock_high());
-        // get the sound output from the emulator
-        outputs[OUTPUT_MIX].setVoltage(getAudio());
+        // create a placeholder for the mix output
+        float mix = 0.f;
+        // iterate over the synthesis channels on the NES
+        for (std::size_t i = 0; i < NES::APU::NUM_CHANNELS; i++) {
+            // get the voltage for this channel
+            auto voltage = emulator.get_audio_voltage(i);
+            // integrate the voltage to the mix if the channel is not connected
+            if (!outputs[OUTPUT_CH + i].isConnected())
+                mix += voltage;
+            // set the output voltage for the channel
+            outputs[OUTPUT_CH + i].setVoltage(voltage);
+        }
+        // set the output voltage for the channel mix
+        outputs[OUTPUT_MIX].setVoltage(mix);
     }
 
     /// Respond to the change of sample rate in the engine.
