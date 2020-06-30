@@ -30,3 +30,11 @@
 
 -   resolve bug where RackNES would crash when the clock frequency was set to
     absolute minimum value through CV
+
+### 1.1.5 (2020-06-28)
+
+-   fix some aesthetic issues in the plugin.json file
+
+### 1.1.6 (2020-06-30)
+
+-   fix audio crackling / popping (BlipBuffer now runs locked at 768kHz)
