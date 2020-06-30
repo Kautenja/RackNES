@@ -147,6 +147,8 @@ struct RackNES : Module {
         configParam(PLAYER2_RIGHT_PARAM,  0.f, 1.f, 0.f, "Player 2 Right");
         // draw the initial screen
         initalizeScreen();
+        // set the emulator's clock rate to the Rack rate
+        emulator.set_clock_rate(768000);
     }
 
     /// Handle a new ROM being loaded into the emulator.
@@ -269,16 +271,9 @@ struct RackNES : Module {
         // set the controller values
         emulator.set_controllers(player1, player2);
 
-        // calculate the number of clock cycles on the NES per audio sample
-        uint32_t cycles_per_sample = getClockSpeed() / args.sampleRate;
-        // set the emulator's clock rate. recalculate the frequency by
-        // multiplying the integer value cycles_per_sample by the sample rate
-        // to account for truncation from the integer conversion.
-        emulator.set_clock_rate(cycles_per_sample * args.sampleRate);
-
         // run the number of cycles through the NES that are required. pass a
         // callback to copy the screen every time a new frame renders
-        for (uint32_t i = 0; i < cycles_per_sample; i++)
+        for (uint32_t i = 0; i < getClockSpeed() / args.sampleRate; i++)
             emulator.cycle([&]() { copyScreen(); });
 
         // set the clock output based on the NES frame-rate
