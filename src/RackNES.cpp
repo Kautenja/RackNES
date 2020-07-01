@@ -251,7 +251,7 @@ struct RackNES : Module {
         NES::NES_Byte player1 = 0;
         NES::NES_Byte player2 = 0;
         // iterate over the buttons
-        for (int button = 0; button < 8; button++) {
+        for (std::size_t button = 0; button < 8; button++) {
             {  // player 1 scope
                 // process the voltage with the Schmitt Trigger
                 player1Triggers[button].process(
@@ -275,7 +275,7 @@ struct RackNES : Module {
 
         // run the number of cycles through the NES that are required. pass a
         // callback to copy the screen every time a new frame renders
-        for (uint32_t i = 0; i < getClockSpeed() / args.sampleRate; i++)
+        for (std::size_t i = 0; i < getClockSpeed() / args.sampleRate; i++)
             emulator.cycle([&]() { copyScreen(); });
 
         // set the clock output based on the NES frame-rate
