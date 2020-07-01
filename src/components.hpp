@@ -56,4 +56,15 @@ struct NESSwitchVertical : app::SvgSwitch {
     }
 };
 
+/// @brief A switch resembling the "A"/"B" switch from the NES controller.
+struct CKD6_NES_Red : app::SvgSwitch {
+    CKD6_NES_Red() {
+        momentary = true;
+        static constexpr auto path_0 = "res/ComponentLibrary/CKD6_NES_Red_0.svg";
+        addFrame(APP->window->loadSvg(asset::plugin(plugin_instance, path_0)));
+        static constexpr auto path_1 = "res/ComponentLibrary/CKD6_NES_Red_1.svg";
+        addFrame(APP->window->loadSvg(asset::plugin(plugin_instance, path_1)));
+    }
+};
+
 #endif  // RACKNES_COMPONENTS_HPP
