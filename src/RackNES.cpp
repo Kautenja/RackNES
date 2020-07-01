@@ -62,7 +62,7 @@ struct RackNES : Module {
         PARAM_CLOCK_ATT,
         ENUMS(PARAM_CH, NES::APU::NUM_CHANNELS),
         PARAM_MIX,
-        PARAM_SAVE, PARAM_LOAD, PARAM_RESET,
+        PARAM_SAVE, PARAM_LOAD, PARAM_HANG, PARAM_RESET,
         PARAM_PLAYER1_A, PARAM_PLAYER1_B, PARAM_PLAYER1_SELECT, PARAM_PLAYER1_START,
         PARAM_PLAYER1_UP, PARAM_PLAYER1_DOWN, PARAM_PLAYER1_LEFT, PARAM_PLAYER1_RIGHT,
         PARAM_PLAYER2_A, PARAM_PLAYER2_B, PARAM_PLAYER2_SELECT, PARAM_PLAYER2_START,
@@ -74,7 +74,7 @@ struct RackNES : Module {
         INPUT_PLAYER1_UP, INPUT_PLAYER1_DOWN, INPUT_PLAYER1_LEFT, INPUT_PLAYER1_RIGHT,
         INPUT_PLAYER2_A, INPUT_PLAYER2_B, INPUT_PLAYER2_SELECT, INPUT_PLAYER2_START,
         INPUT_PLAYER2_UP, INPUT_PLAYER2_DOWN, INPUT_PLAYER2_LEFT, INPUT_PLAYER2_RIGHT,
-        INPUT_CLOCK, INPUT_SAVE, INPUT_LOAD, INPUT_RESET,
+        INPUT_CLOCK, INPUT_SAVE, INPUT_LOAD, INPUT_HANG, INPUT_RESET,
         NUM_INPUTS
     };
     enum OutputIds {
@@ -103,6 +103,8 @@ struct RackNES : Module {
     CVButtonTrigger saveButton;
     /// triggers for handling button presses and CV inputs for the load input
     CVButtonTrigger loadButton;
+    /// triggers for handling button presses and CV inputs for the hang input
+    CVButtonTrigger hangButton;
     /// triggers for handling button presses and CV inputs for the reset input
     CVButtonTrigger resetButton;
     /// the NES emulator backup state
@@ -134,7 +136,7 @@ struct RackNES : Module {
         configParam(PARAM_MIX,    0.f, 2.f, 1.f, "Mix Volume", "%",      0.f, 100.f);
         configParam(PARAM_SAVE,  0.f, 1.f, 0.f, "Save State");
         configParam(PARAM_LOAD,  0.f, 1.f, 0.f, "Load State");
-        // configParam(PARAM_HANG,  0.f, 1.f, 0.f, "Hang Emulation");
+        configParam(PARAM_HANG,  0.f, 1.f, 0.f, "Hang Emulation");
         configParam(PARAM_RESET, 0.f, 1.f, 0.f, "Reset NES");
         configParam(PARAM_PLAYER1_A,      0.f, 1.f, 0.f, "Player 1 A");
         configParam(PARAM_PLAYER1_B,      0.f, 1.f, 0.f, "Player 1 B");
@@ -220,6 +222,14 @@ struct RackNES : Module {
             emulator.set_sample_rate(static_cast<uint32_t>(args.sampleRate));
             new_sample_rate = false;
         }
+
+        // process the hang input for hanging the emulation
+        hangButton.process(
+            params[PARAM_HANG].getValue(),
+            inputs[INPUT_HANG].getVoltage()
+        );
+        // if the hang input is high, stop processing
+        if (hangButton.isHigh()) return;
 
         // NOTE: process the save, reset, restore in given order to ensure
         // that when all go high on the same frame, the emulator stays in its
@@ -372,11 +382,11 @@ struct RackNESWidget : ModuleWidget {
         // emulator controls
         addInput(createInput<PJ301MPort>(Vec(421, 48), module, RackNES::INPUT_SAVE));
         addInput(createInput<PJ301MPort>(Vec(421, 103), module, RackNES::INPUT_LOAD));
-        // addInput(createInput<PJ301MPort>(Vec(421, 158), module, RackNES::INPUT_HANG));
+        addInput(createInput<PJ301MPort>(Vec(421, 158), module, RackNES::INPUT_HANG));
         addInput(createInput<PJ301MPort>(Vec(421, 213), module, RackNES::INPUT_RESET));
         addParam(createParam<NESSwitchVertical>(Vec(454, 40), module, RackNES::PARAM_SAVE));
         addParam(createParam<NESSwitchVertical>(Vec(454, 95), module, RackNES::PARAM_LOAD));
-        // addParam(createParam<NESSwitchVertical>(Vec(454, 150), module, RackNES::PARAM_HANG));
+        addParam(createParam<NESSwitchVertical>(Vec(454, 150), module, RackNES::PARAM_HANG));
         addParam(createParam<NESSwitchVertical>(Vec(454, 205), module, RackNES::PARAM_RESET));
         // global knobs
         addOutput(createOutput<PJ301MPort>(Vec(162, 279), module, RackNES::OUTPUT_CH + 0));
