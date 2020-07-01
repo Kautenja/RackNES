@@ -284,16 +284,17 @@ struct RackNES : Module {
         float mix = 0.f;
         // iterate over the synthesis channels on the NES
         for (std::size_t i = 0; i < NES::APU::NUM_CHANNELS; i++) {
+            // get the level of the channel from the knob's position
+            auto level = params[PARAM_CH + i].getValue();
             // get the voltage for this channel
-            auto voltage = emulator.get_audio_voltage(i);
+            auto voltage = level * emulator.get_audio_voltage(i);
             // integrate the voltage to the mix if the channel is not connected
-            if (!outputs[OUTPUT_CH + i].isConnected())
-                mix += voltage;
+            if (!outputs[OUTPUT_CH + i].isConnected()) mix += voltage;
             // set the output voltage for the channel
             outputs[OUTPUT_CH + i].setVoltage(voltage);
         }
         // set the output voltage for the channel mix
-        outputs[OUTPUT_MIX].setVoltage(mix);
+        outputs[OUTPUT_MIX].setVoltage(params[PARAM_MIX].getValue() * mix);
     }
 
     /// Respond to the change of sample rate in the engine.
