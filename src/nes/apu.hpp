@@ -19,31 +19,38 @@ namespace NES {
 /// The Audio Processing Unit (APU) of the NES.
 class APU {
  private:
-    /// The BLIP buffer to render audio samples from
-    Blip_Buffer buf;
+    /// The BLIP buffers to render audio samples from
+    Blip_Buffer buffer[Nes_Apu::osc_count];
     /// The NES APU instance to synthesize sound with
     Nes_Apu apu;
 
  public:
+    /// the number of channels on the APU
+    static constexpr std::size_t NUM_CHANNELS = Nes_Apu::osc_count;
     /// The default sample rate for the APU
     static constexpr uint32_t SAMPLE_RATE = 96000;
 
-    /// Initialize the APU.
+    /// @brief Initialize a new APU.
     APU() {
-        buf.sample_rate(SAMPLE_RATE);
-        buf.clock_rate(CLOCK_RATE);
-        apu.output(&buf);
+        for (std::size_t i = 0; i < Nes_Apu::osc_count; i++) {
+            buffer[i].sample_rate(SAMPLE_RATE);
+            buffer[i].clock_rate(CLOCK_RATE);
+            apu.osc_output(i, &buffer[i]);
+        }
     }
 
-    /// Copy data from another instance of APU.
+    /// @brief Copy data from another instance.
+    ///
+    /// @param other the other instance to copy the data from into this
+    ///
     void copy_from(const APU &other) {
         apu_snapshot_t snapshot;
         other.apu.save_snapshot(&snapshot);
         apu.load_snapshot(snapshot);
     }
 
-    /// Set the DMC Reader on the APU. The DMC Reader is a callback for reading
-    /// audio samples from RAM for DMC playback.
+    /// @brief Set the DMC Reader on the APU. The DMC Reader is a callback for
+    /// reading audio samples from RAM for DMC playback.
     ///
     /// @param callback the callback function for reading RAM from memory
     ///
@@ -51,7 +58,7 @@ class APU {
         apu.dmc_reader(callback);
     }
 
-    /// Set the callback function for IRQ interrupting the CPU.
+    /// @brief Set the callback function for IRQ interrupting the CPU.
     ///
     /// @param callback the callback method that interrupts the CPU (IRQ)
     ///
@@ -59,29 +66,38 @@ class APU {
         apu.irq_notifier(callback);
     }
 
-    /// Set the sample rate to a new value.
+    /// @brief Set the sample rate to a new value.
     ///
     /// @param value the frame rate, i.e., 96000 Hz
     ///
     inline void set_sample_rate(uint32_t value = SAMPLE_RATE) {
-        buf.sample_rate(value);
+        for (std::size_t i = 0; i < Nes_Apu::osc_count; i++)
+            buffer[i].sample_rate(value);
     }
 
-    /// Set the clock-rate to a new value.
+    /// @brief Set the clock-rate to a new value.
     ///
     /// @param value the clock rate, i.e., 1789773 CPS
     ///
     inline void set_clock_rate(uint64_t value = CLOCK_RATE) {
-        buf.clock_rate(value);
+        for (std::size_t i = 0; i < Nes_Apu::osc_count; i++)
+            buffer[i].clock_rate(value);
     }
 
-    /// Reset the APU.
-    inline void reset() { apu.reset(); buf.clear(); }
+    /// @brief Reset the APU.
+    inline void reset() {
+        apu.reset();
+        for (std::size_t i = 0; i < Nes_Apu::osc_count; i++)
+            buffer[i].clear();
+    }
 
-    /// Read the value from the APU status register.
+    /// @brief Read the value from the APU status register.
+    ///
+    /// @returns the current value of the NES APU status register
+    ///
     inline NES_Byte read_status() { return apu.read_status(1); }
 
-    /// Write a value from to APU registers.
+    /// @brief Write a value from to APU registers.
     ///
     /// @param addr the address to write to
     /// @oaram value the value to write to the register
@@ -90,25 +106,30 @@ class APU {
         apu.write_register(1, addr, value);
     }
 
-    /// Run a cycle on the APU (increment number of elapsed cycles).
-    inline void cycle() { apu.end_frame(1); buf.end_frame(1); }
-
-    /// Return a 16-bit signed sample from the APU.
-    inline int16_t get_sample() {
-        if (buf.samples_avail() == 0) return 0;
-        // copy the buffer to  a local vector and return the first sample
-        std::vector<int16_t> output_buffer(buf.samples_avail());
-        buf.read_samples(&output_buffer[0], buf.samples_avail());
-        // usually there will only be one sample, but when the clock rate is
-        // at particular values or very fast, the buffer will begin to grow
-        // slowly. Because the audio turns to trash anyway, just ignore the
-        // overflowing values :)
-        return output_buffer[0];
-        // TODO: is there a more elegant way of handling this funcation? this
-        // buffer is not really necessary within the context of VCV Rack.
+    /// @brief Run a cycle on the APU (increment number of elapsed cycles).
+    inline void cycle() {
+        apu.end_frame(1);
+        for (std::size_t i = 0; i < Nes_Apu::osc_count; i++)
+            buffer[i].end_frame(1);
     }
 
-    /// Convert the object's state to a JSON object.
+    /// @brief Return a 16-bit signed sample from the APU.
+    ///
+    /// @param channel the channel to get a sample from
+    /// @returns a 16-bit audio sample for the given channel
+    ///
+    inline int16_t get_sample(int channel) {
+        if (buffer[channel].samples_avail() == 0) return 0;
+        // copy the buffer to  a local vector and return the first sample
+        std::vector<int16_t> output_buffer(buffer[channel].samples_avail());
+        buffer[channel].read_samples(&output_buffer[0], buffer[channel].samples_avail());
+        return output_buffer[0];
+    }
+
+    /// @brief Convert the object's state to a JSON object.
+    ///
+    /// @returns a JSON object with the serialized contents of this object
+    ///
     json_t* dataToJson() const {
         json_t* rootJ = json_object();
         apu_snapshot_t snapshot;
@@ -117,7 +138,10 @@ class APU {
         return rootJ;
     }
 
-    /// Load the object's state from a JSON object.
+    /// @brief Load the object's state from a JSON object.
+    ///
+    /// @param rootJ a JSON object with the serialized contents of this object
+    ///
     void dataFromJson(json_t* rootJ) {
         json_t* json_data = json_object_get(rootJ, "apu");
         if (json_data) {
