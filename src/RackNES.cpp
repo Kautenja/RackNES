@@ -60,8 +60,9 @@ struct RackNES : Module {
     enum ParamIds {
         PARAM_CLOCK,
         PARAM_CLOCK_ATT,
-        PARAM_VOLUME,
-        PARAM_BACKUP, PARAM_RESTORE, PARAM_RESET,
+        ENUMS(PARAM_CH, NES::APU::NUM_CHANNELS),
+        PARAM_MIX,
+        PARAM_SAVE, PARAM_LOAD, PARAM_RESET,
         PARAM_PLAYER1_A, PARAM_PLAYER1_B, PARAM_PLAYER1_SELECT, PARAM_PLAYER1_START,
         PARAM_PLAYER1_UP, PARAM_PLAYER1_DOWN, PARAM_PLAYER1_LEFT, PARAM_PLAYER1_RIGHT,
         PARAM_PLAYER2_A, PARAM_PLAYER2_B, PARAM_PLAYER2_SELECT, PARAM_PLAYER2_START,
@@ -73,7 +74,7 @@ struct RackNES : Module {
         INPUT_PLAYER1_UP, INPUT_PLAYER1_DOWN, INPUT_PLAYER1_LEFT, INPUT_PLAYER1_RIGHT,
         INPUT_PLAYER2_A, INPUT_PLAYER2_B, INPUT_PLAYER2_SELECT, INPUT_PLAYER2_START,
         INPUT_PLAYER2_UP, INPUT_PLAYER2_DOWN, INPUT_PLAYER2_LEFT, INPUT_PLAYER2_RIGHT,
-        INPUT_CLOCK, INPUT_BACKUP, INPUT_RESTORE, INPUT_RESET,
+        INPUT_CLOCK, INPUT_SAVE, INPUT_LOAD, INPUT_RESET,
         NUM_INPUTS
     };
     enum OutputIds {
@@ -125,11 +126,16 @@ struct RackNES : Module {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
         configParam(PARAM_CLOCK, -4.f, 4.f, 0.f, "Clock Speed", " MHz", 2.f, NES::CLOCK_RATE / 1000000.f);
         configParam(PARAM_CLOCK_ATT, -1.f, 1.f, 0.f, "Clock Speed CV Attenuverter", "%", 0.f, 100.f);
-        configParam(PARAM_VOLUME, 0.f, 2.f, 1.f, "Volume", "%", 0.f, 100.f);
-        // buttons
-        configParam(PARAM_BACKUP,         0.f, 1.f, 0.f, "Save State");
-        configParam(PARAM_RESTORE,        0.f, 1.f, 0.f, "Load State");
-        configParam(PARAM_RESET,          0.f, 1.f, 0.f, "Reset NES");
+        configParam(PARAM_CH + 0, 0.f, 2.f, 1.f, "Square 1 Volume", "%", 0.f, 100.f);
+        configParam(PARAM_CH + 1, 0.f, 2.f, 1.f, "Square 2 Volume", "%", 0.f, 100.f);
+        configParam(PARAM_CH + 2, 0.f, 2.f, 1.f, "Triangle Volume", "%", 0.f, 100.f);
+        configParam(PARAM_CH + 3, 0.f, 2.f, 1.f, "Noise Volume", "%",    0.f, 100.f);
+        configParam(PARAM_CH + 4, 0.f, 2.f, 1.f, "DMC Volume", "%",      0.f, 100.f);
+        configParam(PARAM_MIX,    0.f, 2.f, 1.f, "Mix Volume", "%",      0.f, 100.f);
+        configParam(PARAM_SAVE,  0.f, 1.f, 0.f, "Save State");
+        configParam(PARAM_LOAD,  0.f, 1.f, 0.f, "Load State");
+        // configParam(PARAM_HANG,  0.f, 1.f, 0.f, "Hang Emulation");
+        configParam(PARAM_RESET, 0.f, 1.f, 0.f, "Reset NES");
         configParam(PARAM_PLAYER1_A,      0.f, 1.f, 0.f, "Player 1 A");
         configParam(PARAM_PLAYER1_B,      0.f, 1.f, 0.f, "Player 1 B");
         configParam(PARAM_PLAYER1_SELECT, 0.f, 1.f, 0.f, "Player 1 Select");
@@ -220,8 +226,8 @@ struct RackNES : Module {
         // current state
         // handle inputs to the backup button and CV
         if (backupButton.process(
-            params[PARAM_BACKUP].getValue(),
-            inputs[INPUT_BACKUP].getVoltage()
+            params[PARAM_SAVE].getValue(),
+            inputs[INPUT_SAVE].getVoltage()
         )) {
             // delete existing backup
             if (backup != nullptr) delete backup;
@@ -235,8 +241,8 @@ struct RackNES : Module {
         )) emulator.reset();
         // handle inputs to the restore button and CV
         if (restoreButton.process(
-            params[PARAM_RESTORE].getValue(),
-            inputs[INPUT_RESTORE].getVoltage()
+            params[PARAM_LOAD].getValue(),
+            inputs[INPUT_LOAD].getVoltage()
         ) && backup != nullptr) emulator.dataFromJson(backup);
 
         // get the controller for both players as a byte where each bit
@@ -357,28 +363,33 @@ struct RackNESWidget : ModuleWidget {
         addChild(createWidget<ScrewSilver>(Vec(box.size.x - 8 * RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ScrewSilver>(Vec(7 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
         addChild(createWidget<ScrewSilver>(Vec(box.size.x - 8 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-        // global inputs
-        addInput(createInput<PJ301MPort>(Vec(118, 279), module, RackNES::INPUT_CLOCK));
-        addInput(createInput<PJ301MPort>(Vec(202, 279), module, RackNES::INPUT_BACKUP));
-        addInput(createInput<PJ301MPort>(Vec(244, 279), module, RackNES::INPUT_RESTORE));
-        addInput(createInput<PJ301MPort>(Vec(286, 279), module, RackNES::INPUT_RESET));
-        // global outputs
-        addOutput(createOutput<PJ301MPort>(Vec(161, 279), module, RackNES::OUTPUT_CLOCK));
-        // global buttons
-        addParam(createParam<CKD6>(Vec(199, 313), module, RackNES::PARAM_BACKUP));
-        addParam(createParam<CKD6>(Vec(242, 313), module, RackNES::PARAM_RESTORE));
-        addParam(createParam<CKD6>(Vec(283, 313), module, RackNES::PARAM_RESET));
+        // clock controls
+        addOutput(createOutput<PJ301MPort>(Vec(116, 49), module, RackNES::OUTPUT_CLOCK));
+        addParam(createParam<Rogan3PSNES>(Vec(107, 91), module, RackNES::PARAM_CLOCK));
+        addParam(createParam<Rogan1PRed>(Vec(114, 151), module, RackNES::PARAM_CLOCK_ATT));
+        addInput(createInput<PJ301MPort>(Vec(116, 213), module, RackNES::INPUT_CLOCK));
+        // emulator controls
+        addInput(createInput<PJ301MPort>(Vec(421, 48), module, RackNES::INPUT_SAVE));
+        addInput(createInput<PJ301MPort>(Vec(421, 103), module, RackNES::INPUT_LOAD));
+        // addInput(createInput<PJ301MPort>(Vec(421, 158), module, RackNES::INPUT_HANG));
+        addInput(createInput<PJ301MPort>(Vec(421, 213), module, RackNES::INPUT_RESET));
+        addParam(createParam<NESSwitchVertical>(Vec(454, 40), module, RackNES::PARAM_SAVE));
+        addParam(createParam<NESSwitchVertical>(Vec(454, 95), module, RackNES::PARAM_LOAD));
+        // addParam(createParam<NESSwitchVertical>(Vec(454, 150), module, RackNES::PARAM_HANG));
+        addParam(createParam<NESSwitchVertical>(Vec(454, 205), module, RackNES::PARAM_RESET));
         // global knobs
-        addParam(createParam<Rogan3PSNES>(Vec(152, 328), module, RackNES::PARAM_CLOCK));
-        addParam(createParam<Rogan1PRed>(Vec(116, 317), module, RackNES::PARAM_CLOCK_ATT));
-        addParam(createParam<Rogan2PRed>(Vec(325, 321), module, RackNES::PARAM_VOLUME));
-        // APU outputs
-        addOutput(createOutput<PJ301MPort>(Vec(118, 360), module, RackNES::OUTPUT_CH + 0));
-        addOutput(createOutput<PJ301MPort>(Vec(202, 360), module, RackNES::OUTPUT_CH + 1));
-        addOutput(createOutput<PJ301MPort>(Vec(244, 360), module, RackNES::OUTPUT_CH + 2));
-        addOutput(createOutput<PJ301MPort>(Vec(286, 360), module, RackNES::OUTPUT_CH + 3));
-        addOutput(createOutput<PJ301MPort>(Vec(161, 360), module, RackNES::OUTPUT_CH + 4));
-        addOutput(createOutput<PJ301MPort>(Vec(329, 360), module, RackNES::OUTPUT_MIX));
+        addOutput(createOutput<PJ301MPort>(Vec(162, 279), module, RackNES::OUTPUT_CH + 0));
+        addOutput(createOutput<PJ301MPort>(Vec(206, 279), module, RackNES::OUTPUT_CH + 1));
+        addOutput(createOutput<PJ301MPort>(Vec(250, 279), module, RackNES::OUTPUT_CH + 2));
+        addOutput(createOutput<PJ301MPort>(Vec(294, 279), module, RackNES::OUTPUT_CH + 3));
+        addOutput(createOutput<PJ301MPort>(Vec(338, 279), module, RackNES::OUTPUT_CH + 4));
+        addOutput(createOutput<PJ301MPort>(Vec(382, 279), module, RackNES::OUTPUT_MIX));
+        addParam(createParam<Rogan2PRed>(Vec(158, 321), module, RackNES::PARAM_CH + 0));
+        addParam(createParam<Rogan2PRed>(Vec(202, 321), module, RackNES::PARAM_CH + 1));
+        addParam(createParam<Rogan2PRed>(Vec(246, 321), module, RackNES::PARAM_CH + 2));
+        addParam(createParam<Rogan2PRed>(Vec(290, 321), module, RackNES::PARAM_CH + 3));
+        addParam(createParam<Rogan2PRed>(Vec(334, 321), module, RackNES::PARAM_CH + 4));
+        addParam(createParam<Rogan2PRed>(Vec(378, 321), module, RackNES::PARAM_MIX));
         // player 1 inputs
         addInput(createInput<PJ301MPort>(Vec(62, 22),  module, RackNES::INPUT_PLAYER1_UP));
         addInput(createInput<PJ301MPort>(Vec(62, 68),  module, RackNES::INPUT_PLAYER1_DOWN));
@@ -398,23 +409,23 @@ struct RackNESWidget : ModuleWidget {
         addParam(createParam<CKD6>(Vec(24, 290), module, RackNES::PARAM_PLAYER1_B));
         addParam(createParam<CKD6>(Vec(24, 336), module, RackNES::PARAM_PLAYER1_A));
         // player 2 inputs
-        addInput(createInput<PJ301MPort>(Vec(392, 22),  module, RackNES::INPUT_PLAYER2_UP));
-        addInput(createInput<PJ301MPort>(Vec(392, 68),  module, RackNES::INPUT_PLAYER2_DOWN));
-        addInput(createInput<PJ301MPort>(Vec(392, 114), module, RackNES::INPUT_PLAYER2_LEFT));
-        addInput(createInput<PJ301MPort>(Vec(392, 160), module, RackNES::INPUT_PLAYER2_RIGHT));
-        addInput(createInput<PJ301MPort>(Vec(392, 206), module, RackNES::INPUT_PLAYER2_SELECT));
-        addInput(createInput<PJ301MPort>(Vec(392, 252), module, RackNES::INPUT_PLAYER2_START));
-        addInput(createInput<PJ301MPort>(Vec(392, 289), module, RackNES::INPUT_PLAYER2_B));
-        addInput(createInput<PJ301MPort>(Vec(392, 335), module, RackNES::INPUT_PLAYER2_A));
+        addInput(createInput<PJ301MPort>(Vec(482, 22),  module, RackNES::INPUT_PLAYER2_UP));
+        addInput(createInput<PJ301MPort>(Vec(482, 68),  module, RackNES::INPUT_PLAYER2_DOWN));
+        addInput(createInput<PJ301MPort>(Vec(482, 114), module, RackNES::INPUT_PLAYER2_LEFT));
+        addInput(createInput<PJ301MPort>(Vec(482, 160), module, RackNES::INPUT_PLAYER2_RIGHT));
+        addInput(createInput<PJ301MPort>(Vec(482, 206), module, RackNES::INPUT_PLAYER2_SELECT));
+        addInput(createInput<PJ301MPort>(Vec(482, 252), module, RackNES::INPUT_PLAYER2_START));
+        addInput(createInput<PJ301MPort>(Vec(482, 289), module, RackNES::INPUT_PLAYER2_B));
+        addInput(createInput<PJ301MPort>(Vec(482, 335), module, RackNES::INPUT_PLAYER2_A));
         // player 2 buttons
-        addParam(createParam<CKD6>(Vec(425, 13),  module, RackNES::PARAM_PLAYER2_UP));
-        addParam(createParam<CKD6>(Vec(425, 59),  module, RackNES::PARAM_PLAYER2_DOWN));
-        addParam(createParam<CKD6>(Vec(425, 105), module, RackNES::PARAM_PLAYER2_LEFT));
-        addParam(createParam<CKD6>(Vec(425, 152), module, RackNES::PARAM_PLAYER2_RIGHT));
-        addParam(createParam<CKD6>(Vec(425, 199), module, RackNES::PARAM_PLAYER2_SELECT));
-        addParam(createParam<CKD6>(Vec(425, 244), module, RackNES::PARAM_PLAYER2_START));
-        addParam(createParam<CKD6>(Vec(425, 290), module, RackNES::PARAM_PLAYER2_B));
-        addParam(createParam<CKD6>(Vec(425, 336), module, RackNES::PARAM_PLAYER2_A));
+        addParam(createParam<CKD6>(Vec(515, 13),  module, RackNES::PARAM_PLAYER2_UP));
+        addParam(createParam<CKD6>(Vec(515, 59),  module, RackNES::PARAM_PLAYER2_DOWN));
+        addParam(createParam<CKD6>(Vec(515, 105), module, RackNES::PARAM_PLAYER2_LEFT));
+        addParam(createParam<CKD6>(Vec(515, 152), module, RackNES::PARAM_PLAYER2_RIGHT));
+        addParam(createParam<CKD6>(Vec(515, 199), module, RackNES::PARAM_PLAYER2_SELECT));
+        addParam(createParam<CKD6>(Vec(515, 244), module, RackNES::PARAM_PLAYER2_START));
+        addParam(createParam<CKD6>(Vec(515, 290), module, RackNES::PARAM_PLAYER2_B));
+        addParam(createParam<CKD6>(Vec(515, 336), module, RackNES::PARAM_PLAYER2_A));
     }
 
     /// Draw the widget in the rack window.
@@ -425,7 +436,7 @@ struct RackNESWidget : ModuleWidget {
         // call the super call to get all default behaviors of the superclass
         ModuleWidget::draw(args);
         // the x position of the screen
-        static constexpr int x = 112;
+        static constexpr int x = 157;
         // the y position of the screen
         static constexpr int y = 18;
         // the width of the screen
