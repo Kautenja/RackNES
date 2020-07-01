@@ -20,27 +20,39 @@
 
 #include "plugin.hpp"
 
-/// A knob in the style of the NES turbo knob, but the shape of Rogan 1P.
+/// @brief A knob in the style of the NES turbo knob, but the shape of Rogan 1P.
 struct Rogan1PSNES : rack::Rogan {
     Rogan1PSNES() {
-        const auto path = "res/ComponentLibrary/Rogan1PSNES.svg";
+        static constexpr auto path = "res/ComponentLibrary/Rogan1PSNES.svg";
         setSvg(APP->window->loadSvg(rack::asset::plugin(plugin_instance, path)));
     }
 };
 
-/// A knob in the style of the NES turbo knob, but the shape of Rogan 2P.
+/// @brief A knob in the style of the NES turbo knob, but the shape of Rogan 2P.
 struct Rogan2PSNES : rack::Rogan {
     Rogan2PSNES() {
-        const auto path = "res/ComponentLibrary/Rogan2PSNES.svg";
+        static constexpr auto path = "res/ComponentLibrary/Rogan2PSNES.svg";
         setSvg(APP->window->loadSvg(rack::asset::plugin(plugin_instance, path)));
     }
 };
 
-/// A knob in the style of the NES turbo knob, but the shape of Rogan 3P.
+/// @brief A knob in the style of the NES turbo knob, but the shape of Rogan 3P.
 struct Rogan3PSNES : rack::Rogan {
     Rogan3PSNES() {
-        const auto path = "res/ComponentLibrary/Rogan3PSNES.svg";
+        static constexpr auto path = "res/ComponentLibrary/Rogan3PSNES.svg";
         setSvg(APP->window->loadSvg(rack::asset::plugin(plugin_instance, path)));
+    }
+};
+
+/// @brief A switch resembling the "Start"/"Select" switch from the NES
+/// controller in the vertical position.
+struct NESSwitchVertical : app::SvgSwitch {
+    NESSwitchVertical() {
+        momentary = true;
+        static constexpr auto path_0 = "res/ComponentLibrary/NESSwitchVertical_0.svg";
+        addFrame(APP->window->loadSvg(asset::plugin(plugin_instance, path_0)));
+        static constexpr auto path_1 = "res/ComponentLibrary/NESSwitchVertical_1.svg";
+        addFrame(APP->window->loadSvg(asset::plugin(plugin_instance, path_1)));
     }
 };
 
