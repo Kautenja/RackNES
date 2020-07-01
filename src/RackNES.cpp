@@ -99,12 +99,12 @@ struct RackNES : Module {
     /// a Schmitt Trigger for handling player 2 button inputs
     CVButtonTrigger player2Triggers[8];
 
+    /// triggers for handling button presses and CV inputs for the save input
+    CVButtonTrigger saveButton;
+    /// triggers for handling button presses and CV inputs for the load input
+    CVButtonTrigger loadButton;
     /// triggers for handling button presses and CV inputs for the reset input
     CVButtonTrigger resetButton;
-    /// triggers for handling button presses and CV inputs for the backup input
-    CVButtonTrigger backupButton;
-    /// triggers for handling button presses and CV inputs for the restore input
-    CVButtonTrigger restoreButton;
     /// the NES emulator backup state
     json_t* backup = nullptr;
 
@@ -221,17 +221,17 @@ struct RackNES : Module {
             new_sample_rate = false;
         }
 
-        // NOTE: process the backup, reset, restore in given order to ensure
+        // NOTE: process the save, reset, restore in given order to ensure
         // that when all go high on the same frame, the emulator stays in its
         // current state
-        // handle inputs to the backup button and CV
-        if (backupButton.process(
+        // handle inputs to the save button and CV
+        if (saveButton.process(
             params[PARAM_SAVE].getValue(),
             inputs[INPUT_SAVE].getVoltage()
         )) {
-            // delete existing backup
+            // delete existing save
             if (backup != nullptr) delete backup;
-            // create a new backup of the NES state
+            // create a new save of the NES state
             backup = emulator.dataToJson();
         }
         // handle inputs to the reset button and CV
@@ -239,8 +239,8 @@ struct RackNES : Module {
             params[PARAM_RESET].getValue(),
             inputs[INPUT_RESET].getVoltage()
         )) emulator.reset();
-        // handle inputs to the restore button and CV
-        if (restoreButton.process(
+        // handle inputs to the load button and CV
+        if (loadButton.process(
             params[PARAM_LOAD].getValue(),
             inputs[INPUT_LOAD].getVoltage()
         ) && backup != nullptr) emulator.dataFromJson(backup);
