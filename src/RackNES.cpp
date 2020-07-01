@@ -417,8 +417,8 @@ struct RackNESWidget : ModuleWidget {
         addParam(createParam<CKD6>(Vec(24, 152), module, RackNES::PARAM_PLAYER1_RIGHT));
         addParam(createParam<CKD6>(Vec(24, 199), module, RackNES::PARAM_PLAYER1_SELECT));
         addParam(createParam<CKD6>(Vec(24, 244), module, RackNES::PARAM_PLAYER1_START));
-        addParam(createParam<CKD6>(Vec(24, 290), module, RackNES::PARAM_PLAYER1_B));
-        addParam(createParam<CKD6>(Vec(24, 336), module, RackNES::PARAM_PLAYER1_A));
+        addParam(createParam<CKD6_NES_Red>(Vec(24, 290), module, RackNES::PARAM_PLAYER1_B));
+        addParam(createParam<CKD6_NES_Red>(Vec(24, 336), module, RackNES::PARAM_PLAYER1_A));
         // player 2 inputs
         addInput(createInput<PJ301MPort>(Vec(482, 22),  module, RackNES::INPUT_PLAYER2_UP));
         addInput(createInput<PJ301MPort>(Vec(482, 68),  module, RackNES::INPUT_PLAYER2_DOWN));
@@ -435,8 +435,8 @@ struct RackNESWidget : ModuleWidget {
         addParam(createParam<CKD6>(Vec(515, 152), module, RackNES::PARAM_PLAYER2_RIGHT));
         addParam(createParam<CKD6>(Vec(515, 199), module, RackNES::PARAM_PLAYER2_SELECT));
         addParam(createParam<CKD6>(Vec(515, 244), module, RackNES::PARAM_PLAYER2_START));
-        addParam(createParam<CKD6>(Vec(515, 290), module, RackNES::PARAM_PLAYER2_B));
-        addParam(createParam<CKD6>(Vec(515, 336), module, RackNES::PARAM_PLAYER2_A));
+        addParam(createParam<CKD6_NES_Red>(Vec(515, 290), module, RackNES::PARAM_PLAYER2_B));
+        addParam(createParam<CKD6_NES_Red>(Vec(515, 336), module, RackNES::PARAM_PLAYER2_A));
     }
 
     /// Draw the widget in the rack window.
