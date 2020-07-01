@@ -23,9 +23,6 @@
 #include "components.hpp"
 #include "nes/emulator.hpp"
 
-// TODO: resolve segmentation fault from loading emulator state where the ROM
-//       path has moved
-
 /// a trigger for a button with a CV input.
 struct CVButtonTrigger {
     /// the trigger for the button
