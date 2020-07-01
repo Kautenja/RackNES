@@ -98,7 +98,7 @@
 \setlength{\headheight}{15pt}
 \pagestyle{fancy}
 \lhead{KautenjaDSP}
-\rhead{\itshape RackNES v1.1.6}
+\rhead{\itshape RackNES v1.2.0}
 \cfoot{\thepage}
 
 % start the document
@@ -134,8 +134,9 @@ RackNES is a Nintendo Entertainment System (NES) emulator for VCV Rack with cont
   \item \textbf{Clock Source:} Use NES frame-rate (FPS) as a clock source for downstream modules;
   \item \textbf{Clock Rate Modulation:} Control the clock rate of the NES with direct knob and CV;
   \item \textbf{NES Audio Output:} Sample audio from the NES in real-time at any sampling rate;
-  \item \textbf{Sampling/Ratcheting:} Save and restore the NES state for interesting musical effects; and
-  \item \textbf{Full CV Control:} CV inputs for Reset, Player 1, Player 2, and more.
+  \item \textbf{Sampling/Ratcheting:} Save and restore the NES state for interesting musical effects;
+  \item \textbf{Full CV Control:} CV inputs for Reset, Player 1, Player 2, and more; and
+  \item \textbf{Channel Mixer:} Control the volume level of individual synthesizer channels.
 \end{itemize}
 
 % -------------------
@@ -185,20 +186,23 @@ Unlike digital media, NES games were deployed using cartridges based on function
 
 \section{Panel Layout}
 
+\begin{figure}[!htp]
 \includegraphics[width=\textwidth]{RackNES-Manual}
+\end{figure}
 
 \begin{enumerate}
   \item Player 1 controller input gates; high at $2V$
   \item Player 2 controller input gates; high at $2V$
-  \item NES Clock rate control. Controls the clock rate of the NES starting at a base rate of $f_{clock} = 1.7898MHz$.
   \item NES Clock output. A pulse wave with $50\%$ duty cycle; high at $10V$, low at $0V$. Rising edge follows the frame-rate of the NES where a frame occurs once every $29781$ CPU cycles, i.e., $f_{output} = \frac{f_{clock}}{29781}$
-  \item NES Clock rate CV modulation. Modulates the clock rate parameter according to CV with half the range of the clock rate control knob.
+  \item NES Clock rate control. Controls the clock rate of the NES starting at a base rate of $f_{clock} = 1.7898MHz$.
   \item NES Clock rate CV attenuverter. Controls strength and polarity of clock rate CV input.
+  \item NES Clock rate CV modulation. Modulates the clock rate parameter according to CV with half the range of the clock rate control knob.
   \item Save state trigger; high at $2V$. Saves the current state of emulation.
   \item Load state trigger; high at $2V$. Loads the existing save state back into the emulation.
+  \item Hang emulation trigger; high at $2V$. Causes the emulation to hold state when the gate is high.
   \item Reset emulator trigger; high at $2V$. Equal to pressing "Reset" on the NES, resets the game.
-  \item NES Audio output; $10V_{pp}$. Audio output from the internal mixer of the NES.
-  \item NES Audio output volume level; $[0\%,200\%]$. Controls the gain of the audio output signal. $100\%$ is $\approx 2.5V_{pp}$ and $200\%$ is $\approx 5V_{pp}$.
+  \item NES Channel Mixer. Outputs and level controls for each of the five synthesis channels on the NES; $10V_{pp}$. Channels are removed from the global mix when connected. Knobs controls the gain of the audio output signal from $0\%$ to $200\%$.
+  \item NES Mix output; $10V_{pp}$. Sum of the five synthesis channels NES. Channels with connected outputs are removed from the mix. The knob controls the gain of the audio output signal from $0\%$ to $200\%$.
 \end{enumerate}
 
 % -------------------
