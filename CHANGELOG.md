@@ -38,3 +38,7 @@
 ### 1.1.6 (2020-06-30)
 
 -   fix audio crackling / popping (BlipBuffer now runs locked at 768kHz)
+
+### 1.2.0 (2020-07-01)
+
+-   mixer (individual channel outputs + mix output)
