@@ -18,13 +18,15 @@ A Nintendo Entertainment System (NES) emulator with Control Voltage (CV) for VCV
 - **NES Audio Output:** Sample audio from the NES in real-time at any sampling rate
 - **Sampling/Ratcheting:** Save and restore the NES state for interesting musical effects
 - **Full CV Control:** CV inputs for Reset, Player 1, Player 2, and more
+- **Channel Mixer:** Control the volume level of individual synthesizer channels
 
 See the [Manual](https://kautenja.github.io/modules/RackNES/manual.pdf) for more
 information about the features of this module.
 
 ## Acknowledgments
 
-The code for the module is derived from:
+The code for the module derives from:
+
 1. the NES emulator, [SimpleNES](https://github.com/amhndu/SimpleNES);
 2. the NES synthesis library, [Nes_Snd_Emu](https://github.com/jamesathey/Nes_Snd_Emu); and
 3. the Base64 library, [cpp-base64](https://github.com/ReneNyffenegger/cpp-base64).
