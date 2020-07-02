@@ -356,6 +356,8 @@ struct RackNES : Module {
 /// A widget that displays a 32-bit RGBA pixel buffer.
 struct Display : TransparentWidget {
  private:
+    /// the size of the internal pixel buffer to render
+    const Vec image_size;
     /// a pointer to the pixels to render
     const uint8_t* pixels;
     /// a pointer to the image to draw the display to
@@ -369,12 +371,18 @@ struct Display : TransparentWidget {
     ///
     /// @param position the position of the screen on the module
     /// @param pixels_ the pixels on the display to render
-    /// @param size the size of the screen
+    /// @param image_size the size of the input image
+    /// @param render_size the output size of the display to render
     ///
-    explicit Display(Vec position, const uint8_t* pixels_, Vec size) :
-        TransparentWidget(), pixels(pixels_) {
+    explicit Display(
+        Vec position,
+        const uint8_t* pixels_,
+        Vec image_size_,
+        Vec render_size
+    ) :
+        TransparentWidget(), image_size(image_size_), pixels(pixels_) {
         setPosition(position);
-        setSize(size);
+        setSize(render_size);
     }
 
     /// @brief Draw the display on the main context.
@@ -386,17 +394,19 @@ struct Display : TransparentWidget {
         static constexpr int x = 0;
         // the y position of the screen
         static constexpr int y = 0;
+        // the alpha value of the SVG image
+        static constexpr float alpha = 1.f;
         // don't do anything if the screen is not on
         if (!is_on) return;
         // return if the pixels aren't on the screen yet
         if (pixels == nullptr) return;
         // draw the screen
         if (screen == -1)  // check if the screen has been initialized yet
-            screen = nvgCreateImageRGBA(args.vg, box.size.x, box.size.y, 0, pixels);
+            screen = nvgCreateImageRGBA(args.vg, image_size.x, image_size.y, 0, pixels);
         else  // update the screen with the pixel data
             nvgUpdateImage(args.vg, screen, pixels);
         // get the screen as a fill paint (for a rectangle)
-        auto imgPaint = nvgImagePattern(args.vg, x, y, box.size.x, box.size.y, 0, screen, 1.0f);
+        auto imgPaint = nvgImagePattern(args.vg, x, y, box.size.x, box.size.y, 0, screen, alpha);
         // create a path for the rectangle to show the screen
         nvgBeginPath(args.vg);
         // create a rectangle to draw the screen
@@ -445,9 +455,10 @@ struct RackNESWidget : ModuleWidget {
         setPanel(APP->window->loadSvg(asset::plugin(plugin_instance, panel)));
         // setup the display for the NES screen
         display = new Display(
-            Vec(157, 18),                                     // screen position
-            static_cast<RackNES*>(module)->screen,            // pixel buffer
-            Vec(NES::Emulator::WIDTH, NES::Emulator::HEIGHT)  // screen size
+            Vec(157, 18),                                         // screen position
+            static_cast<RackNES*>(module)->screen,                // pixel buffer
+            Vec(NES::Emulator::WIDTH, NES::Emulator::HEIGHT),     // buffer size
+            Vec(NES::Emulator::WIDTH_NES, NES::Emulator::HEIGHT)  // image size
         );
         addChild(display);
         // panel screws
