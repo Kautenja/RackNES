@@ -557,7 +557,7 @@ struct RackNESWidget : ModuleWidget {
     void appendContextMenu(ui::Menu* menu) override {
         static constexpr auto TEXT = "Load ROM";
         auto module = dynamic_cast<RackNES*>(this->module);
-        menu->addChild(construct<MenuLabel>());
+        menu->addChild(construct<MenuSeparator>());
         menu->addChild(construct<ROMItem>(&ROMItem::text, TEXT, &ROMItem::module, module));
     }
 };
