@@ -264,7 +264,7 @@ void PPU::cycle(PictureBus& bus) {
                 cycles = 0;
             }
 
-            if (scanline >= FRAME_END_SCANLINE) {
+            if (scanline >= FRAME_END_SCANLINE) {  // end of video frame
                 // render the frame using the NTSC video filter
                 nes_ntsc_blit(
                     &ntsc,                  // configured NTSC object
