@@ -407,8 +407,32 @@ struct Display : TransparentWidget {
     }
 };
 
+/// A menu item for loading ROMs into the emulator.
+struct ROMMenuItem : MenuItem {
+    /// the module associated with the menu item
+    RackNES* module = nullptr;
+
+    /// Respond to an action on the menu item.
+    void onAction(const event::Action &e) override {
+        // check for a ROM path to use as an existing directory
+        auto rom_path = module->emulator.get_rom_path();
+        // if the ROM path is empty, fall back on the user's home directory
+        auto dir = rom_path.empty() ?
+            asset::user("") : rack::string::directory(rom_path);
+        // filter to for files with a ".nes" or ".NES" extension
+        auto filter = osdialog_filters_parse("NES ROM:nes,NES");
+        auto path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, filter);
+        osdialog_filters_free(filter);
+        if (path) {  // the user selected a path
+            module->rom_path_signal = path;
+            free(path);
+        }
+    }
+};
+
 /// The widget structure that lays out the panel of the module and the UI menus.
 struct RackNESWidget : ModuleWidget {
+    /// a pointer to the display to render the NES screen to
     Display* display = nullptr;
 
     /// Create a new NES widget for the given NES module.
@@ -508,57 +532,41 @@ struct RackNESWidget : ModuleWidget {
         // make sure the module has been initialized before proceeding. module
         // will be null when viewing the module in the browser
         if (module == nullptr) return;
-        // get the rendered screen from the module
-        auto nesModule = static_cast<RackNES*>(module);
+        // re-scope the module as the RackNES subtype (guaranteed) for signal
+        // handling in this UI context
+        auto module = static_cast<RackNES*>(this->module);
         // handle signal from module that ROM file has unimplemented mapper
-        if (nesModule->mapper_not_found_signal) {
-            nesModule->mapper_not_found_signal = false;
+        if (module->mapper_not_found_signal) {
+            module->mapper_not_found_signal = false;
             static constexpr auto MSG = "ASIC mapper not implemented for ROM!";
             osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, MSG);
         }
         // handle signal from module that ROM load failed for unknown reason
-        if (nesModule->rom_load_failed_signal) {
-            nesModule->rom_load_failed_signal = false;
+        if (module->rom_load_failed_signal) {
+            module->rom_load_failed_signal = false;
             static constexpr auto MSG = "ROM file failed to load!";
             osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, MSG);
         }
         // handle signal from module that ROM in JSON was not found
-        if (nesModule->rom_reload_failed_signal) {
-            nesModule->rom_reload_failed_signal = false;
+        if (module->rom_reload_failed_signal) {
+            module->rom_reload_failed_signal = false;
             static constexpr auto MSG = "ROM file was not found!";
             osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, MSG);
         }
     }
 
-    /// A menu item for loading ROMs into the emulator.
-    struct ROMItem : MenuItem {
-        /// the module associated with the menu item
-        RackNES* module = nullptr;
-
-        /// Respond to an action on the menu item.
-        void onAction(const event::Action &e) override {
-            // check for a ROM path to use as an existing directory
-            auto rom_path = module->emulator.get_rom_path();
-            // if the ROM path is empty, fall back on the user's home directory
-            auto dir = rom_path.empty() ?
-                asset::user("") : rack::string::directory(rom_path);
-            // filter to for files with a ".nes" or ".NES" extension
-            auto filter = osdialog_filters_parse("NES ROM:nes,NES");
-            auto path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, filter);
-            osdialog_filters_free(filter);
-            if (path) {  // the user selected a path
-                module->rom_path_signal = path;
-                free(path);
-            }
-        }
-    };
-
-    /// Add a content menu to the module widget.
+    /// Add context items for the module to a menu on the UI.
+    ///
+    /// @param menu the menu to add the context items to
+    ///
     void appendContextMenu(ui::Menu* menu) override {
-        static constexpr auto TEXT = "Load ROM";
-        auto module = dynamic_cast<RackNES*>(this->module);
         menu->addChild(construct<MenuSeparator>());
-        menu->addChild(construct<ROMItem>(&ROMItem::text, TEXT, &ROMItem::module, module));
+        menu->addChild(construct<ROMMenuItem>(
+            &ROMMenuItem::text,
+            "Load ROM",
+            &ROMMenuItem::module,
+            static_cast<RackNES*>(this->module)
+        ));
     }
 };
 
