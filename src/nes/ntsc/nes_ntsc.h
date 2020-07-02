@@ -102,7 +102,7 @@ statement in a block (unless you're using C++). */
 15:                    RRRRRGG GGGBBBBB (5-5-5 RGB)
  0: xxxRRRRR RRRxxGGG GGGGGxxB BBBBBBBx (native internal format; x = junk bits) */
 #define NES_NTSC_RGB_OUT( index, rgb_out, bits ) \
-	NES_NTSC_RGB_OUT_14_( index, rgb_out, bits, 0 )
+	NES_NTSC_RGB_OUT_14_( index, rgb_out, bits)
 
 
 /* private */
@@ -147,20 +147,20 @@ enum { nes_ntsc_full_overscan_right = nes_ntsc_full_in_width - 256 - nes_ntsc_fu
 	nes_ntsc_rgb_t const* kernelx1 = kernel0;\
 	nes_ntsc_rgb_t const* kernelx2 = kernel0
 
-#define NES_NTSC_RGB_OUT_14_( x, rgb_out, bits, shift ) {\
+#define NES_NTSC_RGB_OUT_14_( x, rgb_out, bits ) {\
 	nes_ntsc_rgb_t raw_ =\
 		kernel0  [x       ] + kernel1  [(x+12)%7+14] + kernel2  [(x+10)%7+28] +\
 		kernelx0 [(x+7)%14] + kernelx1 [(x+ 5)%7+21] + kernelx2 [(x+ 3)%7+35];\
-	NES_NTSC_CLAMP_( raw_, shift );\
-	NES_NTSC_RGB_OUT_( rgb_out, bits, shift );\
+	NES_NTSC_CLAMP_( raw_ );\
+	NES_NTSC_RGB_OUT_( rgb_out, bits );\
 }
 
 /* common ntsc macros */
 #define nes_ntsc_rgb_builder    ((1L << 21) | (1 << 11) | (1 << 1))
 #define nes_ntsc_clamp_mask     (nes_ntsc_rgb_builder * 3 / 2)
 #define nes_ntsc_clamp_add      (nes_ntsc_rgb_builder * 0x101)
-#define NES_NTSC_CLAMP_( io, shift ) {\
-	nes_ntsc_rgb_t sub = (io) >> (9-(shift)) & nes_ntsc_clamp_mask;\
+#define NES_NTSC_CLAMP_( io ) {\
+	nes_ntsc_rgb_t sub = (io) >> 9 & nes_ntsc_clamp_mask;\
 	nes_ntsc_rgb_t clamp = nes_ntsc_clamp_add - sub;\
 	io |= clamp;\
 	clamp -= sub;\
@@ -173,16 +173,17 @@ enum { nes_ntsc_full_overscan_right = nes_ntsc_full_in_width - 256 - nes_ntsc_fu
 	kernel##index = (color_ = (color), ENTRY( table, color_ ));\
 }
 
+// base format is xxxRRRRR RRRxxGGG GGGGGxxB BBBBBBBx
 /* x is always zero except in snes_ntsc library */
-#define NES_NTSC_RGB_OUT_( rgb_out, bits, x ) {\
+#define NES_NTSC_RGB_OUT_( rgb_out, bits ) {\
 	if ( bits == 16 )\
-		rgb_out = (raw_>>(13-x)& 0xF800)|(raw_>>(8-x)&0x07E0)|(raw_>>(4-x)&0x001F);\
-	if ( bits == 24 || bits == 32 )\
-		rgb_out = 0xFF000000|(raw_>>(5-x)&0xFF0000)|(raw_>>(3-x)&0xFF00)|(raw_>>(1-x)&0xFF);\
-	if ( bits == 15 )\
-		rgb_out = (raw_>>(14-x)& 0x7C00)|(raw_>>(9-x)&0x03E0)|(raw_>>(4-x)&0x001F);\
+		rgb_out = (raw_ >> 13 & 0xF800) | (raw_ >> 8 & 0x07E0) | (raw_ >> 4 & 0x001F);\
+	if ( bits == 24 || bits == 32 ) {\
+		rgb_out = 0xFF000000 | (raw_ << 15 & 0x00FF0000) | (raw_ >> 3 & 0x0000FF00) | (raw_ >> 21 & 0x000000FF);\
+	} if ( bits == 15 )\
+		rgb_out = (raw_>> 14 & 0x7C00) | (raw_>> 9 &0x03E0) | (raw_>> 4 &0x001F);\
 	if ( bits == 0 )\
-		rgb_out = raw_ << x;\
+		rgb_out = raw_;\
 }
 
 #ifdef __cplusplus
