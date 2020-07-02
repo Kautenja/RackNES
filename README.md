@@ -28,5 +28,6 @@ information about the features of this module.
 The code for the module derives from:
 
 1. the NES emulator, [SimpleNES](https://github.com/amhndu/SimpleNES);
-2. the NES synthesis library, [Nes_Snd_Emu](https://github.com/jamesathey/Nes_Snd_Emu); and
+2. the NES synthesis library, [Nes_Snd_Emu](https://www.slack.net/~ant/libs/audio.html#Nes_Snd_Emu); 
+3. the NES NTSC filter library [nes_ntsc](http://slack.net/~ant/libs/ntsc.html#nes_ntsc); and
 3. the Base64 library, [cpp-base64](https://github.com/ReneNyffenegger/cpp-base64).
