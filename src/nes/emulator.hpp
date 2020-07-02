@@ -45,14 +45,16 @@ class Emulator {
     APU apu;
 
  public:
-    /// The width of the NES screen in pixels
-    static const int WIDTH = SCANLINE_VISIBLE_DOTS_NTSC;
+    /// The width of the NES screen in pixels (after NTSC filtering)
+    static constexpr int WIDTH = SCANLINE_VISIBLE_DOTS_NTSC;
     /// The height of the NES screen in pixels
-    static const int HEIGHT = VISIBLE_SCANLINES;
+    static constexpr int HEIGHT = VISIBLE_SCANLINES;
     /// the number of pixels on the NES
-    static const int PIXELS = WIDTH * HEIGHT;
+    static constexpr int PIXELS = WIDTH * HEIGHT;
     /// the number of bytes in the screen (RGBx)
-    static const int SCREEN_BYTES = PIXELS * sizeof(NES_Pixel);
+    static constexpr int SCREEN_BYTES = PIXELS * sizeof(NES_Pixel);
+    /// The width of the NES screen in pixels
+    static constexpr int WIDTH_NES = SCANLINE_VISIBLE_DOTS;
 
     /// @brief Initialize a new emulator.
     Emulator() {
