@@ -353,11 +353,57 @@ struct RackNES : Module {
 // MARK: Widget
 // ---------------------------------------------------------------------------
 
-/// The widget structure that lays out the panel of the module and the UI menus.
-struct RackNESWidget : ModuleWidget {
-    /// a pointer to the image to draw the screen to
+/// A widget that displays a 32-bit RGBA pixel buffer.
+struct Display : TransparentWidget {
+ private:
+    /// a pointer to the pixels to render
+    const uint8_t* pixels;
+    /// a pointer to the image to draw the display to
     int screen = -1;
 
+ public:
+    /// @brief Initialize a new display widget.
+    ///
+    /// @param position the position of the screen on the module
+    /// @param pixels_ the pixels on the display to render
+    /// @param size the size of the screen
+    ///
+    explicit Display(Vec position, const uint8_t* pixels_, Vec size) :
+        TransparentWidget(), pixels(pixels_) {
+        setPosition(position);
+        setSize(size);
+    }
+
+    /// @brief Draw the display on the main context.
+    ///
+    /// @param args the arguments for the draw context for this widget
+    ///
+    void draw(const DrawArgs& args) override {
+        // the x position of the screen
+        static constexpr int x = 0;
+        // the y position of the screen
+        static constexpr int y = 0;
+        // return if the pixels aren't on the screen yet
+        if (pixels == nullptr) return;
+        // draw the screen
+        if (screen == -1)  // check if the screen has been initialized yet
+            screen = nvgCreateImageRGBA(args.vg, box.size.x, box.size.y, 0, pixels);
+        else  // update the screen with the pixel data
+            nvgUpdateImage(args.vg, screen, pixels);
+        // get the screen as a fill paint (for a rectangle)
+        auto imgPaint = nvgImagePattern(args.vg, x, y, box.size.x, box.size.y, 0, screen, 1.0f);
+        // create a path for the rectangle to show the screen
+        nvgBeginPath(args.vg);
+        // create a rectangle to draw the screen
+        nvgRect(args.vg, x, y, box.size.x, box.size.y);
+        // paint the rectangle's fill from the screen
+        nvgFillPaint(args.vg, imgPaint);
+        nvgFill(args.vg);
+    }
+};
+
+/// The widget structure that lays out the panel of the module and the UI menus.
+struct RackNESWidget : ModuleWidget {
     /// Create a new NES widget for the given NES module.
     ///
     /// @param module the module to create a widget for
@@ -366,6 +412,12 @@ struct RackNESWidget : ModuleWidget {
         setModule(module);
         static constexpr auto panel = "res/RackNES.svg";
         setPanel(APP->window->loadSvg(asset::plugin(plugin_instance, panel)));
+        // setup the display for the NES screen
+        addChild(new Display(
+            Vec(157, 18),                                     // screen position
+            static_cast<RackNES*>(module)->screen,            // pixel buffer
+            Vec(NES::Emulator::WIDTH, NES::Emulator::HEIGHT)  // screen size
+        ));
         // panel screws
         addChild(createWidget<ScrewSilver>(Vec(7 * RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ScrewSilver>(Vec(box.size.x - 8 * RACK_GRID_WIDTH, 0)));
@@ -443,36 +495,12 @@ struct RackNESWidget : ModuleWidget {
     void draw(const DrawArgs& args) override {
         // call the super call to get all default behaviors of the superclass
         ModuleWidget::draw(args);
-        // the x position of the screen
-        static constexpr int x = 157;
-        // the y position of the screen
-        static constexpr int y = 18;
-        // the width of the screen
-        static constexpr int w = NES::Emulator::WIDTH;
-        // the height of the screen
-        static constexpr int h = NES::Emulator::HEIGHT;
         // make sure the module has been initialized before proceeding. module
         // will be null when viewing the module in the browser
         if (module == nullptr)
             return;
         // get the rendered screen from the module
         auto nesModule = static_cast<RackNES*>(module);
-        auto pixels = reinterpret_cast<const uint8_t*>(nesModule->screen);
-        // draw the screen
-        if (screen == -1)  // check if the screen has been initialized yet
-            screen = nvgCreateImageRGBA(args.vg, w, h, 0, pixels);
-        else  // update the screen with the pixel data
-            nvgUpdateImage(args.vg, screen, pixels);
-        // get the screen as a fill paint (for a rectangle)
-        auto imgPaint = nvgImagePattern(args.vg, x, y, w, h, 0, screen, 1.0f);
-        // create a path for the rectangle to show the screen
-        nvgBeginPath(args.vg);
-        // create a rectangle to draw the screen
-        nvgRect(args.vg, x, y, w, h);
-        // paint the rectangle's fill from the screen
-        nvgFillPaint(args.vg, imgPaint);
-        nvgFill(args.vg);
-
         // handle signal from module that ROM file has unimplemented mapper
         if (nesModule->mapper_not_found_signal) {
             nesModule->mapper_not_found_signal = false;
