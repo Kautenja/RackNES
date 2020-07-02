@@ -353,18 +353,36 @@ struct RackNES : Module {
 // MARK: Widget
 // ---------------------------------------------------------------------------
 
-/// A widget that displays an image.
+/// A widget that displays a 32-bit RGBA pixel buffer.
 struct Display : TransparentWidget {
+ private:
     /// a pointer to the pixels to render
-    const uint8_t* pixels = nullptr;
+    const uint8_t* pixels;
     /// a pointer to the image to draw the display to
     int screen = -1;
 
+ public:
     /// @brief Initialize a new display widget.
-    Display() : TransparentWidget() { }
+    ///
+    /// @param position the position of the screen on the module
+    /// @param pixels_ the pixels on the display to render
+    /// @param size the size of the screen
+    ///
+    explicit Display(Vec position, const uint8_t* pixels_, Vec size) :
+        TransparentWidget(), pixels(pixels_) {
+        setPosition(position);
+        setSize(size);
+    }
 
-    /// Draw the display on the main context.
+    /// @brief Draw the display on the main context.
+    ///
+    /// @param args the arguments for the draw context for this widget
+    ///
     void draw(const DrawArgs& args) override {
+        // the x position of the screen
+        static constexpr int x = 0;
+        // the y position of the screen
+        static constexpr int y = 0;
         // return if the pixels aren't on the screen yet
         if (pixels == nullptr) return;
         // draw the screen
@@ -373,11 +391,11 @@ struct Display : TransparentWidget {
         else  // update the screen with the pixel data
             nvgUpdateImage(args.vg, screen, pixels);
         // get the screen as a fill paint (for a rectangle)
-        auto imgPaint = nvgImagePattern(args.vg, 0, 0, box.size.x, box.size.y, 0, screen, 1.0f);
+        auto imgPaint = nvgImagePattern(args.vg, x, y, box.size.x, box.size.y, 0, screen, 1.0f);
         // create a path for the rectangle to show the screen
         nvgBeginPath(args.vg);
         // create a rectangle to draw the screen
-        nvgRect(args.vg, 0, 0, box.size.x, box.size.y);
+        nvgRect(args.vg, x, y, box.size.x, box.size.y);
         // paint the rectangle's fill from the screen
         nvgFillPaint(args.vg, imgPaint);
         nvgFill(args.vg);
@@ -395,11 +413,11 @@ struct RackNESWidget : ModuleWidget {
         static constexpr auto panel = "res/RackNES.svg";
         setPanel(APP->window->loadSvg(asset::plugin(plugin_instance, panel)));
         // setup the display for the NES screen
-        auto display = new Display();
-        display->setPosition(Vec(157, 18));
-        display->setSize(Vec(NES::Emulator::WIDTH, NES::Emulator::HEIGHT));
-        display->pixels = static_cast<RackNES*>(module)->screen;
-        addChild(display);
+        addChild(new Display(
+            Vec(157, 18),                                     // screen position
+            static_cast<RackNES*>(module)->screen,            // pixel buffer
+            Vec(NES::Emulator::WIDTH, NES::Emulator::HEIGHT)  // screen size
+        ));
         // panel screws
         addChild(createWidget<ScrewSilver>(Vec(7 * RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ScrewSilver>(Vec(box.size.x - 8 * RACK_GRID_WIDTH, 0)));
