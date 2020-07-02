@@ -7,7 +7,6 @@
 
 #include <cstring>
 #include "ppu.hpp"
-#include "palette.hpp"
 #include "log.hpp"
 
 namespace NES {
@@ -32,6 +31,10 @@ void PPU::reset() {
     pipeline_state = PRE_RENDER;
     scanline_sprites.reserve(8);
     scanline_sprites.resize(0);
+    // setup the NTSC video filter
+    nes_ntsc_setup_t setup;
+    setup = nes_ntsc_composite;
+    nes_ntsc_init(&ntsc, &setup);
 }
 
 void PPU::cycle(PictureBus& bus) {
@@ -175,7 +178,7 @@ void PPU::cycle(PictureBus& bus) {
                 else if (!bgOpaque && !sprOpaque)
                     paletteAddr = 0;
                 // lookup the pixel in the palette and write it to the screen
-                screen[y][x] = PALETTE[bus.read_palette(paletteAddr)];
+                nes_pixels[y][x] = bus.read_palette(paletteAddr);
             }
             else if (cycles == SCANLINE_VISIBLE_DOTS + 1 && is_showing_background) {
                 //Shamelessly copied from nesdev wiki
@@ -261,7 +264,19 @@ void PPU::cycle(PictureBus& bus) {
                 cycles = 0;
             }
 
-            if (scanline >= FRAME_END_SCANLINE) {
+            if (scanline >= FRAME_END_SCANLINE) {  // end of video frame
+                // render the frame using the NTSC video filter
+                nes_ntsc_blit(
+                    &ntsc,                  // configured NTSC object
+                    *nes_pixels,            // input buffer of NES pixels
+                    SCANLINE_VISIBLE_DOTS,  // width of the NES screen
+                    is_even_frame,          // alternating frame flag
+                    SCANLINE_VISIBLE_DOTS,  // width of the NES screen
+                    VISIBLE_SCANLINES,      // height of the NES screen
+                    *ntsc_screen,           // output buffer to write to
+                    NTSC_PITCH              // number of bytes in an output row
+                );
+                // update the PPU state
                 pipeline_state = PRE_RENDER;
                 scanline = 0;
                 is_even_frame = !is_even_frame;
