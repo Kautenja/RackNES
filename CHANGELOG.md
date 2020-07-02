@@ -42,3 +42,7 @@
 ### 1.2.0 (2020-07-01)
 
 -   mixer (individual channel outputs + mix output)
+
+### 1.3.0 (2020-07-02)
+
+-   NTSC emulation
