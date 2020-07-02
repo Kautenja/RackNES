@@ -26,9 +26,9 @@
 /// a trigger for a button with a CV input.
 struct CVButtonTrigger {
     /// the trigger for the button
-    rack::dsp::SchmittTrigger buttonTrigger;
+    dsp::SchmittTrigger buttonTrigger;
     /// the trigger for the CV
-    rack::dsp::SchmittTrigger cvTrigger;
+    dsp::SchmittTrigger cvTrigger;
 
     /// Process the input signals.
     ///
@@ -200,7 +200,7 @@ struct RackNES : Module {
         // get the parameter in [-4, 4]
         auto param = params[PARAM_CLOCK].getValue();
         // calculate the exponential frequency
-        return NES::CLOCK_RATE * powf(2.f, rack::clamp(param + cv, -4.f, 4.f));
+        return NES::CLOCK_RATE * powf(2.f, clamp(param + cv, -4.f, 4.f));
     }
 
     /// Process a sample.
@@ -418,7 +418,7 @@ struct ROMMenuItem : MenuItem {
         auto rom_path = module->emulator.get_rom_path();
         // if the ROM path is empty, fall back on the user's home directory
         auto dir = rom_path.empty() ?
-            asset::user("") : rack::string::directory(rom_path);
+            asset::user("") : string::directory(rom_path);
         // filter to for files with a ".nes" or ".NES" extension
         auto filter = osdialog_filters_parse("NES ROM:nes,NES");
         auto path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, filter);
