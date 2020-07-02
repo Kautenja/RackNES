@@ -362,6 +362,9 @@ struct Display : TransparentWidget {
     int screen = -1;
 
  public:
+    /// whether the screen is turned on
+    bool is_on = false;
+
     /// @brief Initialize a new display widget.
     ///
     /// @param position the position of the screen on the module
@@ -383,6 +386,8 @@ struct Display : TransparentWidget {
         static constexpr int x = 0;
         // the y position of the screen
         static constexpr int y = 0;
+        // don't do anything if the screen is not on
+        if (!is_on) return;
         // return if the pixels aren't on the screen yet
         if (pixels == nullptr) return;
         // draw the screen
@@ -404,6 +409,8 @@ struct Display : TransparentWidget {
 
 /// The widget structure that lays out the panel of the module and the UI menus.
 struct RackNESWidget : ModuleWidget {
+    Display* display = nullptr;
+
     /// Create a new NES widget for the given NES module.
     ///
     /// @param module the module to create a widget for
@@ -413,11 +420,12 @@ struct RackNESWidget : ModuleWidget {
         static constexpr auto panel = "res/RackNES.svg";
         setPanel(APP->window->loadSvg(asset::plugin(plugin_instance, panel)));
         // setup the display for the NES screen
-        addChild(new Display(
+        display = new Display(
             Vec(157, 18),                                     // screen position
             static_cast<RackNES*>(module)->screen,            // pixel buffer
             Vec(NES::Emulator::WIDTH, NES::Emulator::HEIGHT)  // screen size
-        ));
+        );
+        addChild(display);
         // panel screws
         addChild(createWidget<ScrewSilver>(Vec(7 * RACK_GRID_WIDTH, 0)));
         addChild(createWidget<ScrewSilver>(Vec(box.size.x - 8 * RACK_GRID_WIDTH, 0)));
@@ -495,10 +503,11 @@ struct RackNESWidget : ModuleWidget {
     void draw(const DrawArgs& args) override {
         // call the super call to get all default behaviors of the superclass
         ModuleWidget::draw(args);
+        // set the screen state based on the existence of the module
+        display->is_on = module != nullptr;
         // make sure the module has been initialized before proceeding. module
         // will be null when viewing the module in the browser
-        if (module == nullptr)
-            return;
+        if (module == nullptr) return;
         // get the rendered screen from the module
         auto nesModule = static_cast<RackNES*>(module);
         // handle signal from module that ROM file has unimplemented mapper
