@@ -8,23 +8,26 @@
 #ifndef NES_PPU_HPP
 #define NES_PPU_HPP
 
-#include <string>
-#include <functional>
-#include <jansson.h>
 #include "picture_bus.hpp"
+#include "ntsc/nes_ntsc.h"
+#include <jansson.h>
+#include <functional>
+#include <string>
 
 namespace NES {
 
 /// The number of visible scan lines (i.e., the height of the screen)
-const int VISIBLE_SCANLINES = 240;
+static constexpr int VISIBLE_SCANLINES = 240;
 /// The number of visible dots per scan line (i.e., the width of the screen)
-const int SCANLINE_VISIBLE_DOTS = 256;
+static constexpr int SCANLINE_VISIBLE_DOTS = 256;
+/// The number of visible dots per scan line after rendering
+static constexpr int SCANLINE_VISIBLE_DOTS_NTSC = NES_NTSC_OUT_WIDTH(SCANLINE_VISIBLE_DOTS);
 /// The number of cycles per scanline
-const int SCANLINE_CYCLE_LENGTH = 341;
+static constexpr int SCANLINE_CYCLE_LENGTH = 341;
 /// The last cycle of a scan line (changed from 340 to fix render glitch)
-const int SCANLINE_END_CYCLE = 341;
+static constexpr int SCANLINE_END_CYCLE = 341;
 /// The last scanline per frame
-const int FRAME_END_SCANLINE = 261;
+static constexpr int FRAME_END_SCANLINE = 261;
 
 /// The Picture Processing Unit (PPU) for the NES
 class PPU {
@@ -99,6 +102,12 @@ class PPU {
 
     /// The value to increment the data address by
     NES_Address data_address_increment;
+
+    /// the NTSC video filter for rendering RGB pixels from NES pixels
+    nes_ntsc_t ntsc;
+
+    NES_Byte nes_pixels[VISIBLE_SCANLINES][SCANLINE_VISIBLE_DOTS];
+    NES_Pixel ntsc_screen[VISIBLE_SCANLINES][SCANLINE_VISIBLE_DOTS_NTSC];
 
     /// The internal screen data structure as a vector representation of a
     /// matrix of height matching the visible scans lines and width matching
@@ -181,7 +190,7 @@ class PPU {
     }
 
     /// Return a pointer to the screen buffer.
-    inline NES_Pixel* get_screen_buffer() { return *screen; }
+    inline NES_Pixel* get_screen_buffer() { return *ntsc_screen; }
 
     /// Convert the object's state to a JSON object.
     json_t* dataToJson() const {

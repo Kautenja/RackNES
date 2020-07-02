@@ -32,6 +32,10 @@ void PPU::reset() {
     pipeline_state = PRE_RENDER;
     scanline_sprites.reserve(8);
     scanline_sprites.resize(0);
+    // setup the NTSC video filter
+    nes_ntsc_setup_t setup;
+    setup = nes_ntsc_composite;
+    nes_ntsc_init(&ntsc, &setup);
 }
 
 void PPU::cycle(PictureBus& bus) {
@@ -175,7 +179,9 @@ void PPU::cycle(PictureBus& bus) {
                 else if (!bgOpaque && !sprOpaque)
                     paletteAddr = 0;
                 // lookup the pixel in the palette and write it to the screen
-                screen[y][x] = PALETTE[bus.read_palette(paletteAddr)];
+                auto pixel = bus.read_palette(paletteAddr);
+                nes_pixels[y][x] = pixel;
+                screen[y][x] = PALETTE[pixel];
             }
             else if (cycles == SCANLINE_VISIBLE_DOTS + 1 && is_showing_background) {
                 //Shamelessly copied from nesdev wiki
@@ -262,6 +268,16 @@ void PPU::cycle(PictureBus& bus) {
             }
 
             if (scanline >= FRAME_END_SCANLINE) {
+                nes_ntsc_blit(
+                    &ntsc,
+                    *nes_pixels,
+                    SCANLINE_VISIBLE_DOTS,
+                    is_even_frame,
+                    SCANLINE_VISIBLE_DOTS,
+                    VISIBLE_SCANLINES,
+                    *ntsc_screen,
+                    SCANLINE_VISIBLE_DOTS_NTSC * sizeof(NES_Pixel)
+                );
                 pipeline_state = PRE_RENDER;
                 scanline = 0;
                 is_even_frame = !is_even_frame;

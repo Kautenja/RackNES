@@ -20,7 +20,7 @@ typedef struct nes_ntsc_setup_t
 	double contrast;   /* -1 = dark (0.5)       +1 = light (1.5) */
 	double brightness; /* -1 = dark (0.5)       +1 = light (1.5) */
 	double sharpness;  /* edge contrast enhancement/blurring */
-	
+
 	/* Advanced parameters */
 	double gamma;      /* -1 = dark (1.5)       +1 = light (0.5) */
 	double resolution; /* image resolution */
@@ -29,9 +29,9 @@ typedef struct nes_ntsc_setup_t
 	double bleed;      /* color bleed (color resolution reduction) */
 	int merge_fields;  /* if 1, merges even and odd fields together to reduce flicker */
 	float const* decoder_matrix; /* optional RGB decoder matrix, 6 elements */
-	
+
 	unsigned char* palette_out;  /* optional RGB palette out, 3 bytes per color */
-	
+
 	/* You can replace the standard NES color generation with an RGB palette. The
 	first replaces all color generation, while the second replaces only the core
 	64-color generation and does standard color emphasis calculations on it. */
