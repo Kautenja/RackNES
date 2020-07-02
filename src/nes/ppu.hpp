@@ -22,6 +22,8 @@ static constexpr int VISIBLE_SCANLINES = 240;
 static constexpr int SCANLINE_VISIBLE_DOTS = 256;
 /// The number of visible dots per scan line after rendering
 static constexpr int SCANLINE_VISIBLE_DOTS_NTSC = NES_NTSC_OUT_WIDTH(SCANLINE_VISIBLE_DOTS);
+/// the number of bytes in an NTSC pixel row
+static constexpr int NTSC_PITCH = SCANLINE_VISIBLE_DOTS_NTSC * sizeof(NES_Pixel);
 /// The number of cycles per scanline
 static constexpr int SCANLINE_CYCLE_LENGTH = 341;
 /// The last cycle of a scan line (changed from 340 to fix render glitch)
@@ -103,16 +105,15 @@ class PPU {
     /// The value to increment the data address by
     NES_Address data_address_increment;
 
-    /// the NTSC video filter for rendering RGB pixels from NES pixels
-    nes_ntsc_t ntsc;
-
-    NES_Byte nes_pixels[VISIBLE_SCANLINES][SCANLINE_VISIBLE_DOTS];
-    NES_Pixel ntsc_screen[VISIBLE_SCANLINES][SCANLINE_VISIBLE_DOTS_NTSC];
-
     /// The internal screen data structure as a vector representation of a
     /// matrix of height matching the visible scans lines and width matching
-    /// the number of visible scan line dots
-    NES_Pixel screen[VISIBLE_SCANLINES][SCANLINE_VISIBLE_DOTS];
+    /// the number of visible scan line dots. the data type is 8-bit NES pixel
+    /// index corresponding to a value in the NES palette
+    NES_Byte nes_pixels[VISIBLE_SCANLINES][SCANLINE_VISIBLE_DOTS];
+    /// the NTSC video filter for rendering RGB pixels from NES pixels
+    nes_ntsc_t ntsc;
+    /// The RGB pixels rendered by the NTSC video filter
+    NES_Pixel ntsc_screen[VISIBLE_SCANLINES][SCANLINE_VISIBLE_DOTS_NTSC];
 
  public:
     /// Perform a single cycle on the PPU.
