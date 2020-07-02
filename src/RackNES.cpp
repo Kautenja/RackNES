@@ -353,6 +353,47 @@ struct RackNES : Module {
 // MARK: Widget
 // ---------------------------------------------------------------------------
 
+/// A widget that displays an image.
+struct Display : TransparentWidget {
+    /// the position of the display on the module
+    const Vec position;
+    /// the size of the display (x=width, y=height)
+    const Vec size;
+    /// a pointer to the image to draw the display to
+    int screen = -1;
+    /// a pointer to the pixels to render
+    uint8_t* pixels = nullptr;
+
+    /// @brief Initialize a new display widget.
+    ///
+    /// @param position the position of the display on the module
+    /// @param size the size of the display (x=width, y=height)
+    ///
+    explicit Display(Vec position_, Vec size_) :
+        position(position_),
+        size(size_) { }
+
+    /// Draw the display on the main context.
+    void draw(const DrawArgs& args) override {
+        // return if the pixels aren't on the screen yet
+        if (pixels == nullptr) return;
+        // draw the screen
+        if (screen == -1)  // check if the screen has been initialized yet
+            screen = nvgCreateImageRGBA(args.vg, position.x, position.y, 0, pixels);
+        else  // update the screen with the pixel data
+            nvgUpdateImage(args.vg, screen, pixels);
+        // get the screen as a fill paint (for a rectangle)
+        auto imgPaint = nvgImagePattern(args.vg, position.x, position.y, size.x, size.y, 0, screen, 1.0f);
+        // create a path for the rectangle to show the screen
+        nvgBeginPath(args.vg);
+        // create a rectangle to draw the screen
+        nvgRect(args.vg, position.x, position.y, size.x, size.y);
+        // paint the rectangle's fill from the screen
+        nvgFillPaint(args.vg, imgPaint);
+        nvgFill(args.vg);
+    }
+};
+
 /// The widget structure that lays out the panel of the module and the UI menus.
 struct RackNESWidget : ModuleWidget {
     /// a pointer to the image to draw the screen to
