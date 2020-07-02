@@ -20,7 +20,7 @@
 using namespace rack;
 
 /// the global instance of the RackNES plug-in
-extern rack::Plugin* plugin_instance;
+extern Plugin* plugin_instance;
 
 /// the global instance of the RackNES model
-extern rack::Model *modelRackNES;
+extern Model *modelRackNES;
