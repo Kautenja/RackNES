@@ -46,3 +46,7 @@
 ### 1.3.0 (2020-07-02)
 
 -   NTSC emulation
+
+### 1.4.0 (2020-07-03)
+
+-   ROM files can be loaded by dropping them onto the module
