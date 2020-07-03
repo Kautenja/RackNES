@@ -570,7 +570,7 @@ struct RackNESWidget : ModuleWidget {
     ///
     /// @param menu the menu to add the context items to
     ///
-    void appendContextMenu(ui::Menu* menu) override {
+    inline void appendContextMenu(ui::Menu* menu) override {
         menu->addChild(construct<MenuSeparator>());
         menu->addChild(construct<ROMMenuItem>(
             &ROMMenuItem::text,
@@ -578,6 +578,14 @@ struct RackNESWidget : ModuleWidget {
             &ROMMenuItem::module,
             static_cast<RackNES*>(this->module)
         ));
+    }
+
+    /// Respond to a path being dropped onto the module.
+    ///
+    /// @param event the event data for the path drop event
+    ///
+    inline void onPathDrop(const event::PathDrop& event) override {
+        static_cast<RackNES*>(module)->rom_path_signal = std::string(event.paths[0]);
     }
 };
 
