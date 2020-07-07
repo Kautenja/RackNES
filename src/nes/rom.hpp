@@ -175,9 +175,8 @@ class ROM {
         //     auto data_string = base64_encode(&chr_rom[0], chr_rom.size());
         //     json_object_set_new(rootJ, "chr_rom", json_string(data_string.c_str()));
         // }
-        // json_object_set_new(rootJ, "name_table_mirroring", json_integer(name_table_mirroring));
-        // json_object_set_new(rootJ, "mapper_number", json_integer(mapper_number));
-        // json_object_set_new(rootJ, "has_extended_ram", json_boolean(has_extended_ram));
+        json_object_set_new(rootJ, "flags6", json_integer(flags6.byte));
+        json_object_set_new(rootJ, "flags7", json_integer(flags7.byte));
         return rootJ;
     }
 
@@ -207,24 +206,16 @@ class ROM {
         //         chr_rom = std::vector<NES_Byte>(data_string.begin(), data_string.end());
         //     }
         // }
-        // load name_table_mirroring
-        // {
-        //     json_t* json_data = json_object_get(rootJ, "name_table_mirroring");
-        //     if (json_data)
-        //         name_table_mirroring = json_integer_value(json_data);
-        // }
-        // load mapper_number
-        // {
-        //     json_t* json_data = json_object_get(rootJ, "mapper_number");
-        //     if (json_data)
-        //         mapper_number = json_integer_value(json_data);
-        // }
-        // load has_extended_ram
-        // {
-        //     json_t* json_data = json_object_get(rootJ, "has_extended_ram");
-        //     if (json_data)
-        //         has_extended_ram = json_boolean_value(json_data);
-        // }
+        // load flags6
+        {
+            json_t* json_data = json_object_get(rootJ, "flags6");
+            if (json_data) flags6.byte = json_integer_value(json_data);
+        }
+        // load flags7
+        {
+            json_t* json_data = json_object_get(rootJ, "flags7");
+            if (json_data) flags7.byte = json_integer_value(json_data);
+        }
     }
 
     /// An ASIC mapper for different NES cartridges.
