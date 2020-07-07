@@ -11,10 +11,17 @@
 #include <string>
 #include <jansson.h>
 #include "rom.hpp"
+
 #include "mappers/mapper0_NROM.hpp"
 #include "mappers/mapper1_MMC1.hpp"
 #include "mappers/mapper2_UNROM.hpp"
 #include "mappers/mapper3_CNROM.hpp"
+
+#include "mappers2/mapper0_NROM.hpp"
+#include "mappers2/mapper1_MMC1.hpp"
+#include "mappers2/mapper2_UxROM.hpp"
+#include "mappers2/mapper4_MMC3.hpp"
+#include "mappers2/mapper7_AxROM.hpp"
 
 namespace NES {
 

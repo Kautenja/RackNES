@@ -18,11 +18,11 @@
 #ifndef MAPPERS2_MAPPER2_HPP
 #define MAPPERS2_MAPPER2_HPP
 
-#include "../base_mapper.hpp"
+#include "../rom.hpp"
 
 namespace NES {
 
-class Mapper2 final : public BaseMapper {
+class Mapper2 final : public ROM::BaseMapper {
  public:
   inline void reset() override {
     set_prg_map<16>(0, 0);
