@@ -14,6 +14,7 @@
 #include <jansson.h>
 #include "../base64.h"
 #include "common.hpp"
+#include "log.hpp"
 
 namespace NES {
 
@@ -78,19 +79,45 @@ class ROM {
         FLAGS10,
     };
 
-    enum FLAGS6 {
-        MIRRORING,
-        PERSISTENT_MEMORY,
-        TRAINER,
-        FOUR_SCREEN,
-        MAPPER_LO
+    /// a structure for working with the flags 6 byte in the iNES header.
+    union Flags6 {
+        struct {
+            /// the hard-wired nametable mirroring type (true = vertical)
+            bool is_vertical_mirroring: 1;
+            /// whether "battery" and other non-volatile memory is present
+            bool has_persistent_memory: 1;
+            /// whether the 512-byte trainer is present
+            bool has_trainer: 1;
+            /// whether hard-wired four-screen mode is present
+            bool is_four_screen_mode: 1;
+            /// the low bits of the mapper number
+            uint8_t mapper_lo: 4;
+        } flags;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags6;
+
+    /// the different console types
+    enum ConsoleType {
+        NES_FAMICOM,
+        VS_SYSTEM,
+        PLAYCHOICE10,
+        EXTENDED
     };
 
-    enum FLAGS7 {
-        CONSOLE,
-        NES2ID = 3,
-        MAPPER_HI
-    };
+    /// a structure for working with the flags 7 byte in the iNES header.
+    union Flags7 {
+        struct {
+            /// the console type ID (followed by an unused bit)
+            uint8_t console_type: 2, : 1;
+            /// whether the ROM file is NES2.0 format (true) or iNES (false)
+            bool is_nes_2: 1;
+            /// the high bits of the mapper number
+            uint8_t mapper_hi: 4;
+        } flags;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags7;
 
     /// Initialize a new ROM file.
     explicit ROM(const std::string& path) : rom_path(path) {
@@ -99,10 +126,15 @@ class ROM {
         // create a byte vector for the iNES header
         std::vector<NES_Byte> header(HEADER_SIZE);
         romFile.read(reinterpret_cast<char*>(&header[0]), HEADER_SIZE);
+
+        flags6 = reinterpret_cast<Flags6&>(header[FLAGS6]);
+        flags7 = reinterpret_cast<Flags7&>(header[FLAGS7]);
+        mapper_number = (flags7.flags.mapper_hi << 4) | flags6.flags.mapper_lo;
+
         // read internal data
         name_table_mirroring = header[FLAGS6] & 0xB;
-        mapper_number = ((header[FLAGS6] >> 4) & 0xf) | (header[FLAGS7] & 0xf0);
         has_extended_ram = header[FLAGS6] & 0x2;
+
         // read PRG-ROM 16KB banks
         NES_Byte banks = header[PRG_ROM_SIZE];
         prg_rom.resize(0x4000 * banks);
@@ -148,9 +180,9 @@ class ROM {
         //     auto data_string = base64_encode(&chr_rom[0], chr_rom.size());
         //     json_object_set_new(rootJ, "chr_rom", json_string(data_string.c_str()));
         // }
-        json_object_set_new(rootJ, "name_table_mirroring", json_integer(name_table_mirroring));
-        json_object_set_new(rootJ, "mapper_number", json_integer(mapper_number));
-        json_object_set_new(rootJ, "has_extended_ram", json_boolean(has_extended_ram));
+        // json_object_set_new(rootJ, "name_table_mirroring", json_integer(name_table_mirroring));
+        // json_object_set_new(rootJ, "mapper_number", json_integer(mapper_number));
+        // json_object_set_new(rootJ, "has_extended_ram", json_boolean(has_extended_ram));
         return rootJ;
     }
 
@@ -181,23 +213,23 @@ class ROM {
         //     }
         // }
         // load name_table_mirroring
-        {
-            json_t* json_data = json_object_get(rootJ, "name_table_mirroring");
-            if (json_data)
-                name_table_mirroring = json_integer_value(json_data);
-        }
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "name_table_mirroring");
+        //     if (json_data)
+        //         name_table_mirroring = json_integer_value(json_data);
+        // }
         // load mapper_number
-        {
-            json_t* json_data = json_object_get(rootJ, "mapper_number");
-            if (json_data)
-                mapper_number = json_integer_value(json_data);
-        }
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "mapper_number");
+        //     if (json_data)
+        //         mapper_number = json_integer_value(json_data);
+        // }
         // load has_extended_ram
-        {
-            json_t* json_data = json_object_get(rootJ, "has_extended_ram");
-            if (json_data)
-                has_extended_ram = json_boolean_value(json_data);
-        }
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "has_extended_ram");
+        //     if (json_data)
+        //         has_extended_ram = json_boolean_value(json_data);
+        // }
     }
 
     /// An ASIC mapper for different NES cartridges.
