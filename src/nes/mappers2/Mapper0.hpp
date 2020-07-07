@@ -18,7 +18,9 @@
 #ifndef MAPPERS2_MAPPER0_HPP
 #define MAPPERS2_MAPPER0_HPP
 
-#include "../BaseMapper.hpp"
+#include "../base_mapper.hpp"
+
+namespace NES {
 
 class Mapper0 final : public BaseMapper {
  public:
@@ -28,5 +30,7 @@ class Mapper0 final : public BaseMapper {
     set_chr_map<8>(0, 0);
   }
 };
+
+}  // namespace NES
 
 #endif  // MAPPERS2_MAPPER0_HPP

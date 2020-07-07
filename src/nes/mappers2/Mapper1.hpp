@@ -18,7 +18,9 @@
 #ifndef MAPPERS2_MAPPER1_HPP
 #define MAPPERS2_MAPPER1_HPP
 
-#include "../BaseMapper.hpp"
+#include "../base_mapper.hpp"
+
+namespace NES {
 
 class Mapper1 final : public BaseMapper {
  public:
@@ -109,5 +111,7 @@ class Mapper1 final : public BaseMapper {
   uint8_t chr_bank_1 = 0;
   uint8_t prg_bank   = 0;
 };
+
+}  // namespace NES
 
 #endif  // MAPPERS2_MAPPER1_HPP

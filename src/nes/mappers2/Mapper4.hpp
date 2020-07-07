@@ -18,7 +18,9 @@
 #ifndef MAPPERS2_MAPPER4_HPP
 #define MAPPERS2_MAPPER4_HPP
 
-#include "../BaseMapper.hpp"
+#include "../base_mapper.hpp"
+
+namespace NES {
 
 class Mapper4 final : public BaseMapper {
  public:
@@ -111,5 +113,7 @@ class Mapper4 final : public BaseMapper {
   uint8_t irq_period  = 0;
   uint8_t irq_counter = 0;
 };
+
+}  // namespace NES
 
 #endif  // MAPPERS2_MAPPER4_HPP
