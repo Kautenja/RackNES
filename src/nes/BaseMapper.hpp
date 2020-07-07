@@ -1,3 +1,19 @@
+// An abstract base for iNES mappers.
+// Copyright 2020 Christian Kauten
+//
+// Author: Christian Kauten (kautenja@auburn.edu)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
 #ifndef NES_BASE_MAPPER_HPP
 #define NES_BASE_MAPPER_HPP
@@ -14,15 +30,15 @@ class BaseMapper {
 
   virtual void reset() = 0;
 
-  void set_prg_rom(std::vector<uint8_t>&&) {
+  void set_prg_rom(std::vector<uint8_t>&& vec) {
     prg = std::move(vec);
   }
 
-  void set_chr_rom(std::vector<uint8_t>&&) {
+  void set_chr_rom(std::vector<uint8_t>&& vec) {
     chr = std::move(vec);
   }
 
-  void set_prg_ram(std::vector<uint8_t>&&) {
+  void set_prg_ram(std::vector<uint8_t>&& vec) {
     prg_ram = std::move(vec);
   }
 
@@ -30,7 +46,7 @@ class BaseMapper {
     return prg_ram;
   }
 
-  uint8_t prg_read(uint16_t addr) const {
+  uint8_t readPRG(uint16_t addr) const {
     if (addr >= 0x8000) {
       size_t slot     = (addr - 0x8000) / 0x2000;
       size_t prg_addr = (addr - 0x8000) % 0x2000;
@@ -41,17 +57,17 @@ class BaseMapper {
     }
   }
 
-  inline uint8_t chr_read(uint16_t addr) const {
+  inline uint8_t readCHR(uint16_t addr) const {
     size_t slot     = addr / 0x400;
     size_t chr_addr = addr % 0x400;
     return chr[chr_map[slot] + chr_addr];
   }
 
-  virtual inline void prg_write(uint16_t addr, uint8_t value) {
+  virtual inline void writePRG(uint16_t addr, uint8_t value) {
     prg_ram[addr] = value;
   }
 
-  virtual inline void chr_write(uint16_t addr, uint8_t value) {
+  virtual inline void writeCHR(uint16_t addr, uint8_t value) {
     chr[addr] = value;
   }
 

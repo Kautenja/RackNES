@@ -28,7 +28,7 @@ class Mapper2 final : public BaseMapper {
     set_chr_map<8>(0, 0);
   }
 
-  inline void prg_write(uint16_t addr, uint8_t value) override {
+  inline void writePRG(uint16_t addr, uint8_t value) override {
     if (addr < 0x8000) {
       throw std::runtime_error("Mapper 2 does not have PRG-RAM");
     }
