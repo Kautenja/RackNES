@@ -50,3 +50,10 @@
 ### 1.4.0 (2020-07-03)
 
 -   ROM files can be loaded by dropping them onto the module
+
+### 1.5.0 (2020-07-10)
+
+-   iNES2.0 support
+-   improve ROM file loading and storage
+-   fix mapper number calculation to include the 4-high bits in the 12-bit
+    format

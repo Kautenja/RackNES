@@ -48,8 +48,8 @@ class Cartridge : public ROM {
         // initialize a new cartridge
         auto cartridge = new Cartridge(path);
         // load the mapper
-        LOG(INFO) << "loading mapper with ID " << static_cast<int>(cartridge->mapper_number) << std::endl;
-        switch (static_cast<MapperID>(cartridge->mapper_number)) {
+        LOG(INFO) << "loading mapper with ID " << static_cast<int>(cartridge->get_mapper_number()) << std::endl;
+        switch (static_cast<MapperID>(cartridge->get_mapper_number())) {
             case MapperID::NROM:  cartridge->mapper = new MapperNROM(*cartridge);           break;
             case MapperID::MMC1:  cartridge->mapper = new MapperMMC1(*cartridge, callback); break;
             case MapperID::UNROM: cartridge->mapper = new MapperUNROM(*cartridge);          break;

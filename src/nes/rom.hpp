@@ -10,18 +10,20 @@
 
 #include <fstream>
 #include <string>
+#include <array>
 #include <vector>
 #include <jansson.h>
 #include "../base64.h"
 #include "common.hpp"
+#include "log.hpp"
 
 namespace NES {
 
 /// Mirroring modes supported by the NES
 enum NameTableMirroring {
-    HORIZONTAL  = 0,
-    VERTICAL    = 1,
-    FOUR_SCREEN  = 8,
+    HORIZONTAL        = 0,
+    VERTICAL          = 1,
+    FOUR_SCREEN       = 8,
     ONE_SCREEN_LOWER,
     ONE_SCREEN_HIGHER,
 };
@@ -35,15 +37,117 @@ class ROM {
     std::vector<NES_Byte> prg_rom;
     /// the CHR ROM
     std::vector<NES_Byte> chr_rom;
-    /// the name table mirroring mode
-    NES_Byte name_table_mirroring;
-    /// the mapper ID number
-    NES_Byte mapper_number;
-    /// whether this cartridge uses extended RAM
-    bool has_extended_ram;
+    /// the PRG RAM
+    std::vector<NES_Byte> prg_ram;
+
+    /// the size of the iNES head in bytes
+    static constexpr int HEADER_SIZE = 16;
+
+    /// the indexes of semantic bytes in the iNES header.
+    enum HEADER_BYTES {
+        MAGIC_NIBBLE = 0,  // the magic nibble "NES<EOF>"
+        PRG_ROM_SIZE = 4,
+        CHR_ROM_SIZE,
+        FLAGS6,
+        FLAGS7,
+        FLAGS8,
+        FLAGS9,
+        FLAGS10,
+        FLAGS11
+    };
+
+    /// a structure for working with the flags 6 byte in the iNES header.
+    union Flags6 {
+        struct {
+            /// the hard-wired name-table mirroring type (true = vertical)
+            bool is_vertical_mirroring: 1;
+            /// whether "battery" and other non-volatile memory is present
+            bool has_persistent_memory: 1;
+            /// whether the 512-byte trainer is present
+            bool has_trainer: 1;
+            /// whether hard-wired four-screen mode is present
+            bool is_four_screen_mode: 1;
+            /// the low bits of the mapper number
+            uint8_t mapper_low: 4;
+        } flags;
+        /// the name-table mirroring mode
+        uint8_t name_table_mirroring: 4;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags6;
+
+    /// the different console types.
+    enum ConsoleType {
+        NES_FAMICOM = 0,
+        VS_SYSTEM,
+        PLAYCHOICE10,
+        EXTENDED
+    };
+
+    /// a structure for working with the flags 7 byte in the iNES header.
+    union Flags7 {
+        struct {
+            /// the console type ID (followed by an unused bit)
+            uint8_t console_type: 2, : 1;
+            /// whether the ROM file is NES2.0 format (true) or iNES (false)
+            bool is_nes_2: 1;
+            /// the middle bits of the mapper number
+            uint8_t mapper_mid: 4;
+        } flags;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags7;
+
+    /// a structure for working with the flags 8 byte in the iNES header.
+    struct Flags8 {
+        struct {
+            /// the high bits of the mapper number
+            uint8_t mapper_high: 4;
+            /// the sub-mapper number
+            uint8_t submapper: 4;
+        } flags;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags8;
+
+    /// a structure for working with the flags 9 byte in the iNES header.
+    struct Flags9 {
+        struct {
+            /// the most significant bits of the PRG ROM size
+            uint8_t prg_rom_msb: 4;
+            /// the most significant bits of the CHR ROM size
+            uint8_t chr_rom_msb: 4;
+        } flags;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags9;
+
+    /// a structure for working with the flags 10 byte in the iNES header.
+    struct Flags10 {
+        struct {
+            /// the size of the PRG RAM as a shift of 64
+            uint8_t prg_ram_size: 4;
+            /// the size of the NVPRG RAM as a shift of 64
+            uint8_t prg_nvram_size: 4;
+        } flags;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags10;
+
+    /// a structure for working with the flags 11 byte in the iNES header.
+    struct Flags11 {
+        struct {
+            /// the size of the CHR RAM as a shift of 64
+            uint8_t chr_ram_size: 4;
+            /// the size of the NVCHR RAM as a shift of 64
+            uint8_t chr_nvram_size: 4;
+        } flags;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags11;
 
  public:
-    /// Return true of the path points to a valid iNES file.
+    /// @brief Return true of the path points to a valid iNES file.
     ///
     /// @param path the path to the potential file to check
     /// @returns true if the path points to a valid iNES file, false otherwise
@@ -53,62 +157,119 @@ class ROM {
         static const std::vector<NES_Byte> MAGIC = {0x4E, 0x45, 0x53, 0x1A};
         // // create a stream to load the ROM file
         std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
-        /// return false if the file could not be opened
+        /// return false if the file did not open
         if (!romFile.is_open()) return false;
         // create a byte vector for the iNES header
-        std::vector<NES_Byte> header;
-        // resize the header vector
-        header.resize(MAGIC.size());
+        std::vector<NES_Byte> header(MAGIC.size());
         // read the header data from the file
         romFile.read(reinterpret_cast<char*>(&header[0]), MAGIC.size());
         // check if the header is equal to the magic number
         return header == MAGIC;
     }
 
-    /// Initialize a new ROM file.
+    /// @brief Initialize a new ROM file.
+    ///
+    /// @param path the path to the iNES or NES2.0 file on disk
+    ///
     explicit ROM(const std::string& path) : rom_path(path) {
         // create a stream to load the ROM file
         std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
         // create a byte vector for the iNES header
-        std::vector<NES_Byte> header;
-        header.resize(0x10);
-        romFile.read(reinterpret_cast<char*>(&header[0]), 0x10);
-        // read internal data
-        name_table_mirroring = header[6] & 0xB;
-        mapper_number = ((header[6] >> 4) & 0xf) | (header[7] & 0xf0);
-        has_extended_ram = header[6] & 0x2;
+        std::vector<NES_Byte> header(HEADER_SIZE);
+        romFile.read(reinterpret_cast<char*>(&header[0]), HEADER_SIZE);
+        // read the flag registers
+        auto prg_banks = header[PRG_ROM_SIZE];
+        auto chr_banks = header[CHR_ROM_SIZE];
+        flags6 = reinterpret_cast<Flags6&>(header[FLAGS6]);
+        flags7 = reinterpret_cast<Flags7&>(header[FLAGS7]);
+        flags8 = reinterpret_cast<Flags8&>(header[FLAGS8]);
+        flags9 = reinterpret_cast<Flags9&>(header[FLAGS9]);
+        flags10 = reinterpret_cast<Flags10&>(header[FLAGS10]);
+        flags11 = reinterpret_cast<Flags11&>(header[FLAGS11]);
         // read PRG-ROM 16KB banks
-        NES_Byte banks = header[4];
-        prg_rom.resize(0x4000 * banks);
-        romFile.read(reinterpret_cast<char*>(&prg_rom[0]), 0x4000 * banks);
+        static constexpr uint64_t PRG_BANK_SIZE = 0x4000;
+        prg_rom.resize(PRG_BANK_SIZE * prg_banks);
+        romFile.read(reinterpret_cast<char*>(&prg_rom[0]), PRG_BANK_SIZE * prg_banks);
         // read CHR-ROM 8KB banks
-        NES_Byte vbanks = header[5];
-        if (!vbanks) return;
-        chr_rom.resize(0x2000 * vbanks);
-        romFile.read(reinterpret_cast<char*>(&chr_rom[0]), 0x2000 * vbanks);
+        static constexpr uint64_t CHR_BANK_SIZE = 0x2000;
+        if (!chr_banks) return;
+        chr_rom.resize(CHR_BANK_SIZE * chr_banks);
+        romFile.read(reinterpret_cast<char*>(&chr_rom[0]), CHR_BANK_SIZE * chr_banks);
     }
 
-    /// Return the path to the ROM on disk.
+    /// @brief Return the path to the ROM on disk.
+    ///
+    /// @returns the string path to the ROM data on disk
+    ///
     inline std::string get_rom_path() const { return rom_path; }
 
-    /// Return the ROM data.
+    /// @brief Return the ROM data.
+    ///
+    /// @return the ROM data of the ROM
+    ///
     const inline std::vector<NES_Byte>& getROM() const { return prg_rom; }
 
-    /// Return the VROM data.
-    const inline std::vector<NES_Byte>& getVROM() const { return chr_rom; }
+    /// @brief Return the RAM data.
+    ///
+    /// @return the RAM data of the ROM
+    ///
+    const inline std::vector<NES_Byte>& getRAM() const { return prg_ram; }
 
-    /// Return the name table mirroring mode.
-    inline NameTableMirroring getNameTableMirroring() const {
-        return static_cast<NameTableMirroring>(name_table_mirroring);
+    /// @brief Set the value at the RAM address.
+    ///
+    /// @param address the address to write to
+    /// @param value the value to write to the RAM at the address
+    ///
+    inline void writeRAM(NES_Address addr, NES_Byte value) {
+        prg_ram[addr] = value;
     }
 
-    /// Return the mapper ID number.
-    inline NES_Byte get_mapper_number() const { return mapper_number; }
+    /// @brief Return the VROM data.
+    ///
+    /// @return the CHR/VROM data of the ROM
+    ///
+    const inline std::vector<NES_Byte>& getVROM() const { return chr_rom; }
 
-    /// Return a boolean determining whether this cartridge uses extended RAM.
-    inline bool hasExtendedRAM() const { return has_extended_ram; }
+    /// @brief Set the value at the VROM address.
+    ///
+    /// @param address the address to write to
+    /// @param value the value to write to the VROM at the address
+    ///
+    inline void writeVROM(NES_Address addr, NES_Byte value) {
+        chr_rom[addr] = value;
+    }
 
-    /// Convert the object's state to a JSON object.
+    /// @brief Return the name table mirroring mode.
+    ///
+    /// @returns the name table mirroring mode used by the ROM
+    ///
+    inline NameTableMirroring getNameTableMirroring() const {
+        return static_cast<NameTableMirroring>(flags6.name_table_mirroring & 0xB);
+    }
+
+    /// @brief Return the mapper ID number.
+    ///
+    /// @returns the iNES mapper ID for the cartridge mapper
+    ///
+    inline uint16_t get_mapper_number() const {
+        return (flags8.flags.mapper_high << 8) |
+               (flags7.flags.mapper_mid  << 4) |
+                flags6.flags.mapper_low;
+    }
+
+    /// @brief Return a boolean determining whether this cartridge uses
+    /// extended RAM.
+    ///
+    /// @returns true if the ROM requires extended RAM, false otherwise
+    ///
+    inline bool hasExtendedRAM() const {
+        return flags6.flags.has_persistent_memory;
+    }
+
+    /// @brief Convert the object's state to a JSON object.
+    ///
+    /// @returns a JSON representation of this instance's data
+    ///
     json_t* dataToJson() const {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "rom_path", json_string(rom_path.c_str()));
@@ -122,13 +283,16 @@ class ROM {
         //     auto data_string = base64_encode(&chr_rom[0], chr_rom.size());
         //     json_object_set_new(rootJ, "chr_rom", json_string(data_string.c_str()));
         // }
-        json_object_set_new(rootJ, "name_table_mirroring", json_integer(name_table_mirroring));
-        json_object_set_new(rootJ, "mapper_number", json_integer(mapper_number));
-        json_object_set_new(rootJ, "has_extended_ram", json_boolean(has_extended_ram));
+        json_object_set_new(rootJ, "flags6", json_integer(flags6.byte));
+        json_object_set_new(rootJ, "flags7", json_integer(flags7.byte));
+        json_object_set_new(rootJ, "flags8", json_integer(flags8.byte));
         return rootJ;
     }
 
-    /// Load the object's state from a JSON object.
+    /// @brief Load the object's state from a JSON object.
+    ///
+    /// @param rootJ the serialized JSON data to load into this object
+    ///
     void dataFromJson(json_t* rootJ) {
         // load rom_path
         {
@@ -154,52 +318,56 @@ class ROM {
         //         chr_rom = std::vector<NES_Byte>(data_string.begin(), data_string.end());
         //     }
         // }
-        // load name_table_mirroring
+        // load flags6
         {
-            json_t* json_data = json_object_get(rootJ, "name_table_mirroring");
-            if (json_data)
-                name_table_mirroring = json_integer_value(json_data);
+            json_t* json_data = json_object_get(rootJ, "flags6");
+            if (json_data) flags6.byte = json_integer_value(json_data);
         }
-        // load mapper_number
+        // load flags7
         {
-            json_t* json_data = json_object_get(rootJ, "mapper_number");
-            if (json_data)
-                mapper_number = json_integer_value(json_data);
+            json_t* json_data = json_object_get(rootJ, "flags7");
+            if (json_data) flags7.byte = json_integer_value(json_data);
         }
-        // load has_extended_ram
+        // load flags8
         {
-            json_t* json_data = json_object_get(rootJ, "has_extended_ram");
-            if (json_data)
-                has_extended_ram = json_boolean_value(json_data);
+            json_t* json_data = json_object_get(rootJ, "flags8");
+            if (json_data) flags8.byte = json_integer_value(json_data);
         }
     }
 
-    /// An ASIC mapper for different NES cartridges.
+    /// An iNES mapper for different NES cartridges.
     class Mapper {
      protected:
-        /// The cartridge this mapper associates with
+        /// The ROM file this mapper interacts with
         ROM& rom;
 
-        /// Create a mapper as a copy of another mapper.
+        /// Create a mapper as a copy of another mapper (disabled).
         Mapper(const Mapper& other) : rom(other.rom) { }
 
      public:
-        /// Create a new mapper with a rom and given type.
+        /// @brief Create a new mapper with a rom and given type.
         ///
         /// @param rom_ a reference to a rom for the mapper to access
         ///
         explicit Mapper(ROM& rom_) : rom(rom_) { }
 
-        /// Destroy this mapper.
+        /// @brief  Destroy this mapper.
         virtual ~Mapper() { }
 
-        /// Clone the mapper, i.e., the virtual copy constructor
+        /// @brief Clone the mapper, i.e., the virtual copy constructor
         virtual Mapper* clone() = 0;
 
-        /// Return true if this mapper has extended RAM, false otherwise.
+        /// @brief Return a boolean determining whether this cartridge uses
+        /// extended RAM.
+        ///
+        /// @returns true if the ROM requires extended RAM, false otherwise
+        ///
         inline bool hasExtendedRAM() const { return rom.hasExtendedRAM(); }
 
-        /// Return the name table mirroring mode of this mapper.
+        /// @brief Return the name table mirroring mode.
+        ///
+        /// @returns the name table mirroring mode used by the ROM
+        ///
         inline virtual NameTableMirroring getNameTableMirroring() const {
             return rom.getNameTableMirroring();
         }
@@ -207,7 +375,7 @@ class ROM {
         /// Read a byte from the PRG RAM.
         ///
         /// @param address the 16-bit address of the byte to read
-        /// @return the byte located at the given address in PRG RAM
+        /// @returns the byte located at the given address in PRG RAM
         ///
         virtual NES_Byte readPRG(NES_Address address) = 0;
 
@@ -221,7 +389,7 @@ class ROM {
         /// Read a byte from the CHR RAM.
         ///
         /// @param address the 16-bit address of the byte to read
-        /// @return the byte located at the given address in CHR RAM
+        /// @returns the byte located at the given address in CHR RAM
         ///
         virtual NES_Byte readCHR(NES_Address address) = 0;
 
@@ -232,10 +400,16 @@ class ROM {
         ///
         virtual void writeCHR(NES_Address address, NES_Byte value) = 0;
 
-        /// Convert the object's state to a JSON object.
+        /// @brief Convert the object's state to a JSON object.
+        ///
+        /// @returns a JSON representation of this instance's data
+        ///
         virtual json_t* dataToJson() = 0;
 
-        /// Load the object's state from a JSON object.
+        /// @brief Load the object's state from a JSON object.
+        ///
+        /// @param rootJ the serialized JSON data to load into this object
+        ///
         virtual void dataFromJson(json_t* rootJ) = 0;
     };
 };
