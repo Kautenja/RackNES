@@ -2,8 +2,8 @@
 
 [![Travis CI Build Status][BuildStatus]][BuildServer]
 
-[BuildStatus]:  https://travis-ci.com/Kautenja/RackNES.svg?branch=master
-[BuildServer]:  https://travis-ci.com/Kautenja/RackNES
+[BuildStatus]:  https://travis-ci.org/Kautenja/RackNES.svg?branch=master
+[BuildServer]:  https://travis-ci.org/Kautenja/RackNES
 
 A Nintendo Entertainment System (NES) emulator with Control Voltage (CV) for VCV Rack.
 
