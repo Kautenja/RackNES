@@ -23,6 +23,8 @@
 #include <cstdint>
 #include <utility>
 
+namespace NES {
+
 class BaseMapper {
  public:
   BaseMapper() { }
@@ -114,5 +116,7 @@ template void BaseMapper::set_chr_map<8>(size_t, int);
 template void BaseMapper::set_chr_map<4>(size_t, int);
 template void BaseMapper::set_chr_map<2>(size_t, int);
 template void BaseMapper::set_chr_map<1>(size_t, int);
+
+}  // namespace NES
 
 #endif  // NES_BASE_MAPPER_HPP

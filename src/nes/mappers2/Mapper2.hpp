@@ -18,7 +18,9 @@
 #ifndef MAPPERS2_MAPPER2_HPP
 #define MAPPERS2_MAPPER2_HPP
 
-#include "../BaseMapper.hpp"
+#include "../base_mapper.hpp"
+
+namespace NES {
 
 class Mapper2 final : public BaseMapper {
  public:
@@ -41,5 +43,7 @@ class Mapper2 final : public BaseMapper {
 
   int mode = 0;
 };
+
+}  // namespace NES
 
 #endif  // MAPPERS2_MAPPER2_HPP
