@@ -115,6 +115,18 @@ class ROM {
         uint8_t byte;
     } flags7;
 
+    /// a structure for working with the flags 8 byte in the iNES header.
+    struct Flags8 {
+        struct {
+            /// the high bits of the mapper number
+            uint8_t mapper_high: 4;
+            /// the sub-mapper number
+            uint8_t submapper: 4;
+        } flags;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags8;
+
     /// @brief Initialize a new ROM file.
     ///
     /// @param path the path to the iNES or NES2.0 file on disk
@@ -128,6 +140,7 @@ class ROM {
         // read the flag registers
         flags6 = reinterpret_cast<Flags6&>(header[FLAGS6]);
         flags7 = reinterpret_cast<Flags7&>(header[FLAGS7]);
+        flags8 = reinterpret_cast<Flags8&>(header[FLAGS8]);
         // read PRG-ROM 16KB banks
         static constexpr uint64_t PRG_BANK_SIZE = 0x4000;
         NES_Byte banks = header[PRG_ROM_SIZE];
@@ -172,7 +185,9 @@ class ROM {
     /// @returns the iNES mapper ID for the cartridge mapper
     ///
     inline uint16_t get_mapper_number() const {
-        return (flags7.flags.mapper_mid << 4) | flags6.flags.mapper_low;
+        return (flags8.flags.mapper_high << 8) |
+               (flags7.flags.mapper_mid  << 4) |
+                flags6.flags.mapper_low;
     }
 
     /// @brief Return a boolean determining whether this cartridge uses
@@ -203,6 +218,7 @@ class ROM {
         // }
         json_object_set_new(rootJ, "flags6", json_integer(flags6.byte));
         json_object_set_new(rootJ, "flags7", json_integer(flags7.byte));
+        json_object_set_new(rootJ, "flags8", json_integer(flags8.byte));
         return rootJ;
     }
 
@@ -244,6 +260,11 @@ class ROM {
         {
             json_t* json_data = json_object_get(rootJ, "flags7");
             if (json_data) flags7.byte = json_integer_value(json_data);
+        }
+        // load flags8
+        {
+            json_t* json_data = json_object_get(rootJ, "flags8");
+            if (json_data) flags8.byte = json_integer_value(json_data);
         }
     }
 
