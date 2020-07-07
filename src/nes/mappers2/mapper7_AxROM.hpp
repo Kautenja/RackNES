@@ -18,11 +18,11 @@
 #ifndef MAPPERS2_MAPPER7_HPP
 #define MAPPERS2_MAPPER7_HPP
 
-#include "../base_mapper.hpp"
+#include "../rom.hpp"
 
 namespace NES {
 
-class Mapper7 final : public BaseMapper {
+class Mapper7 final : public ROM::BaseMapper {
  public:
   void reset() override {
     mode = 0;

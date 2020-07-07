@@ -10,6 +10,7 @@
 
 #include <fstream>
 #include <string>
+#include <array>
 #include <vector>
 #include <jansson.h>
 #include "../base64.h"
@@ -36,27 +37,8 @@ class ROM {
     std::vector<NES_Byte> prg_rom;
     /// the CHR ROM
     std::vector<NES_Byte> chr_rom;
-
- public:
-    /// @brief Return true of the path points to a valid iNES file.
-    ///
-    /// @param path the path to the potential file to check
-    /// @returns true if the path points to a valid iNES file, false otherwise
-    ///
-    static inline bool is_valid_rom(const std::string& path) {
-        // the "magic number", i.e., sentinel value, of the header
-        static const std::vector<NES_Byte> MAGIC = {0x4E, 0x45, 0x53, 0x1A};
-        // // create a stream to load the ROM file
-        std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
-        /// return false if the file did not open
-        if (!romFile.is_open()) return false;
-        // create a byte vector for the iNES header
-        std::vector<NES_Byte> header(MAGIC.size());
-        // read the header data from the file
-        romFile.read(reinterpret_cast<char*>(&header[0]), MAGIC.size());
-        // check if the header is equal to the magic number
-        return header == MAGIC;
-    }
+    /// the PRG RAM
+    std::vector<NES_Byte> prg_ram;
 
     /// the size of the iNES head in bytes
     static constexpr int HEADER_SIZE = 16;
@@ -164,6 +146,27 @@ class ROM {
         uint8_t byte;
     } flags11;
 
+ public:
+    /// @brief Return true of the path points to a valid iNES file.
+    ///
+    /// @param path the path to the potential file to check
+    /// @returns true if the path points to a valid iNES file, false otherwise
+    ///
+    static inline bool is_valid_rom(const std::string& path) {
+        // the "magic number", i.e., sentinel value, of the header
+        static const std::vector<NES_Byte> MAGIC = {0x4E, 0x45, 0x53, 0x1A};
+        // // create a stream to load the ROM file
+        std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
+        /// return false if the file did not open
+        if (!romFile.is_open()) return false;
+        // create a byte vector for the iNES header
+        std::vector<NES_Byte> header(MAGIC.size());
+        // read the header data from the file
+        romFile.read(reinterpret_cast<char*>(&header[0]), MAGIC.size());
+        // check if the header is equal to the magic number
+        return header == MAGIC;
+    }
+
     /// @brief Initialize a new ROM file.
     ///
     /// @param path the path to the iNES or NES2.0 file on disk
@@ -206,11 +209,35 @@ class ROM {
     ///
     const inline std::vector<NES_Byte>& getROM() const { return prg_rom; }
 
+    /// @brief Return the RAM data.
+    ///
+    /// @return the RAM data of the ROM
+    ///
+    const inline std::vector<NES_Byte>& getRAM() const { return prg_ram; }
+
+    /// @brief Set the value at the RAM address.
+    ///
+    /// @param address the address to write to
+    /// @param value the value to write to the RAM at the address
+    ///
+    inline void writeRAM(NES_Address addr, NES_Byte value) {
+        prg_ram[addr] = value;
+    }
+
     /// @brief Return the VROM data.
     ///
     /// @return the CHR/VROM data of the ROM
     ///
     const inline std::vector<NES_Byte>& getVROM() const { return chr_rom; }
+
+    /// @brief Set the value at the VROM address.
+    ///
+    /// @param address the address to write to
+    /// @param value the value to write to the VROM at the address
+    ///
+    inline void writeVROM(NES_Address addr, NES_Byte value) {
+        chr_rom[addr] = value;
+    }
 
     /// @brief Return the name table mirroring mode.
     ///
@@ -385,7 +412,123 @@ class ROM {
         ///
         virtual void dataFromJson(json_t* rootJ) = 0;
     };
+
+    /// An iNES mapper for different NES cartridges.
+    class BaseMapper {
+     protected:
+        /// The ROM file this mapper interacts with
+        ROM& rom;
+        /// TODO:
+        std::array<std::size_t, 4> prg_map = {};
+        /// TODO:
+        std::array<std::size_t, 8> chr_map = {};
+
+     public:
+        /// @brief Create a new mapper with a rom and given type.
+        ///
+        /// @param rom_ a reference to a rom for the mapper to access
+        ///
+        explicit BaseMapper(ROM& rom_) : rom(rom_) { }
+
+        /// @brief  Destroy this mapper.
+        virtual ~BaseMapper() { }
+
+        /// @brief reset the mapper to its initial state
+        virtual void reset() = 0;
+
+        /// Read a byte from the PRG RAM.
+        ///
+        /// @param address the 16-bit address of the byte to read
+        /// @returns the byte located at the given address in PRG RAM
+        ///
+        uint8_t readPRG(uint16_t addr) const {
+            if (addr >= 0x8000) {
+                size_t slot     = (addr - 0x8000) / 0x2000;
+                size_t prg_addr = (addr - 0x8000) % 0x2000;
+                return rom.getROM()[prg_map[slot] + prg_addr];
+            } else {
+                return rom.getRAM()[addr - 0x6000];
+            }
+        }
+
+        /// Write a byte to an address in the PRG RAM.
+        ///
+        /// @param address the 16-bit address to write to
+        /// @param value the byte to write to the given address
+        ///
+        virtual inline void writePRG(uint16_t addr, uint8_t value) {
+            rom.writeRAM(addr, value);
+        }
+
+        /// Read a byte from the CHR RAM.
+        ///
+        /// @param address the 16-bit address of the byte to read
+        /// @returns the byte located at the given address in CHR RAM
+        ///
+        inline uint8_t readCHR(uint16_t addr) const {
+            size_t slot     = addr / 0x400;
+            size_t chr_addr = addr % 0x400;
+            return rom.getVROM()[chr_map[slot] + chr_addr];
+        }
+
+        /// Write a byte to an address in the CHR RAM.
+        ///
+        /// @param address the 16-bit address to write to
+        /// @param value the byte to write to the given address
+        ///
+        virtual inline void writeCHR(uint16_t addr, uint8_t value) {
+            rom.writeVROM(addr, value);
+        }
+
+        /// TODO:
+        ///
+        /// @tparam size
+        /// @param slot
+        /// @param page
+        ///
+        template <size_t size>
+        void set_prg_map(size_t slot, int page) {
+            constexpr size_t pages   = size / 8;
+            constexpr size_t pages_b = size * 0x400;  // In bytes
+
+            if (page < 0) {
+                page = (static_cast<int>(rom.getROM().size()) / pages_b) + page;
+            }
+
+            for (size_t i = 0; i < pages; ++i) {
+                prg_map[pages * slot + i] = ((pages_b * page) + 0x2000 * i) % rom.getROM().size();
+            }
+        }
+
+        /// TODO:
+        ///
+        /// @tparam size
+        /// @param slot
+        /// @param page
+        ///
+        template <size_t size>
+        void set_chr_map(size_t slot, int page) {
+            constexpr size_t pages   = size;
+            constexpr size_t pages_b = size * 0x400;  // In bytes
+
+            for (size_t i = 0; i < size; ++i) {
+                chr_map[pages * slot + i] = ((pages_b * page) + 0x400 * i) % rom.getVROM().size();
+            }
+        }
+
+        /// TODO:
+        virtual inline void scanline_counter() { }
+    };
 };
+
+template void ROM::BaseMapper::set_prg_map<32>(size_t, int);
+template void ROM::BaseMapper::set_prg_map<16>(size_t, int);
+template void ROM::BaseMapper::set_prg_map<8> (size_t, int);
+
+template void ROM::BaseMapper::set_chr_map<8>(size_t, int);
+template void ROM::BaseMapper::set_chr_map<4>(size_t, int);
+template void ROM::BaseMapper::set_chr_map<2>(size_t, int);
+template void ROM::BaseMapper::set_chr_map<1>(size_t, int);
 
 }  // namespace NES
 

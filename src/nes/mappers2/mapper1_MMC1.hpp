@@ -18,11 +18,11 @@
 #ifndef MAPPERS2_MAPPER1_HPP
 #define MAPPERS2_MAPPER1_HPP
 
-#include "../base_mapper.hpp"
+#include "../rom.hpp"
 
 namespace NES {
 
-class Mapper1 final : public BaseMapper {
+class Mapper1 final : public ROM::BaseMapper {
  public:
   void reset() override {
     write_delay = 5;
@@ -38,7 +38,7 @@ class Mapper1 final : public BaseMapper {
 
   void writePRG(uint16_t addr, uint8_t value) override {
     if (addr < 0x8000) {
-      prg_ram[addr - 0x6000] = value;
+      rom.writeRAM(addr - 0x6000, value);
     } else if (addr & 0x8000) {
       if (value & 0x80) {  // Reset
         control |= 0x0C;
