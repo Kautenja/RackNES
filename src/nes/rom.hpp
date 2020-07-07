@@ -71,6 +71,7 @@ class ROM {
         FLAGS8,
         FLAGS9,
         FLAGS10,
+        FLAGS11
     };
 
     /// a structure for working with the flags 6 byte in the iNES header.
@@ -127,6 +128,42 @@ class ROM {
         uint8_t byte;
     } flags8;
 
+    /// a structure for working with the flags 9 byte in the iNES header.
+    struct Flags9 {
+        struct {
+            /// the most significant bits of the PRG ROM size
+            uint8_t prg_rom_msb: 4;
+            /// the most significant bits of the CHR ROM size
+            uint8_t chr_rom_msb: 4;
+        } flags;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags9;
+
+    /// a structure for working with the flags 10 byte in the iNES header.
+    struct Flags10 {
+        struct {
+            /// the size of the PRG RAM as a shift of 64
+            uint8_t prg_ram_size: 4;
+            /// the size of the NVPRG RAM as a shift of 64
+            uint8_t prg_nvram_size: 4;
+        } flags;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags10;
+
+    /// a structure for working with the flags 11 byte in the iNES header.
+    struct Flags11 {
+        struct {
+            /// the size of the CHR RAM as a shift of 64
+            uint8_t chr_ram_size: 4;
+            /// the size of the NVCHR RAM as a shift of 64
+            uint8_t chr_nvram_size: 4;
+        } flags;
+        /// the byte representation of the flag register
+        uint8_t byte;
+    } flags11;
+
     /// @brief Initialize a new ROM file.
     ///
     /// @param path the path to the iNES or NES2.0 file on disk
@@ -138,20 +175,23 @@ class ROM {
         std::vector<NES_Byte> header(HEADER_SIZE);
         romFile.read(reinterpret_cast<char*>(&header[0]), HEADER_SIZE);
         // read the flag registers
+        auto prg_banks = header[PRG_ROM_SIZE];
+        auto chr_banks = header[CHR_ROM_SIZE];
         flags6 = reinterpret_cast<Flags6&>(header[FLAGS6]);
         flags7 = reinterpret_cast<Flags7&>(header[FLAGS7]);
         flags8 = reinterpret_cast<Flags8&>(header[FLAGS8]);
+        flags9 = reinterpret_cast<Flags9&>(header[FLAGS9]);
+        flags10 = reinterpret_cast<Flags10&>(header[FLAGS10]);
+        flags11 = reinterpret_cast<Flags11&>(header[FLAGS11]);
         // read PRG-ROM 16KB banks
         static constexpr uint64_t PRG_BANK_SIZE = 0x4000;
-        NES_Byte banks = header[PRG_ROM_SIZE];
-        prg_rom.resize(PRG_BANK_SIZE * banks);
-        romFile.read(reinterpret_cast<char*>(&prg_rom[0]), PRG_BANK_SIZE * banks);
+        prg_rom.resize(PRG_BANK_SIZE * prg_banks);
+        romFile.read(reinterpret_cast<char*>(&prg_rom[0]), PRG_BANK_SIZE * prg_banks);
         // read CHR-ROM 8KB banks
-        static constexpr uint64_t CHR_BANK_SIZE = 0x4000;
-        NES_Byte vbanks = header[CHR_ROM_SIZE];
-        if (!vbanks) return;
-        chr_rom.resize(CHR_BANK_SIZE * vbanks);
-        romFile.read(reinterpret_cast<char*>(&chr_rom[0]), CHR_BANK_SIZE * vbanks);
+        static constexpr uint64_t CHR_BANK_SIZE = 0x2000;
+        if (!chr_banks) return;
+        chr_rom.resize(CHR_BANK_SIZE * chr_banks);
+        romFile.read(reinterpret_cast<char*>(&chr_rom[0]), CHR_BANK_SIZE * chr_banks);
     }
 
     /// @brief Return the path to the ROM on disk.
