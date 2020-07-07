@@ -56,33 +56,59 @@ class ROM {
         /// return false if the file could not be opened
         if (!romFile.is_open()) return false;
         // create a byte vector for the iNES header
-        std::vector<NES_Byte> header;
-        // resize the header vector
-        header.resize(MAGIC.size());
+        std::vector<NES_Byte> header(MAGIC.size());
         // read the header data from the file
         romFile.read(reinterpret_cast<char*>(&header[0]), MAGIC.size());
         // check if the header is equal to the magic number
         return header == MAGIC;
     }
 
+    /// the size of the iNES head in bytes
+    static constexpr int HEADER_SIZE = 16;
+
+    /// the indexes of semantic bytes in the iNES header.
+    enum HEADER_BYTES {
+        // MAGIC_BYTES = 0,
+        PRG_ROM_SIZE = 4,
+        CHR_ROM_SIZE,
+        FLAGS6,
+        FLAGS7,
+        FLAGS8,
+        FLAGS9,
+        FLAGS10,
+    };
+
+    enum FLAGS6 {
+        MIRRORING,
+        PERSISTENT_MEMORY,
+        TRAINER,
+        FOUR_SCREEN,
+        MAPPER_LO
+    };
+
+    enum FLAGS7 {
+        CONSOLE,
+        NES2ID = 3,
+        MAPPER_HI
+    };
+
     /// Initialize a new ROM file.
     explicit ROM(const std::string& path) : rom_path(path) {
         // create a stream to load the ROM file
         std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
         // create a byte vector for the iNES header
-        std::vector<NES_Byte> header;
-        header.resize(0x10);
-        romFile.read(reinterpret_cast<char*>(&header[0]), 0x10);
+        std::vector<NES_Byte> header(HEADER_SIZE);
+        romFile.read(reinterpret_cast<char*>(&header[0]), HEADER_SIZE);
         // read internal data
-        name_table_mirroring = header[6] & 0xB;
-        mapper_number = ((header[6] >> 4) & 0xf) | (header[7] & 0xf0);
-        has_extended_ram = header[6] & 0x2;
+        name_table_mirroring = header[FLAGS6] & 0xB;
+        mapper_number = ((header[FLAGS6] >> 4) & 0xf) | (header[FLAGS7] & 0xf0);
+        has_extended_ram = header[FLAGS6] & 0x2;
         // read PRG-ROM 16KB banks
-        NES_Byte banks = header[4];
+        NES_Byte banks = header[PRG_ROM_SIZE];
         prg_rom.resize(0x4000 * banks);
         romFile.read(reinterpret_cast<char*>(&prg_rom[0]), 0x4000 * banks);
         // read CHR-ROM 8KB banks
-        NES_Byte vbanks = header[5];
+        NES_Byte vbanks = header[CHR_ROM_SIZE];
         if (!vbanks) return;
         chr_rom.resize(0x2000 * vbanks);
         romFile.read(reinterpret_cast<char*>(&chr_rom[0]), 0x2000 * vbanks);
