@@ -28,7 +28,7 @@ class Mapper7 final : public BaseMapper {
     apply();
   }
 
-  void prg_write(uint16_t addr, uint8_t value) override {
+  void writePRG(uint16_t addr, uint8_t value) override {
     if (addr < 0x8000) {
       throw std::runtime_error("Mapper 7 does not have PRG-RAM");
     }

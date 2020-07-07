@@ -34,7 +34,7 @@ class Mapper1 final : public BaseMapper {
     apply();
   }
 
-  void prg_write(uint16_t addr, uint8_t value) override {
+  void writePRG(uint16_t addr, uint8_t value) override {
     if (addr < 0x8000) {
       prg_ram[addr - 0x6000] = value;
     } else if (addr & 0x8000) {
