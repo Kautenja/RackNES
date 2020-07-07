@@ -141,31 +141,53 @@ class ROM {
         romFile.read(reinterpret_cast<char*>(&chr_rom[0]), CHR_BANK_SIZE * vbanks);
     }
 
-    /// Return the path to the ROM on disk.
+    /// @brief Return the path to the ROM on disk.
+    ///
+    /// @returns the string path to the ROM data on disk
+    ///
     inline std::string get_rom_path() const { return rom_path; }
 
-    /// Return the ROM data.
+    /// @brief Return the ROM data.
+    ///
+    /// @return the ROM data of the ROM
+    ///
     const inline std::vector<NES_Byte>& getROM() const { return prg_rom; }
 
-    /// Return the VROM data.
+    /// @brief Return the VROM data.
+    ///
+    /// @return the CHR/VROM data of the ROM
+    ///
     const inline std::vector<NES_Byte>& getVROM() const { return chr_rom; }
 
-    /// Return the name table mirroring mode.
+    /// @brief Return the name table mirroring mode.
+    ///
+    /// @returns the name table mirroring mode used by the ROM
+    ///
     inline NameTableMirroring getNameTableMirroring() const {
         return static_cast<NameTableMirroring>(flags6.name_table_mirroring);
     }
 
-    /// Return the mapper ID number.
+    /// @brief Return the mapper ID number.
+    ///
+    /// @returns the iNES mapper ID for the cartridge mapper
+    ///
     inline uint16_t get_mapper_number() const {
         return (flags7.flags.mapper_mid << 4) | flags6.flags.mapper_low;
     }
 
-    /// Return a boolean determining whether this cartridge uses extended RAM.
+    /// @brief Return a boolean determining whether this cartridge uses
+    /// extended RAM.
+    ///
+    /// @returns true if the ROM requires extended RAM, false otherwise
+    ///
     inline bool hasExtendedRAM() const {
         return flags6.flags.has_persistent_memory;
     }
 
-    /// Convert the object's state to a JSON object.
+    /// @brief Convert the object's state to a JSON object.
+    ///
+    /// @returns a JSON representation of this instance's data
+    ///
     json_t* dataToJson() const {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "rom_path", json_string(rom_path.c_str()));
@@ -184,7 +206,10 @@ class ROM {
         return rootJ;
     }
 
-    /// Load the object's state from a JSON object.
+    /// @brief Load the object's state from a JSON object.
+    ///
+    /// @param rootJ the serialized JSON data to load into this object
+    ///
     void dataFromJson(json_t* rootJ) {
         // load rom_path
         {
@@ -222,32 +247,39 @@ class ROM {
         }
     }
 
-    /// An ASIC mapper for different NES cartridges.
+    /// An iNES mapper for different NES cartridges.
     class Mapper {
      protected:
-        /// The cartridge this mapper associates with
+        /// The ROM file this mapper interacts with
         ROM& rom;
 
-        /// Create a mapper as a copy of another mapper.
+        /// Create a mapper as a copy of another mapper (disabled).
         Mapper(const Mapper& other) : rom(other.rom) { }
 
      public:
-        /// Create a new mapper with a rom and given type.
+        /// @brief Create a new mapper with a rom and given type.
         ///
         /// @param rom_ a reference to a rom for the mapper to access
         ///
         explicit Mapper(ROM& rom_) : rom(rom_) { }
 
-        /// Destroy this mapper.
+        /// @brief  Destroy this mapper.
         virtual ~Mapper() { }
 
-        /// Clone the mapper, i.e., the virtual copy constructor
+        /// @brief Clone the mapper, i.e., the virtual copy constructor
         virtual Mapper* clone() = 0;
 
-        /// Return true if this mapper has extended RAM, false otherwise.
+        /// @brief Return a boolean determining whether this cartridge uses
+        /// extended RAM.
+        ///
+        /// @returns true if the ROM requires extended RAM, false otherwise
+        ///
         inline bool hasExtendedRAM() const { return rom.hasExtendedRAM(); }
 
-        /// Return the name table mirroring mode of this mapper.
+        /// @brief Return the name table mirroring mode.
+        ///
+        /// @returns the name table mirroring mode used by the ROM
+        ///
         inline virtual NameTableMirroring getNameTableMirroring() const {
             return rom.getNameTableMirroring();
         }
@@ -255,7 +287,7 @@ class ROM {
         /// Read a byte from the PRG RAM.
         ///
         /// @param address the 16-bit address of the byte to read
-        /// @return the byte located at the given address in PRG RAM
+        /// @returns the byte located at the given address in PRG RAM
         ///
         virtual NES_Byte readPRG(NES_Address address) = 0;
 
@@ -269,7 +301,7 @@ class ROM {
         /// Read a byte from the CHR RAM.
         ///
         /// @param address the 16-bit address of the byte to read
-        /// @return the byte located at the given address in CHR RAM
+        /// @returns the byte located at the given address in CHR RAM
         ///
         virtual NES_Byte readCHR(NES_Address address) = 0;
 
@@ -280,10 +312,16 @@ class ROM {
         ///
         virtual void writeCHR(NES_Address address, NES_Byte value) = 0;
 
-        /// Convert the object's state to a JSON object.
+        /// @brief Convert the object's state to a JSON object.
+        ///
+        /// @returns a JSON representation of this instance's data
+        ///
         virtual json_t* dataToJson() = 0;
 
-        /// Load the object's state from a JSON object.
+        /// @brief Load the object's state from a JSON object.
+        ///
+        /// @param rootJ the serialized JSON data to load into this object
+        ///
         virtual void dataFromJson(json_t* rootJ) = 0;
     };
 };
