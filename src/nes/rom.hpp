@@ -36,10 +36,6 @@ class ROM {
     std::vector<NES_Byte> prg_rom;
     /// the CHR ROM
     std::vector<NES_Byte> chr_rom;
-    /// the name table mirroring mode
-    NES_Byte name_table_mirroring;
-    /// whether this cartridge uses extended RAM
-    bool has_extended_ram;
 
  public:
     /// Return true of the path points to a valid iNES file.
@@ -91,6 +87,8 @@ class ROM {
             /// the low bits of the mapper number
             uint8_t mapper_low: 4;
         } flags;
+        /// the nametable mirroring mode
+        uint8_t name_table_mirroring: 4;
         /// the byte representation of the flag register
         uint8_t byte;
     } flags6;
@@ -124,13 +122,9 @@ class ROM {
         // create a byte vector for the iNES header
         std::vector<NES_Byte> header(HEADER_SIZE);
         romFile.read(reinterpret_cast<char*>(&header[0]), HEADER_SIZE);
-
+        // read the flag registers
         flags6 = reinterpret_cast<Flags6&>(header[FLAGS6]);
         flags7 = reinterpret_cast<Flags7&>(header[FLAGS7]);
-
-        // read internal data
-        name_table_mirroring = header[FLAGS6] & 0xB;
-        has_extended_ram = header[FLAGS6] & 0x2;
 
         // read PRG-ROM 16KB banks
         NES_Byte banks = header[PRG_ROM_SIZE];
@@ -154,7 +148,7 @@ class ROM {
 
     /// Return the name table mirroring mode.
     inline NameTableMirroring getNameTableMirroring() const {
-        return static_cast<NameTableMirroring>(name_table_mirroring);
+        return static_cast<NameTableMirroring>(flags6.name_table_mirroring);
     }
 
     /// Return the mapper ID number.
@@ -163,7 +157,9 @@ class ROM {
     }
 
     /// Return a boolean determining whether this cartridge uses extended RAM.
-    inline bool hasExtendedRAM() const { return has_extended_ram; }
+    inline bool hasExtendedRAM() const {
+        return flags6.flags.has_persistent_memory;
+    }
 
     /// Convert the object's state to a JSON object.
     json_t* dataToJson() const {
