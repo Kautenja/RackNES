@@ -38,7 +38,7 @@ class ROM {
     std::vector<NES_Byte> chr_rom;
 
  public:
-    /// Return true of the path points to a valid iNES file.
+    /// @brief Return true of the path points to a valid iNES file.
     ///
     /// @param path the path to the potential file to check
     /// @returns true if the path points to a valid iNES file, false otherwise
@@ -48,7 +48,7 @@ class ROM {
         static const std::vector<NES_Byte> MAGIC = {0x4E, 0x45, 0x53, 0x1A};
         // // create a stream to load the ROM file
         std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
-        /// return false if the file could not be opened
+        /// return false if the file did not open
         if (!romFile.is_open()) return false;
         // create a byte vector for the iNES header
         std::vector<NES_Byte> header(MAGIC.size());
@@ -63,7 +63,7 @@ class ROM {
 
     /// the indexes of semantic bytes in the iNES header.
     enum HEADER_BYTES {
-        // MAGIC_BYTES = 0,
+        MAGIC_NIBBLE = 0,  // the magic nibble "NES<EOF>"
         PRG_ROM_SIZE = 4,
         CHR_ROM_SIZE,
         FLAGS6,
@@ -76,7 +76,7 @@ class ROM {
     /// a structure for working with the flags 6 byte in the iNES header.
     union Flags6 {
         struct {
-            /// the hard-wired nametable mirroring type (true = vertical)
+            /// the hard-wired name-table mirroring type (true = vertical)
             bool is_vertical_mirroring: 1;
             /// whether "battery" and other non-volatile memory is present
             bool has_persistent_memory: 1;
@@ -87,15 +87,15 @@ class ROM {
             /// the low bits of the mapper number
             uint8_t mapper_low: 4;
         } flags;
-        /// the nametable mirroring mode
+        /// the name-table mirroring mode
         uint8_t name_table_mirroring: 4;
         /// the byte representation of the flag register
         uint8_t byte;
     } flags6;
 
-    /// the different console types
+    /// the different console types.
     enum ConsoleType {
-        NES_FAMICOM,
+        NES_FAMICOM = 0,
         VS_SYSTEM,
         PLAYCHOICE10,
         EXTENDED
@@ -115,7 +115,10 @@ class ROM {
         uint8_t byte;
     } flags7;
 
-    /// Initialize a new ROM file.
+    /// @brief Initialize a new ROM file.
+    ///
+    /// @param path the path to the iNES or NES2.0 file on disk
+    ///
     explicit ROM(const std::string& path) : rom_path(path) {
         // create a stream to load the ROM file
         std::ifstream romFile(path, std::ios_base::binary | std::ios_base::in);
@@ -125,16 +128,17 @@ class ROM {
         // read the flag registers
         flags6 = reinterpret_cast<Flags6&>(header[FLAGS6]);
         flags7 = reinterpret_cast<Flags7&>(header[FLAGS7]);
-
         // read PRG-ROM 16KB banks
+        static constexpr uint64_t PRG_BANK_SIZE = 0x4000;
         NES_Byte banks = header[PRG_ROM_SIZE];
-        prg_rom.resize(0x4000 * banks);
-        romFile.read(reinterpret_cast<char*>(&prg_rom[0]), 0x4000 * banks);
+        prg_rom.resize(PRG_BANK_SIZE * banks);
+        romFile.read(reinterpret_cast<char*>(&prg_rom[0]), PRG_BANK_SIZE * banks);
         // read CHR-ROM 8KB banks
+        static constexpr uint64_t CHR_BANK_SIZE = 0x4000;
         NES_Byte vbanks = header[CHR_ROM_SIZE];
         if (!vbanks) return;
-        chr_rom.resize(0x2000 * vbanks);
-        romFile.read(reinterpret_cast<char*>(&chr_rom[0]), 0x2000 * vbanks);
+        chr_rom.resize(CHR_BANK_SIZE * vbanks);
+        romFile.read(reinterpret_cast<char*>(&chr_rom[0]), CHR_BANK_SIZE * vbanks);
     }
 
     /// Return the path to the ROM on disk.
