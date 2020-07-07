@@ -20,9 +20,9 @@ namespace NES {
 
 /// Mirroring modes supported by the NES
 enum NameTableMirroring {
-    HORIZONTAL  = 0,
-    VERTICAL    = 1,
-    FOUR_SCREEN  = 8,
+    HORIZONTAL        = 0,
+    VERTICAL          = 1,
+    FOUR_SCREEN       = 8,
     ONE_SCREEN_LOWER,
     ONE_SCREEN_HIGHER,
 };
@@ -164,7 +164,7 @@ class ROM {
     /// @returns the name table mirroring mode used by the ROM
     ///
     inline NameTableMirroring getNameTableMirroring() const {
-        return static_cast<NameTableMirroring>(flags6.name_table_mirroring);
+        return static_cast<NameTableMirroring>(flags6.name_table_mirroring & 0xB);
     }
 
     /// @brief Return the mapper ID number.
