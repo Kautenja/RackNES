@@ -38,8 +38,6 @@ class ROM {
     std::vector<NES_Byte> chr_rom;
     /// the name table mirroring mode
     NES_Byte name_table_mirroring;
-    /// the mapper ID number
-    NES_Byte mapper_number;
     /// whether this cartridge uses extended RAM
     bool has_extended_ram;
 
@@ -91,7 +89,7 @@ class ROM {
             /// whether hard-wired four-screen mode is present
             bool is_four_screen_mode: 1;
             /// the low bits of the mapper number
-            uint8_t mapper_lo: 4;
+            uint8_t mapper_low: 4;
         } flags;
         /// the byte representation of the flag register
         uint8_t byte;
@@ -112,8 +110,8 @@ class ROM {
             uint8_t console_type: 2, : 1;
             /// whether the ROM file is NES2.0 format (true) or iNES (false)
             bool is_nes_2: 1;
-            /// the high bits of the mapper number
-            uint8_t mapper_hi: 4;
+            /// the middle bits of the mapper number
+            uint8_t mapper_mid: 4;
         } flags;
         /// the byte representation of the flag register
         uint8_t byte;
@@ -129,7 +127,6 @@ class ROM {
 
         flags6 = reinterpret_cast<Flags6&>(header[FLAGS6]);
         flags7 = reinterpret_cast<Flags7&>(header[FLAGS7]);
-        mapper_number = (flags7.flags.mapper_hi << 4) | flags6.flags.mapper_lo;
 
         // read internal data
         name_table_mirroring = header[FLAGS6] & 0xB;
@@ -161,7 +158,9 @@ class ROM {
     }
 
     /// Return the mapper ID number.
-    inline NES_Byte get_mapper_number() const { return mapper_number; }
+    inline uint16_t get_mapper_number() const {
+        return (flags7.flags.mapper_mid << 4) | flags6.flags.mapper_low;
+    }
 
     /// Return a boolean determining whether this cartridge uses extended RAM.
     inline bool hasExtendedRAM() const { return has_extended_ram; }
