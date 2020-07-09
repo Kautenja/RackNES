@@ -44,7 +44,7 @@ class ROM {
     static constexpr int HEADER_SIZE = 16;
 
     /// the indexes of semantic bytes in the iNES header.
-    enum HEADER_BYTES {
+    enum HeaderByteIndexes {
         MAGIC_NIBBLE = 0,  // the magic nibble "NES<EOF>"
         PRG_ROM_SIZE = 4,
         CHR_ROM_SIZE,
@@ -283,9 +283,12 @@ class ROM {
         //     auto data_string = base64_encode(&chr_rom[0], chr_rom.size());
         //     json_object_set_new(rootJ, "chr_rom", json_string(data_string.c_str()));
         // }
-        json_object_set_new(rootJ, "flags6", json_integer(flags6.byte));
-        json_object_set_new(rootJ, "flags7", json_integer(flags7.byte));
-        json_object_set_new(rootJ, "flags8", json_integer(flags8.byte));
+        // json_object_set_new(rootJ, "flags6", json_integer(flags6.byte));
+        // json_object_set_new(rootJ, "flags7", json_integer(flags7.byte));
+        // json_object_set_new(rootJ, "flags8", json_integer(flags8.byte));
+        // json_object_set_new(rootJ, "flags9", json_integer(flags9.byte));
+        // json_object_set_new(rootJ, "flags10", json_integer(flags10.byte));
+        // json_object_set_new(rootJ, "flags11", json_integer(flags11.byte));
         return rootJ;
     }
 
@@ -294,12 +297,12 @@ class ROM {
     /// @param rootJ the serialized JSON data to load into this object
     ///
     void dataFromJson(json_t* rootJ) {
-        // load rom_path
-        {
-            json_t* json_data = json_object_get(rootJ, "rom_path");
-            if (json_data)
-                rom_path = json_string_value(json_data);
-        }
+        // // load rom_path
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "rom_path");
+        //     if (json_data)
+        //         rom_path = json_string_value(json_data);
+        // }
         // // load prg_rom
         // {
         //     json_t* json_data = json_object_get(rootJ, "prg_rom");
@@ -318,21 +321,36 @@ class ROM {
         //         chr_rom = std::vector<NES_Byte>(data_string.begin(), data_string.end());
         //     }
         // }
-        // load flags6
-        {
-            json_t* json_data = json_object_get(rootJ, "flags6");
-            if (json_data) flags6.byte = json_integer_value(json_data);
-        }
-        // load flags7
-        {
-            json_t* json_data = json_object_get(rootJ, "flags7");
-            if (json_data) flags7.byte = json_integer_value(json_data);
-        }
-        // load flags8
-        {
-            json_t* json_data = json_object_get(rootJ, "flags8");
-            if (json_data) flags8.byte = json_integer_value(json_data);
-        }
+        // // load flags6
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "flags6");
+        //     if (json_data) flags6.byte = json_integer_value(json_data);
+        // }
+        // // load flags7
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "flags7");
+        //     if (json_data) flags7.byte = json_integer_value(json_data);
+        // }
+        // // load flags8
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "flags8");
+        //     if (json_data) flags8.byte = json_integer_value(json_data);
+        // }
+        // // load flags9
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "flags9");
+        //     if (json_data) flags9.byte = json_integer_value(json_data);
+        // }
+        // // load flags10
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "flags10");
+        //     if (json_data) flags10.byte = json_integer_value(json_data);
+        // }
+        // // load flags11
+        // {
+        //     json_t* json_data = json_object_get(rootJ, "flags11");
+        //     if (json_data) flags11.byte = json_integer_value(json_data);
+        // }
     }
 
     /// An iNES mapper for different NES cartridges.
