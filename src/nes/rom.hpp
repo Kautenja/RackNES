@@ -297,12 +297,12 @@ class ROM {
     /// @param rootJ the serialized JSON data to load into this object
     ///
     void dataFromJson(json_t* rootJ) {
-        // // load rom_path
-        // {
-        //     json_t* json_data = json_object_get(rootJ, "rom_path");
-        //     if (json_data)
-        //         rom_path = json_string_value(json_data);
-        // }
+        // load rom_path
+        {
+            json_t* json_data = json_object_get(rootJ, "rom_path");
+            if (json_data)
+                rom_path = json_string_value(json_data);
+        }
         // // load prg_rom
         // {
         //     json_t* json_data = json_object_get(rootJ, "prg_rom");
