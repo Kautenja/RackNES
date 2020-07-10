@@ -57,3 +57,5 @@ script:
   - export RACK_DIR="${HOME}"/Rack/Rack-SDK
   - make dep
   - make dist
+notifications:
+  email: false
