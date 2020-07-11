@@ -43,17 +43,6 @@ enum class Operation1 {
     SBC,
 };
 
-enum class AddressMode1 {
-    IndexedIndirectX,
-    ZeroPage,
-    Immediate,
-    Absolute,
-    IndirectY,
-    IndexedX,
-    AbsoluteY,
-    AbsoluteX,
-};
-
 enum class Operation2 {
     ASL,
     ROL,

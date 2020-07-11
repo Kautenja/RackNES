@@ -152,6 +152,86 @@ class CPU {
         return;
     }
 
+    /// Addressing modes for type 1 instructions:
+    /// ORA, AND, EOR, ADC, STA, LDA, CMP, SBC
+    enum class AddressMode1 {
+        IndexedIndirectX,
+        ZeroPage,
+        Immediate,
+        Absolute,
+        IndirectY,
+        IndexedX,
+        AbsoluteY,
+        AbsoluteX,
+    };
+
+    /// Return an address for a type 1 instruction:
+    /// ORA, AND, EOR, ADC, STA, LDA, CMP, SBC
+    ///
+    /// @param bus the bus to read and write data from and to
+    /// @param opcode the opcode of the operation to perform
+    ///
+    NES_Address type1_address(MainBus &bus, NES_Byte opcode) {
+        // Location of the operand, could be in RAM
+        NES_Address location = 0;
+        auto op = static_cast<Operation1>((opcode & OPERATION_MASK) >> OPERATION_SHIFT);
+        switch (static_cast<AddressMode1>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
+            case AddressMode1::IndexedIndirectX: {
+                NES_Byte zero_address = register_X + bus.read(register_PC++);
+                // Addresses wrap in zero page mode, thus pass through a mask
+                location = bus.read(zero_address & 0xff) | bus.read((zero_address + 1) & 0xff) << 8;
+                break;
+            }
+            case AddressMode1::ZeroPage: {
+                location = bus.read(register_PC++);
+                break;
+            }
+            case AddressMode1::Immediate: {
+                location = register_PC++;
+                break;
+            }
+            case AddressMode1::Absolute: {
+                location = read_address(bus, register_PC);
+                register_PC += 2;
+                break;
+            }
+            case AddressMode1::IndirectY: {
+                NES_Byte zero_address = bus.read(register_PC++);
+                location = bus.read(zero_address & 0xff) | bus.read((zero_address + 1) & 0xff) << 8;
+                if (op != Operation1::STA)
+                    set_page_crossed(location, location + register_Y);
+                location += register_Y;
+                break;
+            }
+            case AddressMode1::IndexedX: {
+                // Address wraps around in the zero page
+                location = (bus.read(register_PC++) + register_X) & 0xff;
+                break;
+            }
+            case AddressMode1::AbsoluteY: {
+                location = read_address(bus, register_PC);
+                register_PC += 2;
+                if (op != Operation1::STA)
+                    set_page_crossed(location, location + register_Y);
+                location += register_Y;
+                break;
+            }
+            case AddressMode1::AbsoluteX: {
+                location = read_address(bus, register_PC);
+                register_PC += 2;
+                if (op != Operation1::STA)
+                    set_page_crossed(location, location + register_X);
+                location += register_X;
+                break;
+            }
+        }
+        return location;
+    }
+
+    NES_Address type2_address(MainBus &bus, NES_Byte opcode);
+
+    NES_Address type0_address(MainBus &bus, NES_Byte opcode);
+
     /// Execute a type 1 instruction.
     ///
     /// @param bus the bus to read and write data from and to
