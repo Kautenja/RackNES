@@ -309,6 +309,10 @@ class CPU {
         bus.write(address, tmp);
     }
 
+    // -----------------------------------------------------------------------
+    // MARK: Branch
+    // -----------------------------------------------------------------------
+
     /// The flag to check for a branch operation.
     enum class BranchFlagType: NES_Byte {
         NEGATIVE,
@@ -362,6 +366,10 @@ class CPU {
         register_PC = newPC;
         return;
     }
+
+    // -----------------------------------------------------------------------
+    // MARK: Addressing Modes
+    // -----------------------------------------------------------------------
 
     /// a mask for determining addressing mode from opcode
     static constexpr auto ADRESS_MODE_MASK = 0x1c;
