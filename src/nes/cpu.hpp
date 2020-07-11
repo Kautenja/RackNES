@@ -99,35 +99,39 @@ class CPU {
     }
 
     // -----------------------------------------------------------------------
+    // MARK: Implied Instructions
+    // -----------------------------------------------------------------------
+
+    // -----------------------------------------------------------------------
     // MARK: Type 0 Instructions
     // -----------------------------------------------------------------------
 
     inline void BIT(MainBus &bus, NES_Byte opcode) {
-            NES_Address operand = bus.read(type0_address(bus, opcode));
-            flags.bits.Z = !(register_A & operand);
-            flags.bits.V = operand & 0x40;
-            flags.bits.N = operand & 0x80;
+        NES_Address operand = bus.read(type0_address(bus, opcode));
+        flags.bits.Z = !(register_A & operand);
+        flags.bits.V = operand & 0x40;
+        flags.bits.N = operand & 0x80;
     }
 
     inline void STY(MainBus &bus, NES_Byte opcode) {
-            bus.write(type0_address(bus, opcode), register_Y);
+        bus.write(type0_address(bus, opcode), register_Y);
     }
 
     inline void LDY(MainBus &bus, NES_Byte opcode) {
-            register_Y = bus.read(type0_address(bus, opcode));
-            set_ZN(register_Y);
+        register_Y = bus.read(type0_address(bus, opcode));
+        set_ZN(register_Y);
     }
 
     inline void CPY(MainBus &bus, NES_Byte opcode) {
-            NES_Address diff = register_Y - bus.read(type0_address(bus, opcode));
-            flags.bits.C = !(diff & 0x100);
-            set_ZN(diff);
+        NES_Address diff = register_Y - bus.read(type0_address(bus, opcode));
+        flags.bits.C = !(diff & 0x100);
+        set_ZN(diff);
     }
 
     inline void CPX(MainBus &bus, NES_Byte opcode) {
-            NES_Address diff = register_X - bus.read(type0_address(bus, opcode));
-            flags.bits.C = !(diff & 0x100);
-            set_ZN(diff);
+        NES_Address diff = register_X - bus.read(type0_address(bus, opcode));
+        flags.bits.C = !(diff & 0x100);
+        set_ZN(diff);
     }
 
     // -----------------------------------------------------------------------
@@ -152,10 +156,10 @@ class CPU {
     inline void ADC(MainBus &bus, NES_Byte opcode) {
         NES_Byte operand = bus.read(type1_address(bus, opcode));
         NES_Address sum = register_A + operand + flags.bits.C;
-        //Carry forward or UNSIGNED overflow
+        // Carry forward or UNSIGNED overflow
         flags.bits.C = sum & 0x100;
-        //SIGNED overflow, would only happen if the sign of sum is
-        //different from BOTH the operands
+        // SIGNED overflow, would only happen if the sign of sum is
+        // different from BOTH the operands
         flags.bits.V = (register_A ^ sum) & (operand ^ sum) & 0x80;
         register_A = static_cast<NES_Byte>(sum);
         set_ZN(register_A);
@@ -177,13 +181,13 @@ class CPU {
     }
 
     inline void SBC(MainBus &bus, NES_Byte opcode) {
-        //High carry means "no borrow", thus negate and subtract
+        // High carry means "no borrow", thus negate and subtract
         NES_Address subtrahend = bus.read(type1_address(bus, opcode));
         NES_Address diff = register_A - subtrahend - !flags.bits.C;
-        //if the ninth bit is 1, the resulting number is negative => borrow => low carry
+        // if the ninth bit is 1, the resulting number is negative => borrow => low carry
         flags.bits.C = !(diff & 0x100);
-        //Same as ADC, except instead of the subtrahend,
-        //substitute with it's one complement
+        // Same as ADC, except instead of the subtrahend,
+        // substitute with it's one complement
         flags.bits.V = (register_A ^ diff) & (~subtrahend ^ diff) & 0x80;
         register_A = diff;
         set_ZN(diff);
@@ -194,35 +198,108 @@ class CPU {
     // -----------------------------------------------------------------------
 
     inline void ASL(MainBus &bus, NES_Byte opcode) {
-
+        auto address_mode = static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
+        auto address = type2_address(bus, opcode);
+        if (address_mode == AddressMode2::Accumulator) {
+            // auto prev_C = flags.bits.C;
+            flags.bits.C = register_A & 0x80;
+            register_A <<= 1;
+            //If Rotating, set the bit-0 to the the previous carry
+            // register_A = register_A | (prev_C && 0);
+            set_ZN(register_A);
+        } else {
+            // auto prev_C = flags.bits.C;
+            NES_Address operand = bus.read(address);
+            flags.bits.C = operand & 0x80;
+            // operand = operand << 1 | (prev_C && 0);
+            set_ZN(operand);
+            bus.write(address, operand);
+        }
     }
 
     inline void ROL(MainBus &bus, NES_Byte opcode) {
-
+        auto address_mode = static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
+        auto address = type2_address(bus, opcode);
+        if (address_mode == AddressMode2::Accumulator) {
+            auto prev_C = flags.bits.C;
+            flags.bits.C = register_A & 0x80;
+            register_A <<= 1;
+            // If Rotating, set the bit-0 to the the previous carry
+            register_A = register_A | prev_C;
+            set_ZN(register_A);
+        } else {
+            auto prev_C = flags.bits.C;
+            NES_Address operand = bus.read(address);
+            flags.bits.C = operand & 0x80;
+            // If Rotating, set the bit-0 to the the previous carry
+            operand = operand << 1 | prev_C;
+            set_ZN(operand);
+            bus.write(address, operand);
+        }
     }
 
     inline void LSR(MainBus &bus, NES_Byte opcode) {
-
+        auto address_mode = static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
+        auto address = type2_address(bus, opcode);
+        if (address_mode == AddressMode2::Accumulator) {
+            // auto prev_C = flags.bits.C;
+            flags.bits.C = register_A & 1;
+            register_A >>= 1;
+            //If Rotating, set the bit-7 to the previous carry
+            // register_A = register_A | (prev_C && 0) << 7;
+            set_ZN(register_A);
+        } else {
+            // auto prev_C = flags.bits.C;
+            NES_Address operand = bus.read(address);
+            flags.bits.C = operand & 1;
+            // operand = operand >> 1 | (prev_C && 0) << 7;
+            set_ZN(operand);
+            bus.write(address, operand);
+        }
     }
 
-    inline void ROR(MainBus &bus, NES_Byte opcode) {
-
+    inline void ROR(MainBus &bus, NES_Byte opcode, bool is_accum) {
+        auto address_mode = static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
+        auto address = type2_address(bus, opcode);
+        if (address_mode == AddressMode2::Accumulator) {
+            auto prev_C = flags.bits.C;
+            flags.bits.C = register_A & 1;
+            register_A >>= 1;
+            // If Rotating, set the bit-7 to the previous carry
+            register_A = register_A | prev_C << 7;
+            set_ZN(register_A);
+        } else {
+            auto prev_C = flags.bits.C;
+            NES_Address operand = bus.read(address);
+            flags.bits.C = operand & 1;
+            // If Rotating, set the bit-7 to the previous carry
+            operand = operand >> 1 | prev_C << 7;
+            set_ZN(operand);
+            bus.write(address, operand);
+        }
     }
 
     inline void STX(MainBus &bus, NES_Byte opcode) {
-
+        bus.write(type2_address(bus, opcode, true), register_X);
     }
 
     inline void LDX(MainBus &bus, NES_Byte opcode) {
-
+        register_X = bus.read(type2_address(bus, opcode, true));
+        set_ZN(register_X);
     }
 
     inline void DEC(MainBus &bus, NES_Byte opcode) {
-
+        NES_Address address = type2_address(bus, opcode);
+        auto tmp = bus.read(address) - 1;
+        set_ZN(tmp);
+        bus.write(address, tmp);
     }
 
     inline void INC(MainBus &bus, NES_Byte opcode) {
-
+        NES_Address address = type2_address(bus, opcode);
+        auto tmp = bus.read(address) + 1;
+        set_ZN(tmp);
+        bus.write(address, tmp);
     }
 
     /// The flag to check for a branch operation.
