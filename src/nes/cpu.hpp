@@ -28,8 +28,22 @@ class CPU {
     NES_Byte register_X = 0;
     /// The Y register
     NES_Byte register_Y = 0;
+
     /// The flags register
-    CPU_Flags flags = {.byte = 0b00110100};
+    union {
+        struct {
+            bool N : 1,
+                 V : 1,
+                   : 1,
+                 B : 1,
+                 D : 1,
+                 I : 1,
+                 Z : 1,
+                 C : 1;
+        } bits;
+        NES_Byte byte;
+    } flags = {.byte = 0b00110100};
+
     /// The number of cycles to skip
     int skip_cycles = 0;
     /// The number of cycles the CPU has run
