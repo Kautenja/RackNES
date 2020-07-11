@@ -98,6 +98,69 @@ class CPU {
         if ((a & 0xff00) != (b & 0xff00)) skip_cycles += inc;
     }
 
+    // -----------------------------------------------------------------------
+    // MARK: Type 1 Instructions
+    // -----------------------------------------------------------------------
+
+    inline void ORA(MainBus &bus, NES_Byte opcode) {
+        register_A |= bus.read(type1_address(bus, opcode));
+        set_ZN(register_A);
+    }
+
+    inline void AND(MainBus &bus, NES_Byte opcode) {
+        register_A &= bus.read(type1_address(bus, opcode));
+        set_ZN(register_A);
+    }
+
+    inline void EOR(MainBus &bus, NES_Byte opcode) {
+        register_A ^= bus.read(type1_address(bus, opcode));
+        set_ZN(register_A);
+    }
+
+    inline void ADC(MainBus &bus, NES_Byte opcode) {
+        NES_Byte operand = bus.read(type1_address(bus, opcode));
+        NES_Address sum = register_A + operand + flags.bits.C;
+        //Carry forward or UNSIGNED overflow
+        flags.bits.C = sum & 0x100;
+        //SIGNED overflow, would only happen if the sign of sum is
+        //different from BOTH the operands
+        flags.bits.V = (register_A ^ sum) & (operand ^ sum) & 0x80;
+        register_A = static_cast<NES_Byte>(sum);
+        set_ZN(register_A);
+    }
+
+    inline void STA(MainBus &bus, NES_Byte opcode) {
+        bus.write(type1_address(bus, opcode, true), register_A);
+    }
+
+    inline void LDA(MainBus &bus, NES_Byte opcode) {
+        register_A = bus.read(type1_address(bus, opcode));
+        set_ZN(register_A);
+    }
+
+    inline void CMP(MainBus &bus, NES_Byte opcode) {
+        NES_Address diff = register_A - bus.read(type1_address(bus, opcode));
+        flags.bits.C = !(diff & 0x100);
+        set_ZN(diff);
+    }
+
+    inline void SBC(MainBus &bus, NES_Byte opcode) {
+        //High carry means "no borrow", thus negate and subtract
+        NES_Address subtrahend = bus.read(type1_address(bus, opcode));
+        NES_Address diff = register_A - subtrahend - !flags.bits.C;
+        //if the ninth bit is 1, the resulting number is negative => borrow => low carry
+        flags.bits.C = !(diff & 0x100);
+        //Same as ADC, except instead of the subtrahend,
+        //substitute with it's one complement
+        flags.bits.V = (register_A ^ diff) & (~subtrahend ^ diff) & 0x80;
+        register_A = diff;
+        set_ZN(diff);
+    }
+
+    // inline void eor(MainBus &bus, NES_Byte opcode) {
+
+    // }
+
     /// The flag to check for a branch operation.
     enum class BranchFlagType: NES_Byte {
         NEGATIVE,
@@ -177,7 +240,7 @@ class CPU {
     /// @param opcode the opcode of the operation to perform
     /// @param is_STA whether the opcode is STA
     ///
-    NES_Address type1_address(MainBus &bus, NES_Byte opcode, bool is_STA) {
+    NES_Address type1_address(MainBus &bus, NES_Byte opcode, bool is_STA = false) {
         NES_Address location = 0;
         switch (static_cast<AddressMode1>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
         case AddressMode1::IndexedIndirectX: {
@@ -243,7 +306,7 @@ class CPU {
     /// @param opcode the opcode of the operation to perform
     /// @param is_LDX_or_STX whether the opcode is LDX or STX
     ///
-    NES_Address type2_address(MainBus &bus, NES_Byte opcode, bool is_LDX_or_STX) {
+    NES_Address type2_address(MainBus &bus, NES_Byte opcode, bool is_LDX_or_STX = false) {
         NES_Address location = 0;
         switch (static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
         case AddressMode2::Immediate:
@@ -315,7 +378,23 @@ class CPU {
     /// @param opcode the opcode of the operation to perform
     /// @return true if the instruction succeeds
     ///
-    bool type1(MainBus &bus, NES_Byte opcode);
+    bool type1(MainBus &bus, NES_Byte opcode) {
+        if ((opcode & INSTRUCTION_MODE_MASK) != 0x1) return false;
+        // Location of the operand, could be in RAM
+        auto op = static_cast<Operation1>((opcode & OPERATION_MASK) >> OPERATION_SHIFT);
+        switch (op) {
+        case Operation1::ORA: ORA(bus, opcode); break;
+        case Operation1::AND: AND(bus, opcode); break;
+        case Operation1::EOR: EOR(bus, opcode); break;
+        case Operation1::ADC: ADC(bus, opcode); break;
+        case Operation1::STA: STA(bus, opcode); break;
+        case Operation1::LDA: LDA(bus, opcode); break;
+        case Operation1::CMP: CMP(bus, opcode); break;
+        case Operation1::SBC: SBC(bus, opcode); break;
+        default: return false;
+        }
+        return true;
+    }
 
     /// Execute a type 2 instruction.
     ///
