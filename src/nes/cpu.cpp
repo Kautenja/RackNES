@@ -524,43 +524,43 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
 }
 
 bool CPU::branch(MainBus &bus, NES_Byte opcode) {
+    static constexpr NES_Byte BRANCH_INSTRUCTION_MASK = 0x1f;
+    static constexpr NES_Byte BRANCH_INSTRUCTION_MASK_RESULT = 0x10;
     if ((opcode & BRANCH_INSTRUCTION_MASK) != BRANCH_INSTRUCTION_MASK_RESULT)
         return false;
 
-    // branch is initialized to the condition required (for the flag
-    // specified later)
-    bool branch = opcode & BRANCH_CONDITION_MASK;
-
+    // initialize branch to the status bit
+    static constexpr NES_Byte STATUS_BIT_MASK = 0b00100000;
+    bool branch = opcode & STATUS_BIT_MASK;
+    // the number of bits to shift the opcode to the right to get the flag type
+    static constexpr auto FLAG_TYPE_SHIFTS = 6;
     // set branch to true if the given condition is met by the given flag
-    // We use xnor here, it is true if either both operands are true or
-    // false
-    switch (opcode >> BRANCH_ON_FLAG_SHIFT) {
-        case NEGATIVE_: {
+    switch (static_cast<BranchFlagType>(opcode >> FLAG_TYPE_SHIFTS)) {
+        case BranchFlagType::NEGATIVE: {  // use XNOR to set
             branch = !(branch ^ flags.bits.N);
             break;
         }
-        case OVERFLOW_: {
+        case BranchFlagType::OVERFLOW: {  // use XNOR to set
             branch = !(branch ^ flags.bits.V);
             break;
         }
-        case CARRY_: {
+        case BranchFlagType::CARRY: {  // use XNOR to set
             branch = !(branch ^ flags.bits.C);
             break;
         }
-        case ZERO_: {
+        case BranchFlagType::ZERO: {  // use XNOR to set
             branch = !(branch ^ flags.bits.Z);
             break;
         }
         default: return false;
     }
-
-    if (branch) {
+    if (branch) {  // set program counter to branch location
         int8_t offset = bus.read(register_PC++);
         ++skip_cycles;
         auto newPC = static_cast<NES_Address>(register_PC + offset);
         set_page_crossed(register_PC, newPC, 2);
         register_PC = newPC;
-    } else {
+    } else {  // increment program counter
         ++register_PC;
     }
     return true;

@@ -20,20 +20,15 @@ const auto OPERATION_SHIFT = 5;
 const auto ADRESS_MODE_MASK = 0x1c;
 const auto ADDRESS_MODE_SHIFT = 2;
 
-const auto BRANCH_INSTRUCTION_MASK = 0x1f;
-const auto BRANCH_INSTRUCTION_MASK_RESULT = 0x10;
-const auto BRANCH_CONDITION_MASK = 0x20;
-const auto BRANCH_ON_FLAG_SHIFT = 6;
-
 const auto NMI_VECTOR = 0xfffa;
 const auto RESET_VECTOR = 0xfffc;
 const auto IRQ_VECTOR = 0xfffe;
 
-enum BranchOnFlag {
-    NEGATIVE_,
-    OVERFLOW_,
-    CARRY_,
-    ZERO_,
+enum class BranchFlagType {
+    NEGATIVE,
+    OVERFLOW,
+    CARRY,
+    ZERO,
 };
 
 enum Operation1 {
