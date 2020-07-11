@@ -28,11 +28,6 @@ struct apu_snapshot_t {
     typedef BOOST::uint8_t byte;
 
     typedef byte env_t[3];
-    /*struct env_t {
-        byte delay;
-        byte env;3
-        byte written;
-    };*/
 
     /// register $4000-$4013
     byte w40xx[0x14];
