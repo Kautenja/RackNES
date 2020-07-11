@@ -77,7 +77,7 @@ class MapperCNROM : public ROM::Mapper {
     /// @param value the byte to write to the given address
     ///
     inline void writeCHR(NES_Address address, NES_Byte value) override {
-        DEBUG("Read-only CHR memory write attempt at " << std::hex << address);
+        NES_DEBUG("Read-only CHR memory write attempt at " << std::hex << address);
     }
 
     /// Convert the object's state to a JSON object.

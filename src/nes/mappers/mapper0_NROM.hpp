@@ -34,7 +34,7 @@ class MapperNROM : public ROM::Mapper {
         has_character_ram(rom.getVROM().size() == 0) {
         if (has_character_ram) {
             character_ram.resize(0x2000);
-            DEBUG("Uses character RAM");
+            NES_DEBUG("Uses character RAM");
         }
     }
 
@@ -68,7 +68,7 @@ class MapperNROM : public ROM::Mapper {
     /// @param value the byte to write to the given address
     ///
     inline void writePRG(NES_Address address, NES_Byte value) override {
-        DEBUG("ROM memory write attempt at " << +address << " to set " << +value);
+        NES_DEBUG("ROM memory write attempt at " << +address << " to set " << +value);
     }
 
     /// Read a byte from the CHR RAM.
@@ -92,7 +92,7 @@ class MapperNROM : public ROM::Mapper {
         if (has_character_ram) {
             character_ram[address] = value;
         } else {
-            DEBUG("Read-only CHR memory write attempt at " << std::hex << address);
+            NES_DEBUG("Read-only CHR memory write attempt at " << std::hex << address);
         }
     }
 

@@ -38,7 +38,7 @@ class MapperUNROM : public ROM::Mapper {
         select_prg(0) {
         if (has_character_ram) {
             character_ram.resize(0x2000);
-            DEBUG("Uses character RAM");
+            NES_DEBUG("Uses character RAM");
         }
     }
 
@@ -97,7 +97,7 @@ class MapperUNROM : public ROM::Mapper {
         if (has_character_ram) {
             character_ram[address] = value;
         } else {
-            DEBUG("Read-only CHR memory write attempt at " << std::hex << address);
+            NES_DEBUG("Read-only CHR memory write attempt at " << std::hex << address);
         }
     }
 

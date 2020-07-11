@@ -281,7 +281,7 @@ void PPU::cycle(PictureBus& bus) {
 
             break;
         }
-        default: DEBUG("PPU::cycle reached invalid state");
+        default: NES_DEBUG("PPU::cycle reached invalid state");
     }
     ++cycles;
 }
