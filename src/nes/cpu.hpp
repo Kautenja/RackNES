@@ -49,7 +49,7 @@ class CPU {
     /// @param address the address in memory to read an address from
     /// @return the 16-bit address located at the given memory address
     ///
-    inline NES_Address read_address(MainBus &bus, NES_Address address) {
+    inline NES_Address read_address(MainBus &bus, NES_Address address) const {
         return bus.read(address) | bus.read(address + 1) << 8;
     }
 

@@ -212,14 +212,11 @@ void PPU::cycle(PictureBus& bus) {
                 data_address |= temp_address & 0x41f;
             }
 
-//                 if (cycles > 257 && cycles < 320)
-//                     sprite_data_address = 0;
-
             if (cycles >= SCANLINE_END_CYCLE) {
-                //Find and index sprites that are on the next Scanline
-                //This isn't where/when this indexing, actually copying in 2C02 is done
-                //but (I think) it shouldn't hurt any games if this is done here
-
+                // Find and index sprites that are on the next Scanline
+                // This isn't where/when this indexing, actually copying in
+                // 2C02 is done but (I think) it shouldn't hurt any games if
+                // this is done here
                 scanline_sprites.resize(0);
 
                 int range = 8;
@@ -280,7 +277,6 @@ void PPU::cycle(PictureBus& bus) {
                 pipeline_state = PRE_RENDER;
                 scanline = 0;
                 is_even_frame = !is_even_frame;
-                // is_vblank = false;
             }
 
             break;
