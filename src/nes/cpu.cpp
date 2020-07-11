@@ -20,6 +20,9 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
             push_stack(bus, flags.byte);
             break;
         }
+        // case OpcodeTable::BPL: {
+        //     break;
+        // }
         case OpcodeTable::CLC: {
             flags.bits.C = false;
             break;
@@ -37,6 +40,9 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
             flags.byte = pop_stack(bus);
             break;
         }
+        // case OpcodeTable::BMI: {
+        //     break;
+        // }
         case OpcodeTable::SEC: {
             flags.bits.C = true;
             break;
@@ -55,6 +61,9 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
             register_PC = read_address(bus, register_PC);
             break;
         }
+        // case OpcodeTable::BVC: {
+        //     break;
+        // }
         case OpcodeTable::CLI: {
             flags.bits.I = false;
             break;
@@ -81,6 +90,9 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
             register_PC = bus.read(location) | bus.read(Page | ((location + 1) & 0xff)) << 8;
             break;
         }
+        // case OpcodeTable::BVS: {
+        //     break;
+        // }
         case OpcodeTable::SEI: {
             flags.bits.I = true;
             break;
@@ -95,6 +107,9 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
             set_ZN(register_A);
             break;
         }
+        // case OpcodeTable::BCC: {
+        //     break;
+        // }
         case OpcodeTable::TYA: {
             register_A = register_Y;
             set_ZN(register_A);
@@ -114,6 +129,9 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
             set_ZN(register_X);
             break;
         }
+        // case OpcodeTable::BCS: {
+        //     break;
+        // }
         case OpcodeTable::CLV: {
             flags.bits.V = false;
             break;
@@ -133,6 +151,9 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
             set_ZN(register_X);
             break;
         }
+        // case OpcodeTable::BNE: {
+        //     break;
+        // }
         case OpcodeTable::CLD: {
             flags.bits.D = false;
             break;
@@ -145,6 +166,9 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
         case OpcodeTable::NOP: {
             break;
         }
+        // case OpcodeTable::BEQ: {
+        //     break;
+        // }
         case OpcodeTable::SED: {
             flags.bits.D = true;
             break;
