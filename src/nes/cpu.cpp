@@ -14,8 +14,9 @@ bool CPU::type1(MainBus &bus, NES_Byte opcode) {
     if ((opcode & INSTRUCTION_MODE_MASK) != 0x1)
         return false;
     // Location of the operand, could be in RAM
-    NES_Address address = type1_address(bus, opcode);
-    switch (static_cast<Operation1>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
+    auto op = static_cast<Operation1>((opcode & OPERATION_MASK) >> OPERATION_SHIFT);
+    NES_Address address = type1_address(bus, opcode, op == Operation1::STA);
+    switch (op) {
         case Operation1::ORA: {
             register_A |= bus.read(address);
             set_ZN(register_A);
@@ -187,6 +188,7 @@ bool CPU::type0(MainBus &bus, NES_Byte opcode) {
 }
 
 bool CPU::decode_execute(MainBus &bus, NES_Byte opcode) {
+    // NES_Byte address_mode = (opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT;
     switch (static_cast<OpcodeTable>(opcode)) {
     case OpcodeTable::BRK: {
         interrupt(bus, BRK_INTERRUPT);

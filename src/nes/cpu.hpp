@@ -165,16 +165,16 @@ class CPU {
         AbsoluteX,
     };
 
-    /// Return an address for a type 1 instruction:
+    /// @brief Return an address for a type 1 instruction:
     /// ORA, AND, EOR, ADC, STA, LDA, CMP, SBC
     ///
     /// @param bus the bus to read and write data from and to
     /// @param opcode the opcode of the operation to perform
+    /// @param is_STA whether the opcode is STA
     ///
-    NES_Address type1_address(MainBus &bus, NES_Byte opcode) {
+    NES_Address type1_address(MainBus &bus, NES_Byte opcode, bool is_STA) {
         // Location of the operand, could be in RAM
         NES_Address location = 0;
-        auto op = static_cast<Operation1>((opcode & OPERATION_MASK) >> OPERATION_SHIFT);
         switch (static_cast<AddressMode1>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
             case AddressMode1::IndexedIndirectX: {
                 NES_Byte zero_address = register_X + bus.read(register_PC++);
@@ -198,8 +198,7 @@ class CPU {
             case AddressMode1::IndirectY: {
                 NES_Byte zero_address = bus.read(register_PC++);
                 location = bus.read(zero_address & 0xff) | bus.read((zero_address + 1) & 0xff) << 8;
-                if (op != Operation1::STA)
-                    set_page_crossed(location, location + register_Y);
+                if (!is_STA) set_page_crossed(location, location + register_Y);
                 location += register_Y;
                 break;
             }
@@ -211,16 +210,14 @@ class CPU {
             case AddressMode1::AbsoluteY: {
                 location = read_address(bus, register_PC);
                 register_PC += 2;
-                if (op != Operation1::STA)
-                    set_page_crossed(location, location + register_Y);
+                if (!is_STA) set_page_crossed(location, location + register_Y);
                 location += register_Y;
                 break;
             }
             case AddressMode1::AbsoluteX: {
                 location = read_address(bus, register_PC);
                 register_PC += 2;
-                if (op != Operation1::STA)
-                    set_page_crossed(location, location + register_X);
+                if (!is_STA) set_page_crossed(location, location + register_X);
                 location += register_X;
                 break;
             }
@@ -241,7 +238,7 @@ class CPU {
         AbsoluteIndexed = 7,
     };
 
-    /// Return an address for a type 2 instruction:
+    /// @brief Return an address for a type 2 instruction:
     /// ASL, ROL, LSR, ROR, STX, LDX, DEC, INC
     ///
     /// @param bus the bus to read and write data from and to
@@ -295,7 +292,7 @@ class CPU {
         return location;
     }
 
-    /// Return an address for a type 0 instruction:
+    /// @brief Return an address for a type 0 instruction:
     /// BIT, STY, LDY, CPY, CPX
     ///
     /// @param bus the bus to read and write data from and to
