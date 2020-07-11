@@ -105,10 +105,10 @@ class CPU {
 
     /// The flag to check for a branch operation.
     enum class BranchFlagType: NES_Byte {
-        NEGATIVE,
-        OVERFLOW,
-        CARRY,
-        ZERO,
+        Negative,
+        Overflow,
+        Carry,
+        Zero,
     };
 
     /// Execute a branch instruction.
@@ -126,22 +126,22 @@ class CPU {
         static constexpr auto FLAG_TYPE_SHIFTS = 6;
         // set branch to true if the given condition is met by the given flag
         switch (static_cast<BranchFlagType>(opcode >> FLAG_TYPE_SHIFTS)) {
-        case BranchFlagType::NEGATIVE: {  // use XNOR to set
+        case BranchFlagType::Negative: {  // use XNOR to set
             if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.N))
                 goto branch_to_newPC;
             break;
         }
-        case BranchFlagType::OVERFLOW: {  // use XNOR to set
+        case BranchFlagType::Overflow: {  // use XNOR to set
             if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.V))
                 goto branch_to_newPC;
             break;
         }
-        case BranchFlagType::CARRY: {  // use XNOR to set
+        case BranchFlagType::Carry: {  // use XNOR to set
             if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.C))
                 goto branch_to_newPC;
             break;
         }
-        case BranchFlagType::ZERO: {  // use XNOR to set
+        case BranchFlagType::Zero: {  // use XNOR to set
             if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.Z))
                 goto branch_to_newPC;
             break;
