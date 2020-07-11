@@ -43,7 +43,7 @@ enum class Operation1 {
     SBC,
 };
 
-enum class AddrMode1 {
+enum class AddressMode1 {
     IndexedIndirectX,
     ZeroPage,
     Immediate,
@@ -65,7 +65,7 @@ enum class Operation2 {
     INC,
 };
 
-enum class AddrMode2 {
+enum class AddressMode2 {
     Immediate,
     ZeroPage,
     Accumulator,
