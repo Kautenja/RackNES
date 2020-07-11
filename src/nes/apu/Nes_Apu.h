@@ -135,7 +135,7 @@ class Nes_Apu {
 };
 
 inline void Nes_Apu::osc_output(int osc, Blip_Buffer* buf) {
-    assert(( "Nes_Apu::osc_output(): Index out of range", 0 <= osc && osc < osc_count ));
+    assert(0 <= osc && osc < osc_count /*Nes_Apu::osc_output(): Index out of range*/);
     oscs[osc]->output = buf;
 }
 
