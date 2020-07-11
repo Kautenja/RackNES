@@ -98,9 +98,13 @@ struct RackNES : Module {
     dsp::PulseGenerator clockGenerator;
 
     /// a Schmitt Trigger for handling player 1 button inputs
-    CVButtonTrigger player1Triggers[10];
+    CVButtonTrigger player1Triggers[8];
+    /// a Schmitt Trigger for handling player 1 turbo button inputs
+    dsp::SchmittTrigger player1TurboTriggers[2];
     /// a Schmitt Trigger for handling player 2 button inputs
-    CVButtonTrigger player2Triggers[10];
+    CVButtonTrigger player2Triggers[8];
+    /// a Schmitt Trigger for handling player 2 turbo button inputs
+    dsp::SchmittTrigger player2TurboTriggers[2];
 
     /// triggers for handling button presses and CV inputs for the save input
     CVButtonTrigger saveButton;
@@ -292,24 +296,18 @@ struct RackNES : Module {
             }
         }
         // iterate over the turbo controls
-        for (std::size_t button = 8; button < 10; button++) {
+        for (std::size_t button = 0; button < 2; button++) {
             {  // player 1 scope
+                // process the voltage with the Schmitt Trigger
+                player1TurboTriggers[button].process(params[PARAM_PLAYER1_A_TURBO + button].getValue());
                 // TODO:
-                // // process the voltage with the Schmitt Trigger
-                // player1Triggers[button].process(
-                //     params[PARAM_PLAYER1_A + button].getValue(),
-                //     inputs[INPUT_PLAYER1_A + button].getVoltage()
-                // );
-                // // the position for the current button's index
+                // the position for the current button's index
                 // player1 += player1Triggers[button].isHigh() << button;
             } {  // player 2 scope
+                // process the voltage with the Schmitt Trigger
+                player2TurboTriggers[button].process(params[PARAM_PLAYER2_A_TURBO + button].getValue());
                 // TODO:
-                // // process the voltage with the Schmitt Trigger
-                // player2Triggers[button].process(
-                //     params[PARAM_PLAYER2_A + button].getValue(),
-                //     inputs[INPUT_PLAYER2_A + button].getVoltage()
-                // );
-                // // the position for the current button's index
+                // the position for the current button's index
                 // player2 += player2Triggers[button].isHigh() << button;
             }
         }
