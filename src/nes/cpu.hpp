@@ -103,14 +103,6 @@ class CPU {
     ///
     bool decode_execute(NES_Byte opcode, MainBus &bus);
 
-    /// Execute an implied mode instruction.
-    ///
-    /// @param bus the bus to read and write data from and to
-    /// @param opcode the opcode of the operation to perform
-    /// @return true if the instruction succeeds
-    ///
-    bool implied(MainBus &bus, NES_Byte opcode);
-
     /// Execute a branch instruction.
     ///
     /// @param bus the bus to read and write data from and to
