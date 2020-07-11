@@ -673,10 +673,11 @@ class CPU {
         // Using short-circuit evaluation, call the other function only if the
         // first failed. ExecuteImplied must be called first and ExecuteBranch
         // must be before ExecuteType0
-        if (decode_execute(bus, op) || type1(bus, op) || type2(bus, op) || type0(bus, op))
+        if (decode_execute(bus, op) || type1(bus, op) || type2(bus, op) || type0(bus, op)) {
             skip_cycles += OPERATION_CYCLES[op];
-        else
-            LOG(Error) << "failed to execute opcode: " << std::hex << +op << std::endl;
+        } else {
+            DEBUG("failed to execute opcode: " << std::hex << +op);
+        }
     }
 
     /// @brief Skip DMA cycles.
