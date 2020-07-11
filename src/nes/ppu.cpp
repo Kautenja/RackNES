@@ -7,7 +7,6 @@
 
 #include <cstring>
 #include "ppu.hpp"
-#include "log.hpp"
 
 namespace NES {
 

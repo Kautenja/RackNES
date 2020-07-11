@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 #include "../rom.hpp"
-#include "../log.hpp"
 
 namespace NES {
 

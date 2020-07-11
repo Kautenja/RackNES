@@ -6,7 +6,6 @@
 //
 
 #include "cpu.hpp"
-#include "log.hpp"
 
 namespace NES {
 

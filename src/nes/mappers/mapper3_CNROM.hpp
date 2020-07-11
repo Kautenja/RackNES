@@ -9,7 +9,6 @@
 #define NES_MAPPERS_MAPPER_CNROM_HPP
 
 #include "../rom.hpp"
-#include "../log.hpp"
 
 namespace NES {
 

@@ -15,7 +15,6 @@
 #include <jansson.h>
 #include "common.hpp"
 #include "cartridge.hpp"
-#include "log.hpp"
 
 namespace NES {
 

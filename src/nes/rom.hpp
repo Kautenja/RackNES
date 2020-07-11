@@ -15,7 +15,6 @@
 #include <jansson.h>
 #include "../base64.h"
 #include "common.hpp"
-#include "log.hpp"
 
 namespace NES {
 
