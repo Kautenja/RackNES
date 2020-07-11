@@ -293,8 +293,8 @@ struct apu_snapshot_t {
         }
     } dmc;
 
-    enum { tag = 'APUR' };
-    void swap();
+    // enum { tag = 'APUR' };
+    // void swap();
 
     /// Convert the object's state to a JSON object.
     json_t* dataToJson() {
