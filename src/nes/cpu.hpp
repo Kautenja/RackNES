@@ -154,7 +154,7 @@ class CPU {
 
     /// Addressing modes for type 1 instructions:
     /// ORA, AND, EOR, ADC, STA, LDA, CMP, SBC
-    enum class AddressMode1 {
+    enum class AddressMode1: NES_Byte {
         IndexedIndirectX,
         ZeroPage,
         Immediate,
@@ -228,9 +228,113 @@ class CPU {
         return location;
     }
 
-    NES_Address type2_address(MainBus &bus, NES_Byte opcode);
+    /// Addressing modes for type 2 instructions:
+    /// ASL, ROL, LSR, ROR, STX, LDX, DEC, INC
+    /// and type 0 instructions:
+    /// BIT, STY, LDY, CPY, CPX
+    enum class AddressMode2: NES_Byte {
+        Immediate,
+        ZeroPage,
+        Accumulator,
+        Absolute,
+        Indexed         = 5,
+        AbsoluteIndexed = 7,
+    };
 
-    NES_Address type0_address(MainBus &bus, NES_Byte opcode);
+    /// Return an address for a type 2 instruction:
+    /// ASL, ROL, LSR, ROR, STX, LDX, DEC, INC
+    ///
+    /// @param bus the bus to read and write data from and to
+    /// @param opcode the opcode of the operation to perform
+    ///
+    NES_Address type2_address(MainBus &bus, NES_Byte opcode) {
+        NES_Address location = 0;
+        auto op = static_cast<Operation2>((opcode & OPERATION_MASK) >> OPERATION_SHIFT);
+        auto address_mode = static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
+        switch (address_mode) {
+            case AddressMode2::Immediate: {
+                location = register_PC++;
+                break;
+            }
+            case AddressMode2::ZeroPage: {
+                location = bus.read(register_PC++);
+                break;
+            }
+            case AddressMode2::Accumulator: {
+                break;
+            }
+            case AddressMode2::Absolute: {
+                location = read_address(bus, register_PC);
+                register_PC += 2;
+                break;
+            }
+            case AddressMode2::Indexed: {
+                location = bus.read(register_PC++);
+                NES_Byte index;
+                if (op == Operation2::LDX || op == Operation2::STX)
+                    index = register_Y;
+                else
+                    index = register_X;
+                //The mask wraps address around zero page
+                location = (location + index) & 0xff;
+                break;
+            }
+            case AddressMode2::AbsoluteIndexed: {
+                location = read_address(bus, register_PC);
+                register_PC += 2;
+                NES_Byte index;
+                if (op == Operation2::LDX || op == Operation2::STX)
+                    index = register_Y;
+                else
+                    index = register_X;
+                set_page_crossed(location, location + index);
+                location += index;
+                break;
+            }
+        }
+        return location;
+    }
+
+    /// Return an address for a type 0 instruction:
+    /// BIT, STY, LDY, CPY, CPX
+    ///
+    /// @param bus the bus to read and write data from and to
+    /// @param opcode the opcode of the operation to perform
+    ///
+    NES_Address type0_address(MainBus &bus, NES_Byte opcode) {
+        NES_Address location = 0;
+        switch (static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
+            case AddressMode2::Immediate: {
+                location = register_PC++;
+                break;
+            }
+            case AddressMode2::ZeroPage: {
+                location = bus.read(register_PC++);
+                break;
+            }
+            case AddressMode2::Accumulator: {
+                break;
+            }
+            case AddressMode2::Absolute: {
+                location = read_address(bus, register_PC);
+                register_PC += 2;
+                break;
+            }
+            case AddressMode2::Indexed: {
+                // Address wraps around in the zero page
+                location = (bus.read(register_PC++) + register_X) & 0xff;
+                break;
+            }
+            case AddressMode2::AbsoluteIndexed: {
+                location = read_address(bus, register_PC);
+                register_PC += 2;
+                set_page_crossed(location, location + register_X);
+                location += register_X;
+                break;
+            }
+        }
+        return location;
+    }
 
     /// Execute a type 1 instruction.
     ///

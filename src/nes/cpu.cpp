@@ -80,52 +80,9 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
     if ((opcode & INSTRUCTION_MODE_MASK) != 2)
         return false;
 
-    NES_Address location = 0;
+    NES_Address location = type2_address(bus, opcode);
     auto op = static_cast<Operation2>((opcode & OPERATION_MASK) >> OPERATION_SHIFT);
     auto address_mode = static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
-    switch (address_mode) {
-        case AddressMode2::Immediate: {
-            location = register_PC++;
-            break;
-        }
-        case AddressMode2::ZeroPage: {
-            location = bus.read(register_PC++);
-            break;
-        }
-        case AddressMode2::Accumulator: {
-            break;
-        }
-        case AddressMode2::Absolute: {
-            location = read_address(bus, register_PC);
-            register_PC += 2;
-            break;
-        }
-        case AddressMode2::Indexed: {
-            location = bus.read(register_PC++);
-            NES_Byte index;
-            if (op == Operation2::LDX || op == Operation2::STX)
-                index = register_Y;
-            else
-                index = register_X;
-            //The mask wraps address around zero page
-            location = (location + index) & 0xff;
-            break;
-        }
-        case AddressMode2::AbsoluteIndexed: {
-            location = read_address(bus, register_PC);
-            register_PC += 2;
-            NES_Byte index;
-            if (op == Operation2::LDX || op == Operation2::STX)
-                index = register_Y;
-            else
-                index = register_X;
-            set_page_crossed(location, location + index);
-            location += index;
-            break;
-        }
-        default: return false;
-    }
-
     NES_Address operand = 0;
     switch (op) {
         case Operation2::ASL:
@@ -194,35 +151,7 @@ bool CPU::type0(MainBus &bus, NES_Byte opcode) {
     if ((opcode & INSTRUCTION_MODE_MASK) != 0x0)
         return false;
 
-    NES_Address location = 0;
-    switch (static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
-        case AddressMode2::Immediate: {
-            location = register_PC++;
-            break;
-        }
-        case AddressMode2::ZeroPage: {
-            location = bus.read(register_PC++);
-            break;
-        }
-        case AddressMode2::Absolute: {
-            location = read_address(bus, register_PC);
-            register_PC += 2;
-            break;
-        }
-        case AddressMode2::Indexed: {
-            // Address wraps around in the zero page
-            location = (bus.read(register_PC++) + register_X) & 0xff;
-            break;
-        }
-        case AddressMode2::AbsoluteIndexed: {
-            location = read_address(bus, register_PC);
-            register_PC += 2;
-            set_page_crossed(location, location + register_X);
-            location += register_X;
-            break;
-        }
-        default: return false;
-    }
+    NES_Address location = type0_address(bus, opcode);
     switch (static_cast<Operation0>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
         case Operation0::BIT: {
             NES_Address operand = bus.read(location);

@@ -12,17 +12,17 @@
 
 namespace NES {
 
-const auto INSTRUCTION_MODE_MASK = 0x3;
+static constexpr auto INSTRUCTION_MODE_MASK = 0x3;
 
-const auto OPERATION_MASK = 0xe0;
-const auto OPERATION_SHIFT = 5;
+static constexpr auto OPERATION_MASK = 0xe0;
+static constexpr auto OPERATION_SHIFT = 5;
 
-const auto ADRESS_MODE_MASK = 0x1c;
-const auto ADDRESS_MODE_SHIFT = 2;
+static constexpr auto ADRESS_MODE_MASK = 0x1c;
+static constexpr auto ADDRESS_MODE_SHIFT = 2;
 
-const auto NMI_VECTOR = 0xfffa;
-const auto RESET_VECTOR = 0xfffc;
-const auto IRQ_VECTOR = 0xfffe;
+static constexpr auto NMI_VECTOR = 0xfffa;
+static constexpr auto RESET_VECTOR = 0xfffc;
+static constexpr auto IRQ_VECTOR = 0xfffe;
 
 enum class Operation0 {
     BIT = 1,
@@ -52,15 +52,6 @@ enum class Operation2 {
     LDX,
     DEC,
     INC,
-};
-
-enum class AddressMode2 {
-    Immediate,
-    ZeroPage,
-    Accumulator,
-    Absolute,
-    Indexed         = 5,
-    AbsoluteIndexed = 7,
 };
 
 /// The opcodes of the MOS6502 CPU used in the Nintendo Entertainment System.
