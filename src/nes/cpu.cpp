@@ -523,46 +523,43 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     return true;
 }
 
-bool CPU::branch(MainBus &bus, NES_Byte opcode) {
+bool CPU::branch(NES_Byte opcode, MainBus &bus) {
     static constexpr NES_Byte BRANCH_INSTRUCTION_MASK = 0x1f;
     static constexpr NES_Byte BRANCH_INSTRUCTION_MASK_RESULT = 0x10;
     if ((opcode & BRANCH_INSTRUCTION_MASK) != BRANCH_INSTRUCTION_MASK_RESULT)
         return false;
 
-    // initialize branch to the status bit
     static constexpr NES_Byte STATUS_BIT_MASK = 0b00100000;
-    bool branch = opcode & STATUS_BIT_MASK;
     // the number of bits to shift the opcode to the right to get the flag type
     static constexpr auto FLAG_TYPE_SHIFTS = 6;
     // set branch to true if the given condition is met by the given flag
     switch (static_cast<BranchFlagType>(opcode >> FLAG_TYPE_SHIFTS)) {
-        case BranchFlagType::NEGATIVE: {  // use XNOR to set
-            branch = !(branch ^ flags.bits.N);
-            break;
-        }
-        case BranchFlagType::OVERFLOW: {  // use XNOR to set
-            branch = !(branch ^ flags.bits.V);
-            break;
-        }
-        case BranchFlagType::CARRY: {  // use XNOR to set
-            branch = !(branch ^ flags.bits.C);
-            break;
-        }
-        case BranchFlagType::ZERO: {  // use XNOR to set
-            branch = !(branch ^ flags.bits.Z);
-            break;
-        }
-        default: return false;
+    case BranchFlagType::NEGATIVE: {  // use XNOR to set
+        if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.N)) goto branch_to_newPC;
+        break;
     }
-    if (branch) {  // set program counter to branch location
-        int8_t offset = bus.read(register_PC++);
-        ++skip_cycles;
-        auto newPC = static_cast<NES_Address>(register_PC + offset);
-        set_page_crossed(register_PC, newPC, 2);
-        register_PC = newPC;
-    } else {  // increment program counter
-        ++register_PC;
+    case BranchFlagType::OVERFLOW: {  // use XNOR to set
+        if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.V)) goto branch_to_newPC;
+        break;
     }
+    case BranchFlagType::CARRY: {  // use XNOR to set
+        if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.C)) goto branch_to_newPC;
+        break;
+    }
+    case BranchFlagType::ZERO: {  // use XNOR to set
+        if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.Z)) goto branch_to_newPC;
+        break;
+    }
+    default: break;
+    }
+    ++register_PC;
+    return true;
+branch_to_newPC:
+    int8_t offset = bus.read(register_PC++);
+    ++skip_cycles;
+    auto newPC = static_cast<NES_Address>(register_PC + offset);
+    set_page_crossed(register_PC, newPC, 2);
+    register_PC = newPC;
     return true;
 }
 
@@ -907,8 +904,7 @@ void CPU::cycle(MainBus &bus) {
     // increment the number of cycles
     ++cycles;
     // if in a skip cycle, return
-    if (skip_cycles-- > 1)
-        return;
+    if (skip_cycles-- > 1) return;
     // reset the number of skip cycles to 0
     skip_cycles = 0;
     // read the opcode from the bus and lookup the number of cycles
@@ -916,7 +912,7 @@ void CPU::cycle(MainBus &bus) {
     // Using short-circuit evaluation, call the other function only if the
     // first failed. ExecuteImplied must be called first and ExecuteBranch
     // must be before ExecuteType0
-    if (decode_execute(op, bus) || branch(bus, op) || type1(bus, op) || type2(bus, op) || type0(bus, op))
+    if (decode_execute(op, bus) || branch(op, bus) || type1(bus, op) || type2(bus, op) || type0(bus, op))
         skip_cycles += OPERATION_CYCLES[op];
     else
         LOG(Error) << "failed to execute opcode: " << std::hex << +op << std::endl;

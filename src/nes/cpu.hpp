@@ -105,11 +105,11 @@ class CPU {
 
     /// Execute a branch instruction.
     ///
-    /// @param bus the bus to read and write data from and to
     /// @param opcode the opcode of the operation to perform
+    /// @param bus the bus to read and write data from and to
     /// @return true if the instruction succeeds
     ///
-    bool branch(MainBus &bus, NES_Byte opcode);
+    bool branch(NES_Byte opcode, MainBus &bus);
 
     /// Execute a type 0 instruction.
     ///
