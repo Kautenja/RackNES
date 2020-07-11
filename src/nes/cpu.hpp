@@ -63,7 +63,7 @@ class CPU {
     /// @param address the address in memory to read an address from
     /// @return the 16-bit address located at the given memory address
     ///
-    inline NES_Address read_address(MainBus &bus, NES_Address address) {
+    inline NES_Address read_address(MainBus &bus, NES_Address address) const {
         return bus.read(address) | bus.read(address + 1) << 8;
     }
 
@@ -97,11 +97,11 @@ class CPU {
 
     /// Execute a branch instruction.
     ///
-    /// @param opcode the opcode of the operation to perform
     /// @param bus the bus to read and write data from and to
+    /// @param opcode the opcode of the operation to perform
     /// @return true if the instruction succeeds
     ///
-    inline void branch(NES_Byte opcode, MainBus &bus) {
+    inline void branch(MainBus &bus, NES_Byte opcode) {
         // a mask for checking the status bit of the opcode
         static constexpr NES_Byte STATUS_BIT_MASK = 0b00100000;
         // the number of bits to shift the opcode to the right to get flag type
@@ -167,11 +167,11 @@ class CPU {
 
     /// Decode and execute the given opcode using the given bus.
     ///
-    /// @param opcode the opcode of the operation to perform
     /// @param bus the bus to read and write data from and to
+    /// @param opcode the opcode of the operation to perform
     /// @return true if the instruction succeeds
     ///
-    bool decode_execute(NES_Byte opcode, MainBus &bus);
+    bool decode_execute(MainBus &bus, NES_Byte opcode);
 
     /// Reset the emulator using the given starting address.
     ///
@@ -250,7 +250,7 @@ class CPU {
         // Using short-circuit evaluation, call the other function only if the
         // first failed. ExecuteImplied must be called first and ExecuteBranch
         // must be before ExecuteType0
-        if (decode_execute(op, bus) || type1(bus, op) || type2(bus, op) || type0(bus, op))
+        if (decode_execute(bus, op) || type1(bus, op) || type2(bus, op) || type0(bus, op))
             skip_cycles += OPERATION_CYCLES[op];
         else
             LOG(Error) << "failed to execute opcode: " << std::hex << +op << std::endl;

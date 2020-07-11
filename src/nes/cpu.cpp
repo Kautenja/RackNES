@@ -310,7 +310,7 @@ bool CPU::type0(MainBus &bus, NES_Byte opcode) {
     return true;
 }
 
-bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
+bool CPU::decode_execute(MainBus &bus, NES_Byte opcode) {
     switch (static_cast<OpcodeTable>(opcode)) {
     case OpcodeTable::BRK: {
         interrupt(bus, BRK_INTERRUPT);
@@ -342,7 +342,7 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     //     break;
     // }
     case OpcodeTable::BPL: {  // branch on result plus
-        branch(opcode, bus);
+        branch(bus, opcode);
         break;
     }
     // case OpcodeTable::ORA__INDIRECT_Y: {
@@ -408,7 +408,7 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     //     break;
     // }
     case OpcodeTable::BMI: {  // branch on result minus
-        branch(opcode, bus);
+        branch(bus, opcode);
         break;
     }
     // case OpcodeTable::AND__INDIRECT_Y: {
@@ -469,7 +469,7 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     //     break;
     // }
     case OpcodeTable::BVC: {  // branch on overflow clear
-        branch(opcode, bus);
+        branch(bus, opcode);
         break;
     }
     // case OpcodeTable::EOR__INDIRECT_Y: {
@@ -538,7 +538,7 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     //     break;
     // }
     case OpcodeTable::BVS: {  // branch on overflow set
-        branch(opcode, bus);
+        branch(bus, opcode);
         break;
     }
     // case OpcodeTable::ADC__INDIRECT_Y: {
@@ -595,7 +595,7 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     //     break;
     // }
     case OpcodeTable::BCC: {  // branch on carry clear
-        branch(opcode, bus);
+        branch(bus, opcode);
         break;
     }
     // case OpcodeTable::STA__INDIRECT_Y: {
@@ -666,7 +666,7 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     //     break;
     // }
     case OpcodeTable::BCS: {  // branch on carry set
-        branch(opcode, bus);
+        branch(bus, opcode);
         break;
     }
     // case OpcodeTable::LDA__INDIRECT_Y: {
@@ -740,7 +740,7 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     //     break;
     // }
     case OpcodeTable::BNE: {  // branch on result not zero
-        branch(opcode, bus);
+        branch(bus, opcode);
         break;
     }
     // case OpcodeTable::CMP__INDIRECT_Y: {
@@ -801,7 +801,7 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     //     break;
     // }
     case OpcodeTable::BEQ: {  // branch on result zero
-        branch(opcode, bus);
+        branch(bus, opcode);
         break;
     }
     // case OpcodeTable::SBC__INDIRECT_Y: {
