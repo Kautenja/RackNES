@@ -104,24 +104,28 @@ class CPU {
     inline void branch(NES_Byte opcode, MainBus &bus) {
         // a mask for checking the status bit of the opcode
         static constexpr NES_Byte STATUS_BIT_MASK = 0b00100000;
-        // the number of bits to shift the opcode to the right to get the flag type
+        // the number of bits to shift the opcode to the right to get flag type
         static constexpr auto FLAG_TYPE_SHIFTS = 6;
         // set branch to true if the given condition is met by the given flag
         switch (static_cast<BranchFlagType>(opcode >> FLAG_TYPE_SHIFTS)) {
         case BranchFlagType::NEGATIVE: {  // use XNOR to set
-            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.N)) goto branch_to_newPC;
+            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.N))
+                goto branch_to_newPC;
             break;
         }
         case BranchFlagType::OVERFLOW: {  // use XNOR to set
-            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.V)) goto branch_to_newPC;
+            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.V))
+                goto branch_to_newPC;
             break;
         }
         case BranchFlagType::CARRY: {  // use XNOR to set
-            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.C)) goto branch_to_newPC;
+            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.C))
+                goto branch_to_newPC;
             break;
         }
         case BranchFlagType::ZERO: {  // use XNOR to set
-            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.Z)) goto branch_to_newPC;
+            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.Z))
+                goto branch_to_newPC;
             break;
         }
         default: break;
@@ -212,7 +216,8 @@ class CPU {
         // push values on to the stack
         push_stack(bus, register_PC >> 8);
         push_stack(bus, register_PC);
-        push_stack(bus, flags.byte | 0b00100000 | (type == BRK_INTERRUPT) << 4);
+        auto brk = static_cast<NES_Byte>(type == BRK_INTERRUPT) << 4;
+        push_stack(bus, flags.byte | 0b00100000 | brk);
         // set the interrupt flag
         flags.bits.I = true;
         // handle the kind of interrupt
