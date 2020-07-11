@@ -34,7 +34,7 @@ class CPU {
         struct {
             bool N : 1,
                  V : 1,
-                 ONE : 1,
+                   : 1,
                  B : 1,
                  D : 1,
                  I : 1,
