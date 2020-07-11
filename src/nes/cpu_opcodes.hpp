@@ -12,15 +12,6 @@
 
 namespace NES {
 
-static constexpr auto INSTRUCTION_MODE_MASK = 0x3;
-
-static constexpr auto OPERATION_MASK = 0xe0;
-static constexpr auto OPERATION_SHIFT = 5;
-
-static constexpr auto NMI_VECTOR = 0xfffa;
-static constexpr auto RESET_VECTOR = 0xfffc;
-static constexpr auto IRQ_VECTOR = 0xfffe;
-
 enum class Operation0 {
     BIT = 1,
     STY = 4,

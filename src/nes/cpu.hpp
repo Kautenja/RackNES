@@ -18,6 +18,13 @@ namespace NES {
 /// The MOS6502 CPU for the Nintendo Entertainment System (NES).
 class CPU {
  private:
+    /// TODO:
+    static constexpr auto NMI_VECTOR = 0xfffa;
+    /// TODO:
+    static constexpr auto RESET_VECTOR = 0xfffc;
+    /// TODO:
+    static constexpr auto IRQ_VECTOR = 0xfffe;
+
     /// The program counter register
     NES_Address register_PC = 0x34;
     /// The stack pointer register
@@ -258,7 +265,7 @@ class CPU {
         }
     }
 
-    inline void ROR(MainBus &bus, NES_Byte opcode, bool is_accum) {
+    inline void ROR(MainBus &bus, NES_Byte opcode) {
         auto address_mode = static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
         auto address = type2_address(bus, opcode);
         if (address_mode == AddressMode2::Accumulator) {
@@ -513,6 +520,32 @@ class CPU {
         return location;
     }
 
+    /// a mask for calculating the instruction type
+    static constexpr auto INSTRUCTION_MODE_MASK = 0x3;
+    /// a mask for calculating the operation code
+    static constexpr auto OPERATION_MASK = 0xe0;
+    /// the number of bits to shift an operation code to the right
+    static constexpr auto OPERATION_SHIFT = 5;
+
+    /// Execute a type 0 instruction.
+    ///
+    /// @param bus the bus to read and write data from and to
+    /// @param opcode the opcode of the operation to perform
+    /// @return true if the instruction succeeds
+    ///
+    bool type0(MainBus &bus, NES_Byte opcode) {
+        if ((opcode & INSTRUCTION_MODE_MASK) != 0) return false;
+        switch (static_cast<Operation0>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
+        case Operation0::BIT: BIT(bus, opcode); break;
+        case Operation0::STY: STY(bus, opcode); break;
+        case Operation0::LDY: LDY(bus, opcode); break;
+        case Operation0::CPY: CPY(bus, opcode); break;
+        case Operation0::CPX: CPX(bus, opcode); break;
+        default: return false;
+        }
+        return true;
+    }
+
     /// Execute a type 1 instruction.
     ///
     /// @param bus the bus to read and write data from and to
@@ -520,7 +553,7 @@ class CPU {
     /// @return true if the instruction succeeds
     ///
     bool type1(MainBus &bus, NES_Byte opcode) {
-        if ((opcode & INSTRUCTION_MODE_MASK) != 0x1) return false;
+        if ((opcode & INSTRUCTION_MODE_MASK) != 1) return false;
         switch (static_cast<Operation1>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
         case Operation1::ORA: ORA(bus, opcode); break;
         case Operation1::AND: AND(bus, opcode); break;
@@ -541,22 +574,17 @@ class CPU {
     /// @param opcode the opcode of the operation to perform
     /// @return true if the instruction succeeds
     ///
-    bool type2(MainBus &bus, NES_Byte opcode);
-
-    /// Execute a type 0 instruction.
-    ///
-    /// @param bus the bus to read and write data from and to
-    /// @param opcode the opcode of the operation to perform
-    /// @return true if the instruction succeeds
-    ///
-    bool type0(MainBus &bus, NES_Byte opcode) {
-        if ((opcode & INSTRUCTION_MODE_MASK) != 0x0) return false;
-        switch (static_cast<Operation0>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
-        case Operation0::BIT: BIT(bus, opcode); break;
-        case Operation0::STY: STY(bus, opcode); break;
-        case Operation0::LDY: LDY(bus, opcode); break;
-        case Operation0::CPY: CPY(bus, opcode); break;
-        case Operation0::CPX: CPX(bus, opcode); break;
+    bool type2(MainBus &bus, NES_Byte opcode) {
+        if ((opcode & INSTRUCTION_MODE_MASK) != 2) return false;
+        switch (static_cast<Operation2>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
+        case Operation2::ASL: ASL(bus, opcode); break;
+        case Operation2::ROL: ROL(bus, opcode); break;
+        case Operation2::LSR: LSR(bus, opcode); break;
+        case Operation2::ROR: ROR(bus, opcode); break;
+        case Operation2::STX: STX(bus, opcode); break;
+        case Operation2::LDX: LDX(bus, opcode); break;
+        case Operation2::DEC: DEC(bus, opcode); break;
+        case Operation2::INC: INC(bus, opcode); break;
         default: return false;
         }
         return true;
