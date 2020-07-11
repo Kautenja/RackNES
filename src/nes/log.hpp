@@ -10,18 +10,13 @@
 
 #include <iostream>
 
-#define debug_disabled true
+namespace NES {
 
-#define LOG(level) \
-    if (debug_disabled) {} \
-    else std::cerr
+/// a NOP debugging statement
+#define DEBUG(x)
+/// the actual debugging statement
+// #define DEBUG(x) do { std::cerr << x << std::endl; } while (0)
 
-enum Level {
-    None,
-    Error,
-    Info,
-    InfoVerbose,
-    CpuTrace
-};
+}  // namespace NES
 
 #endif  // NES_LOG_HPP

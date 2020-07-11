@@ -105,24 +105,24 @@ class PictureBus {
             case HORIZONTAL:
                 name_tables[0] = name_tables[1] = 0;
                 name_tables[2] = name_tables[3] = 0x400;
-                LOG(InfoVerbose) << "Horizontal Name Table mirroring set. (Vertical Scrolling)" << std::endl;
+                DEBUG("Horizontal Name Table mirroring set. (Vertical Scrolling)");
                 break;
             case VERTICAL:
                 name_tables[0] = name_tables[2] = 0;
                 name_tables[1] = name_tables[3] = 0x400;
-                LOG(InfoVerbose) << "Vertical Name Table mirroring set. (Horizontal Scrolling)" << std::endl;
+                DEBUG("Vertical Name Table mirroring set. (Horizontal Scrolling)");
                 break;
             case ONE_SCREEN_LOWER:
                 name_tables[0] = name_tables[1] = name_tables[2] = name_tables[3] = 0;
-                LOG(InfoVerbose) << "Single Screen mirroring set with lower bank." << std::endl;
+                DEBUG("Single Screen mirroring set with lower bank.");
                 break;
             case ONE_SCREEN_HIGHER:
                 name_tables[0] = name_tables[1] = name_tables[2] = name_tables[3] = 0x400;
-                LOG(InfoVerbose) << "Single Screen mirroring set with higher bank." << std::endl;
+                DEBUG("Single Screen mirroring set with higher bank.");
                 break;
             default:
                 name_tables[0] = name_tables[1] = name_tables[2] = name_tables[3] = 0;
-                LOG(Error) << "Unsupported Name Table mirroring : " << mapper->getNameTableMirroring() << std::endl;
+                DEBUG("Unsupported Name Table mirroring : " << mapper->getNameTableMirroring());
         }
     }
 
