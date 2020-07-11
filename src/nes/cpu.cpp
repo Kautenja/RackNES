@@ -531,12 +531,8 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     return true;
 }
 
-bool CPU::branch(NES_Byte opcode, MainBus &bus) {
-    static constexpr NES_Byte BRANCH_INSTRUCTION_MASK = 0x1f;
-    static constexpr NES_Byte BRANCH_INSTRUCTION_MASK_RESULT = 0x10;
-    if ((opcode & BRANCH_INSTRUCTION_MASK) != BRANCH_INSTRUCTION_MASK_RESULT)
-        return false;
-
+void CPU::branch(NES_Byte opcode, MainBus &bus) {
+    // a mask for checking the status bit of the opcode
     static constexpr NES_Byte STATUS_BIT_MASK = 0b00100000;
     // the number of bits to shift the opcode to the right to get the flag type
     static constexpr auto FLAG_TYPE_SHIFTS = 6;
@@ -561,14 +557,14 @@ bool CPU::branch(NES_Byte opcode, MainBus &bus) {
     default: break;
     }
     ++register_PC;
-    return true;
+    return;
 branch_to_newPC:
     int8_t offset = bus.read(register_PC++);
     ++skip_cycles;
     auto newPC = static_cast<NES_Address>(register_PC + offset);
     set_page_crossed(register_PC, newPC, 2);
     register_PC = newPC;
-    return true;
+    return;
 }
 
 bool CPU::type0(MainBus &bus, NES_Byte opcode) {
