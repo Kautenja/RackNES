@@ -95,6 +95,14 @@ class CPU {
         if ((a & 0xff00) != (b & 0xff00)) skip_cycles += inc;
     }
 
+    /// Decode and execute the given opcode using the given bus.
+    ///
+    /// @param opcode the opcode of the operation to perform
+    /// @param bus the bus to read and write data from and to
+    /// @return true if the instruction succeeds
+    ///
+    bool decode_execute(NES_Byte opcode, MainBus &bus);
+
     /// Execute an implied mode instruction.
     ///
     /// @param bus the bus to read and write data from and to

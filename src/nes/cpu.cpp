@@ -10,21 +10,21 @@
 
 namespace NES {
 
-bool CPU::implied(MainBus &bus, NES_Byte opcode) {
-    switch (static_cast<OperationImplied>(opcode)) {
-        case BRK: {
+bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
+    switch (static_cast<OpcodeTable>(opcode)) {
+        case OpcodeTable::BRK: {
             interrupt(bus, BRK_INTERRUPT);
             break;
         }
-        case PHP: {
+        case OpcodeTable::PHP: {
             push_stack(bus, flags.byte);
             break;
         }
-        case CLC: {
+        case OpcodeTable::CLC: {
             flags.bits.C = false;
             break;
         }
-        case JSR: {
+        case OpcodeTable::JSR: {
             // Push address of next instruction - 1, thus register_PC + 1
             // instead of register_PC + 2 since register_PC and
             // register_PC + 1 are address of subroutine
@@ -33,44 +33,44 @@ bool CPU::implied(MainBus &bus, NES_Byte opcode) {
             register_PC = read_address(bus, register_PC);
             break;
         }
-        case PLP: {
+        case OpcodeTable::PLP: {
             flags.byte = pop_stack(bus);
             break;
         }
-        case SEC: {
+        case OpcodeTable::SEC: {
             flags.bits.C = true;
             break;
         }
-        case RTI: {
+        case OpcodeTable::RTI: {
             flags.byte = pop_stack(bus);
             register_PC = pop_stack(bus);
             register_PC |= pop_stack(bus) << 8;
             break;
         }
-        case PHA: {
+        case OpcodeTable::PHA: {
             push_stack(bus, register_A);
             break;
         }
-        case JMP: {
+        case OpcodeTable::JMP__ABSOLUTE: {
             register_PC = read_address(bus, register_PC);
             break;
         }
-        case CLI: {
+        case OpcodeTable::CLI: {
             flags.bits.I = false;
             break;
         }
-        case RTS: {
+        case OpcodeTable::RTS: {
             register_PC = pop_stack(bus);
             register_PC |= pop_stack(bus) << 8;
             ++register_PC;
             break;
         }
-        case PLA: {
+        case OpcodeTable::PLA: {
             register_A = pop_stack(bus);
             set_ZN(register_A);
             break;
         }
-        case JMPI: {
+        case OpcodeTable::JMP__INDIRECT: {
             NES_Address location = read_address(bus, register_PC);
             // 6502 has a bug such that the when the vector of an indirect
             // address begins at the last byte of a page, the second byte
@@ -81,71 +81,71 @@ bool CPU::implied(MainBus &bus, NES_Byte opcode) {
             register_PC = bus.read(location) | bus.read(Page | ((location + 1) & 0xff)) << 8;
             break;
         }
-        case SEI: {
+        case OpcodeTable::SEI: {
             flags.bits.I = true;
             break;
         }
-        case DEY: {
+        case OpcodeTable::DEY: {
             --register_Y;
             set_ZN(register_Y);
             break;
         }
-        case TXA: {
+        case OpcodeTable::TXA: {
             register_A = register_X;
             set_ZN(register_A);
             break;
         }
-        case TYA: {
+        case OpcodeTable::TYA: {
             register_A = register_Y;
             set_ZN(register_A);
             break;
         }
-        case TXS: {
+        case OpcodeTable::TXS: {
             register_SP = register_X;
             break;
         }
-        case TAY: {
+        case OpcodeTable::TAY: {
             register_Y = register_A;
             set_ZN(register_Y);
             break;
         }
-        case TAX: {
+        case OpcodeTable::TAX: {
             register_X = register_A;
             set_ZN(register_X);
             break;
         }
-        case CLV: {
+        case OpcodeTable::CLV: {
             flags.bits.V = false;
             break;
         }
-        case TSX: {
+        case OpcodeTable::TSX: {
             register_X = register_SP;
             set_ZN(register_X);
             break;
         }
-        case INY: {
+        case OpcodeTable::INY: {
             ++register_Y;
             set_ZN(register_Y);
             break;
         }
-        case DEX: {
+        case OpcodeTable::DEX: {
             --register_X;
             set_ZN(register_X);
             break;
         }
-        case CLD: {
+        case OpcodeTable::CLD: {
             flags.bits.D = false;
             break;
         }
-        case INX: {
+        case OpcodeTable::INX: {
             ++register_X;
             set_ZN(register_X);
             break;
         }
-        case NOP: {
+        case OpcodeTable::NOP: {
             break;
         }
-        case SED: {
+        case OpcodeTable::SED: {
             flags.bits.D = true;
             break;
         }
@@ -547,7 +547,7 @@ void CPU::cycle(MainBus &bus) {
     // Using short-circuit evaluation, call the other function only if the
     // first failed. ExecuteImplied must be called first and ExecuteBranch
     // must be before ExecuteType0
-    if (implied(bus, op) || branch(bus, op) || type1(bus, op) || type2(bus, op) || type0(bus, op))
+    if (decode_execute(op, bus) || branch(bus, op) || type1(bus, op) || type2(bus, op) || type0(bus, op))
         skip_cycles += OPERATION_CYCLES[op];
     else
         LOG(Error) << "failed to execute opcode: " << std::hex << +op << std::endl;

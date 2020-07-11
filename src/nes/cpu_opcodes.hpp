@@ -86,38 +86,6 @@ enum Operation0 {
     CPX,
 };
 
-/// Implied mode opcodes
-enum OperationImplied {
-    BRK  = 0x00,
-    PHP  = 0x08,
-    CLC  = 0x18,
-    JSR  = 0x20,
-    PLP  = 0x28,
-    SEC  = 0x38,
-    RTI  = 0x40,
-    PHA  = 0x48,
-    JMP  = 0x4C,
-    CLI  = 0x58,
-    RTS  = 0x60,
-    PLA  = 0x68,
-    JMPI = 0x6C,  // JMP indirect
-    SEI  = 0x78,
-    DEY  = 0x88,
-    TXA  = 0x8a,
-    TYA  = 0x98,
-    TXS  = 0x9a,
-    TAY  = 0xa8,
-    TAX  = 0xaa,
-    CLV  = 0xb8,
-    TSX  = 0xba,
-    INY  = 0xc8,
-    DEX  = 0xca,
-    CLD  = 0xd8,
-    INX  = 0xe8,
-    NOP  = 0xea,
-    SED  = 0xf8,
-};
-
 /// The opcodes of the MOS6502 CPU used in the Nintendo Entertainment System.
 /// Opcodes are sorted in increasing order of code. Enums are coded as the
 /// three character opcode followed by an optional `__<mode>` symbol indicating
