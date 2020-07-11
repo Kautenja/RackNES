@@ -223,13 +223,11 @@ bool CPU::decode_execute(MainBus &bus, NES_Byte opcode) {
     // }
     case OpcodeTable::JMP__INDIRECT: {
         NES_Address address = read_address(bus, register_PC);
-        // 6502 has a bug such that the when the vector of an indirect
-        // address begins at the last byte of a page, the second byte
-        // is fetched from the beginning of that page rather than the
-        // beginning of the next
-        // Recreating here:
-        NES_Address Page = address & 0xff00;
-        register_PC = bus.read(address) | bus.read(Page | ((address + 1) & 0xff)) << 8;
+        // 6502 has a bug such that the when the vector of an indirect address
+        // begins at the last byte of a page, the second byte is fetched from
+        // the beginning of that page rather than the beginning of the next
+        NES_Address page = address & 0xff00;
+        register_PC = bus.read(address) | bus.read(page | ((address + 1) & 0xff)) << 8;
         break;
     }
     // case OpcodeTable::ADC__ABSOLUTE: {

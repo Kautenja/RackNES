@@ -208,17 +208,12 @@ class CPU {
         auto address_mode = static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
         auto address = type2_address(bus, opcode);
         if (address_mode == AddressMode2::Accumulator) {
-            // auto prev_C = flags.bits.C;
             flags.bits.C = register_A & 0x80;
             register_A <<= 1;
-            //If Rotating, set the bit-0 to the the previous carry
-            // register_A = register_A | (prev_C && 0);
             set_ZN(register_A);
         } else {
-            // auto prev_C = flags.bits.C;
             NES_Address operand = bus.read(address);
             flags.bits.C = operand & 0x80;
-            // operand = operand << 1 | (prev_C && 0);
             set_ZN(operand);
             bus.write(address, operand);
         }
@@ -249,17 +244,12 @@ class CPU {
         auto address_mode = static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
         auto address = type2_address(bus, opcode);
         if (address_mode == AddressMode2::Accumulator) {
-            // auto prev_C = flags.bits.C;
             flags.bits.C = register_A & 1;
             register_A >>= 1;
-            //If Rotating, set the bit-7 to the previous carry
-            // register_A = register_A | (prev_C && 0) << 7;
             set_ZN(register_A);
         } else {
-            // auto prev_C = flags.bits.C;
             NES_Address operand = bus.read(address);
             flags.bits.C = operand & 1;
-            // operand = operand >> 1 | (prev_C && 0) << 7;
             set_ZN(operand);
             bus.write(address, operand);
         }
