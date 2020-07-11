@@ -95,14 +95,6 @@ class CPU {
         if ((a & 0xff00) != (b & 0xff00)) skip_cycles += inc;
     }
 
-    /// Decode and execute the given opcode using the given bus.
-    ///
-    /// @param opcode the opcode of the operation to perform
-    /// @param bus the bus to read and write data from and to
-    /// @return true if the instruction succeeds
-    ///
-    bool decode_execute(NES_Byte opcode, MainBus &bus);
-
     /// Execute a branch instruction.
     ///
     /// @param opcode the opcode of the operation to perform
@@ -169,50 +161,104 @@ class CPU {
     ///
     bool type2(MainBus &bus, NES_Byte opcode);
 
+    /// Decode and execute the given opcode using the given bus.
+    ///
+    /// @param opcode the opcode of the operation to perform
+    /// @param bus the bus to read and write data from and to
+    /// @return true if the instruction succeeds
+    ///
+    bool decode_execute(NES_Byte opcode, MainBus &bus);
+
     /// Reset the emulator using the given starting address.
     ///
     /// @param start_address the starting address for the program counter
     ///
-    void reset(NES_Address start_address);
+    inline void reset(NES_Address start_address) {
+        register_PC = start_address;
+        register_SP = 0xfd;
+        register_A = 0;
+        register_X = 0;
+        register_Y = 0;
+        flags.byte = 0b00110100;
+        skip_cycles = 0;
+        cycles = 0;
+    }
 
  public:
-    /// The interrupt types available to this CPU
+    /// The interrupt types available for this CPU
     enum InterruptType {
         IRQ_INTERRUPT,
         NMI_INTERRUPT,
         BRK_INTERRUPT,
     };
 
-    /// Reset using the given main bus to lookup a starting address.
+    /// @brief Reset using the given main bus to lookup a starting address.
     ///
     /// @param bus the main bus of the NES emulator
     ///
     inline void reset(MainBus &bus) { reset(read_address(bus, RESET_VECTOR)); }
 
-    /// Interrupt the CPU.
+    /// @brief Interrupt the CPU.
     ///
     /// @param bus the main bus of the machine
     /// @param type the type of interrupt to issue
     ///
-    /// TODO: Assuming sequential execution, for asynchronously calling this
-    ///       with Execute, further work needed
-    ///
-    void interrupt(MainBus &bus, InterruptType type);
+    void interrupt(MainBus &bus, InterruptType type) {
+        if (flags.bits.I && type != NMI_INTERRUPT && type != BRK_INTERRUPT)
+            return;
+        // Add one if BRK, a quirk of 6502
+        if (type == BRK_INTERRUPT)
+            ++register_PC;
+        // push values on to the stack
+        push_stack(bus, register_PC >> 8);
+        push_stack(bus, register_PC);
+        push_stack(bus, flags.byte | 0b00100000 | (type == BRK_INTERRUPT) << 4);
+        // set the interrupt flag
+        flags.bits.I = true;
+        // handle the kind of interrupt
+        switch (type) {
+            case IRQ_INTERRUPT:
+            case BRK_INTERRUPT:
+                register_PC = read_address(bus, IRQ_VECTOR);
+                break;
+            case NMI_INTERRUPT:
+                register_PC = read_address(bus, NMI_VECTOR);
+                break;
+        }
+        // add the number of cycles to handle the interrupt
+        skip_cycles += 7;
+    }
 
-    /// Perform a full CPU cycle using and storing data in the given bus.
+    /// @brief Perform a full cycle
     ///
     /// @param bus the bus to read and write data from / to
     ///
-    void cycle(MainBus &bus);
+    void cycle(MainBus &bus) {
+        // increment the number of cycles
+        ++cycles;
+        // if in a skip cycle, return
+        if (skip_cycles-- > 1) return;
+        // reset the number of skip cycles to 0
+        skip_cycles = 0;
+        // read the opcode from the bus and lookup the number of cycles
+        NES_Byte op = bus.read(register_PC++);
+        // Using short-circuit evaluation, call the other function only if the
+        // first failed. ExecuteImplied must be called first and ExecuteBranch
+        // must be before ExecuteType0
+        if (decode_execute(op, bus) || type1(bus, op) || type2(bus, op) || type0(bus, op))
+            skip_cycles += OPERATION_CYCLES[op];
+        else
+            LOG(Error) << "failed to execute opcode: " << std::hex << +op << std::endl;
+    }
 
-    /// Skip DMA cycles.
+    /// @brief Skip DMA cycles.
     ///
     /// 513 = 256 read + 256 write + 1 dummy read
     /// &1 -> +1 if on odd cycle
     ///
     inline void skip_DMA_cycles() { skip_cycles += 513 + (cycles & 1); }
 
-    /// Convert the object's state to a JSON object.
+    /// @brief Convert the object's state to a JSON object.
     json_t* dataToJson() const {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "register_PC", json_integer(register_PC));
@@ -226,7 +272,7 @@ class CPU {
         return rootJ;
     }
 
-    /// Load the object's state from a JSON object.
+    /// @brief Load the object's state from a JSON object.
     void dataFromJson(json_t* rootJ) {
         // load register_PC
         json_t* register_PC_ = json_object_get(rootJ, "register_PC");
