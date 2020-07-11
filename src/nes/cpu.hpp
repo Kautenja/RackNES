@@ -109,7 +109,41 @@ class CPU {
     /// @param bus the bus to read and write data from and to
     /// @return true if the instruction succeeds
     ///
-    void branch(NES_Byte opcode, MainBus &bus);
+    inline void branch(NES_Byte opcode, MainBus &bus) {
+        // a mask for checking the status bit of the opcode
+        static constexpr NES_Byte STATUS_BIT_MASK = 0b00100000;
+        // the number of bits to shift the opcode to the right to get the flag type
+        static constexpr auto FLAG_TYPE_SHIFTS = 6;
+        // set branch to true if the given condition is met by the given flag
+        switch (static_cast<BranchFlagType>(opcode >> FLAG_TYPE_SHIFTS)) {
+        case BranchFlagType::NEGATIVE: {  // use XNOR to set
+            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.N)) goto branch_to_newPC;
+            break;
+        }
+        case BranchFlagType::OVERFLOW: {  // use XNOR to set
+            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.V)) goto branch_to_newPC;
+            break;
+        }
+        case BranchFlagType::CARRY: {  // use XNOR to set
+            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.C)) goto branch_to_newPC;
+            break;
+        }
+        case BranchFlagType::ZERO: {  // use XNOR to set
+            if (!(static_cast<bool>(opcode & STATUS_BIT_MASK) ^ flags.bits.Z)) goto branch_to_newPC;
+            break;
+        }
+        default: break;
+        }
+        ++register_PC;
+        return;
+    branch_to_newPC:
+        int8_t offset = bus.read(register_PC++);
+        ++skip_cycles;
+        auto newPC = static_cast<NES_Address>(register_PC + offset);
+        set_page_crossed(register_PC, newPC, 2);
+        register_PC = newPC;
+        return;
+    }
 
     /// Execute a type 0 instruction.
     ///
