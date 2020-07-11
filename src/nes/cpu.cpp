@@ -14,25 +14,25 @@ bool CPU::type1(MainBus &bus, NES_Byte opcode) {
     if ((opcode & INSTRUCTION_MODE_MASK) != 0x1)
         return false;
     // Location of the operand, could be in RAM
-    NES_Address location = type1_address(bus, opcode);
+    NES_Address address = type1_address(bus, opcode);
     switch (static_cast<Operation1>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
         case Operation1::ORA: {
-            register_A |= bus.read(location);
+            register_A |= bus.read(address);
             set_ZN(register_A);
             break;
         }
         case Operation1::AND: {
-            register_A &= bus.read(location);
+            register_A &= bus.read(address);
             set_ZN(register_A);
             break;
         }
         case Operation1::EOR: {
-            register_A ^= bus.read(location);
+            register_A ^= bus.read(address);
             set_ZN(register_A);
             break;
         }
         case Operation1::ADC: {
-            NES_Byte operand = bus.read(location);
+            NES_Byte operand = bus.read(address);
             NES_Address sum = register_A + operand + flags.bits.C;
             //Carry forward or UNSIGNED overflow
             flags.bits.C = sum & 0x100;
@@ -44,23 +44,23 @@ bool CPU::type1(MainBus &bus, NES_Byte opcode) {
             break;
         }
         case Operation1::STA: {
-            bus.write(location, register_A);
+            bus.write(address, register_A);
             break;
         }
         case Operation1::LDA: {
-            register_A = bus.read(location);
+            register_A = bus.read(address);
             set_ZN(register_A);
             break;
         }
         case Operation1::CMP: {
-            NES_Address diff = register_A - bus.read(location);
+            NES_Address diff = register_A - bus.read(address);
             flags.bits.C = !(diff & 0x100);
             set_ZN(diff);
             break;
         }
         case Operation1::SBC: {
             //High carry means "no borrow", thus negate and subtract
-            NES_Address subtrahend = bus.read(location),
+            NES_Address subtrahend = bus.read(address),
                      diff = register_A - subtrahend - !flags.bits.C;
             //if the ninth bit is 1, the resulting number is negative => borrow => low carry
             flags.bits.C = !(diff & 0x100);
@@ -80,7 +80,7 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
     if ((opcode & INSTRUCTION_MODE_MASK) != 2)
         return false;
 
-    NES_Address location = type2_address(bus, opcode);
+    NES_Address address = type2_address(bus, opcode);
     auto op = static_cast<Operation2>((opcode & OPERATION_MASK) >> OPERATION_SHIFT);
     auto address_mode = static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
     NES_Address operand = 0;
@@ -96,11 +96,11 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
                 set_ZN(register_A);
             } else {
                 auto prev_C = flags.bits.C;
-                operand = bus.read(location);
+                operand = bus.read(address);
                 flags.bits.C = operand & 0x80;
                 operand = operand << 1 | (prev_C && (op == Operation2::ROL));
                 set_ZN(operand);
-                bus.write(location, operand);
+                bus.write(address, operand);
             }
             break;
         case Operation2::LSR:
@@ -114,32 +114,32 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
                 set_ZN(register_A);
             } else {
                 auto prev_C = flags.bits.C;
-                operand = bus.read(location);
+                operand = bus.read(address);
                 flags.bits.C = operand & 1;
                 operand = operand >> 1 | (prev_C && (op == Operation2::ROR)) << 7;
                 set_ZN(operand);
-                bus.write(location, operand);
+                bus.write(address, operand);
             }
             break;
         case Operation2::STX: {
-            bus.write(location, register_X);
+            bus.write(address, register_X);
             break;
         }
         case Operation2::LDX: {
-            register_X = bus.read(location);
+            register_X = bus.read(address);
             set_ZN(register_X);
             break;
         }
         case Operation2::DEC: {
-            auto tmp = bus.read(location) - 1;
+            auto tmp = bus.read(address) - 1;
             set_ZN(tmp);
-            bus.write(location, tmp);
+            bus.write(address, tmp);
             break;
         }
         case Operation2::INC: {
-            auto tmp = bus.read(location) + 1;
+            auto tmp = bus.read(address) + 1;
             set_ZN(tmp);
-            bus.write(location, tmp);
+            bus.write(address, tmp);
             break;
         }
         default: return false;
@@ -151,32 +151,32 @@ bool CPU::type0(MainBus &bus, NES_Byte opcode) {
     if ((opcode & INSTRUCTION_MODE_MASK) != 0x0)
         return false;
 
-    NES_Address location = type0_address(bus, opcode);
+    NES_Address address = type0_address(bus, opcode);
     switch (static_cast<Operation0>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
         case Operation0::BIT: {
-            NES_Address operand = bus.read(location);
+            NES_Address operand = bus.read(address);
             flags.bits.Z = !(register_A & operand);
             flags.bits.V = operand & 0x40;
             flags.bits.N = operand & 0x80;
             break;
         }
         case Operation0::STY: {
-            bus.write(location, register_Y);
+            bus.write(address, register_Y);
             break;
         }
         case Operation0::LDY: {
-            register_Y = bus.read(location);
+            register_Y = bus.read(address);
             set_ZN(register_Y);
             break;
         }
         case Operation0::CPY: {
-            NES_Address diff = register_Y - bus.read(location);
+            NES_Address diff = register_Y - bus.read(address);
             flags.bits.C = !(diff & 0x100);
             set_ZN(diff);
             break;
         }
         case Operation0::CPX: {
-            NES_Address diff = register_X - bus.read(location);
+            NES_Address diff = register_X - bus.read(address);
             flags.bits.C = !(diff & 0x100);
             set_ZN(diff);
             break;
@@ -397,14 +397,14 @@ bool CPU::decode_execute(MainBus &bus, NES_Byte opcode) {
     //     break;
     // }
     case OpcodeTable::JMP__INDIRECT: {
-        NES_Address location = read_address(bus, register_PC);
+        NES_Address address = read_address(bus, register_PC);
         // 6502 has a bug such that the when the vector of an indirect
         // address begins at the last byte of a page, the second byte
         // is fetched from the beginning of that page rather than the
         // beginning of the next
         // Recreating here:
-        NES_Address Page = location & 0xff00;
-        register_PC = bus.read(location) | bus.read(Page | ((location + 1) & 0xff)) << 8;
+        NES_Address Page = address & 0xff00;
+        register_PC = bus.read(address) | bus.read(Page | ((address + 1) & 0xff)) << 8;
         break;
     }
     // case OpcodeTable::ADC__ABSOLUTE: {
