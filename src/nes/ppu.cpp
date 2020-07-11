@@ -285,8 +285,7 @@ void PPU::cycle(PictureBus& bus) {
 
             break;
         }
-        default:
-            LOG << "Well, this shouldn't have happened." << std::endl;
+        default: DEBUG("PPU::cycle reached invalid state");
     }
     ++cycles;
 }

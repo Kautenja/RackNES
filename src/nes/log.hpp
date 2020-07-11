@@ -10,10 +10,13 @@
 
 #include <iostream>
 
-#define debug_disabled true
+namespace NES {
 
-#define LOG \
-    if (debug_disabled) {} \
-    else std::cerr
+/// a NOP debugging statement
+#define DEBUG(x)
+/// the actual debugging statement
+// #define DEBUG(x) do { std::cerr << x << std::endl; } while (0)
+
+}  // namespace NES
 
 #endif  // NES_LOG_HPP

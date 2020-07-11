@@ -89,9 +89,9 @@ class MapperMMC1 : public ROM::Mapper {
         if (rom.getVROM().size() == 0) {
             has_character_ram = true;
             character_ram.resize(0x2000);
-            LOG << "Uses character RAM" << std::endl;
+            DEBUG("Uses character RAM");
         } else {
-            LOG << "Using CHR-ROM" << std::endl;
+            DEBUG("Using CHR-ROM");
             has_character_ram = false;
             first_bank_chr = 0;
             second_bank_chr = 0x1000 * register_chr1;
@@ -185,7 +185,7 @@ class MapperMMC1 : public ROM::Mapper {
                 } else {
                     // TODO: PRG-RAM
                     if ((temp_register & 0x10) == 0x10) {
-                        LOG << "PRG-RAM activated" << std::endl;
+                        DEBUG("PRG-RAM activated");
                     }
                     temp_register &= 0xf;
                     register_prg = temp_register;
@@ -226,8 +226,7 @@ class MapperMMC1 : public ROM::Mapper {
         if (has_character_ram)
             character_ram[address] = value;
         else
-            LOG << "Read-only CHR memory write attempt at " <<
-                std::hex << address << std::endl;
+            DEBUG("Read-only CHR memory write attempt at " << std::hex << address);
     }
 
     /// Convert the object's state to a JSON object.

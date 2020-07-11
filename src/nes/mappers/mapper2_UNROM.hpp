@@ -38,7 +38,7 @@ class MapperUNROM : public ROM::Mapper {
         select_prg(0) {
         if (has_character_ram) {
             character_ram.resize(0x2000);
-            LOG << "Uses character RAM" << std::endl;
+            DEBUG("Uses character RAM");
         }
     }
 
@@ -97,8 +97,7 @@ class MapperUNROM : public ROM::Mapper {
         if (has_character_ram)
             character_ram[address] = value;
         else
-            LOG << "Read-only CHR memory write attempt at " <<
-                std::hex << address << std::endl;
+            DEBUG("Read-only CHR memory write attempt at " << std::hex << address);
     }
 
     /// Convert the object's state to a JSON object.
