@@ -41,9 +41,10 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     // case OpcodeTable::ASL__ABSOLUTE: {
     //     break;
     // }
-    // case OpcodeTable::BPL: {
-    //     break;
-    // }
+    case OpcodeTable::BPL: {  // branch on result plus
+        branch(opcode, bus);
+        break;
+    }
     // case OpcodeTable::ORA__INDIRECT_Y: {
     //     break;
     // }
@@ -106,9 +107,10 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     // case OpcodeTable::ROL__ABSOLUTE: {
     //     break;
     // }
-    // case OpcodeTable::BMI: {
-    //     break;
-    // }
+    case OpcodeTable::BMI: {  // branch on result minus
+        branch(opcode, bus);
+        break;
+    }
     // case OpcodeTable::AND__INDIRECT_Y: {
     //     break;
     // }
@@ -166,9 +168,10 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     // case OpcodeTable::LSR__ABSOLUTE: {
     //     break;
     // }
-    // case OpcodeTable::BVC: {
-    //     break;
-    // }
+    case OpcodeTable::BVC: {  // branch on overflow clear
+        branch(opcode, bus);
+        break;
+    }
     // case OpcodeTable::EOR__INDIRECT_Y: {
     //     break;
     // }
@@ -234,9 +237,10 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     // case OpcodeTable::ROR__ABSOLUTE: {
     //     break;
     // }
-    // case OpcodeTable::BVS: {
-    //     break;
-    // }
+    case OpcodeTable::BVS: {  // branch on overflow set
+        branch(opcode, bus);
+        break;
+    }
     // case OpcodeTable::ADC__INDIRECT_Y: {
     //     break;
     // }
@@ -290,9 +294,10 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     // case OpcodeTable::STX__ABSOLUTE: {
     //     break;
     // }
-    // case OpcodeTable::BCC: {
-    //     break;
-    // }
+    case OpcodeTable::BCC: {  // branch on carry clear
+        branch(opcode, bus);
+        break;
+    }
     // case OpcodeTable::STA__INDIRECT_Y: {
     //     break;
     // }
@@ -360,9 +365,10 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     // case OpcodeTable::LDX__ABSOLUTE: {
     //     break;
     // }
-    // case OpcodeTable::BCS: {
-    //     break;
-    // }
+    case OpcodeTable::BCS: {  // branch on carry set
+        branch(opcode, bus);
+        break;
+    }
     // case OpcodeTable::LDA__INDIRECT_Y: {
     //     break;
     // }
@@ -433,9 +439,10 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     // case OpcodeTable::DEC__ABSOLUTE: {
     //     break;
     // }
-    // case OpcodeTable::BNE: {
-    //     break;
-    // }
+    case OpcodeTable::BNE: {  // branch on result not zero
+        branch(opcode, bus);
+        break;
+    }
     // case OpcodeTable::CMP__INDIRECT_Y: {
     //     break;
     // }
@@ -493,9 +500,10 @@ bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     // case OpcodeTable::INC__ABSOLUTE: {
     //     break;
     // }
-    // case OpcodeTable::BEQ: {
-    //     break;
-    // }
+    case OpcodeTable::BEQ: {  // branch on result zero
+        branch(opcode, bus);
+        break;
+    }
     // case OpcodeTable::SBC__INDIRECT_Y: {
     //     break;
     // }
@@ -912,7 +920,7 @@ void CPU::cycle(MainBus &bus) {
     // Using short-circuit evaluation, call the other function only if the
     // first failed. ExecuteImplied must be called first and ExecuteBranch
     // must be before ExecuteType0
-    if (decode_execute(op, bus) || branch(op, bus) || type1(bus, op) || type2(bus, op) || type0(bus, op))
+    if (decode_execute(op, bus) || type1(bus, op) || type2(bus, op) || type0(bus, op))
         skip_cycles += OPERATION_CYCLES[op];
     else
         LOG(Error) << "failed to execute opcode: " << std::hex << +op << std::endl;
