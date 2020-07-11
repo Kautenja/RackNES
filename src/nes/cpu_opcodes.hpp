@@ -24,13 +24,6 @@ const auto NMI_VECTOR = 0xfffa;
 const auto RESET_VECTOR = 0xfffc;
 const auto IRQ_VECTOR = 0xfffe;
 
-enum class BranchFlagType {
-    NEGATIVE,
-    OVERFLOW,
-    CARRY,
-    ZERO,
-};
-
 enum Operation1 {
     ORA,
     AND,
@@ -100,7 +93,7 @@ enum Operation0 {
 /// | Zero Page, X  | __ZERO_PAGE_X |
 /// | Zero Page, Y  | __ZERO_PAGE_Y |
 ///
-enum class OpcodeTable: uint8_t {
+enum class OpcodeTable: NES_Byte {
     BRK               = 0x00,
     ORA__INDIRECT_X   = 0x01,
     ORA__ZERO_PAGE    = 0x05,

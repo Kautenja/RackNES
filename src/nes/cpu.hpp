@@ -98,6 +98,14 @@ class CPU {
         if ((a & 0xff00) != (b & 0xff00)) skip_cycles += inc;
     }
 
+    /// The flag to check for a branch operation.
+    enum class BranchFlagType: NES_Byte {
+        NEGATIVE,
+        OVERFLOW,
+        CARRY,
+        ZERO,
+    };
+
     /// Execute a branch instruction.
     ///
     /// @param bus the bus to read and write data from and to
