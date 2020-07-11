@@ -137,14 +137,6 @@ class CPU {
         return;
     }
 
-    /// Execute a type 0 instruction.
-    ///
-    /// @param bus the bus to read and write data from and to
-    /// @param opcode the opcode of the operation to perform
-    /// @return true if the instruction succeeds
-    ///
-    bool type0(MainBus &bus, NES_Byte opcode);
-
     /// Execute a type 1 instruction.
     ///
     /// @param bus the bus to read and write data from and to
@@ -160,6 +152,14 @@ class CPU {
     /// @return true if the instruction succeeds
     ///
     bool type2(MainBus &bus, NES_Byte opcode);
+
+    /// Execute a type 0 instruction.
+    ///
+    /// @param bus the bus to read and write data from and to
+    /// @param opcode the opcode of the operation to perform
+    /// @return true if the instruction succeeds
+    ///
+    bool type0(MainBus &bus, NES_Byte opcode);
 
     /// Decode and execute the given opcode using the given bus.
     ///

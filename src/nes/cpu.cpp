@@ -10,73 +10,6 @@
 
 namespace NES {
 
-bool CPU::type0(MainBus &bus, NES_Byte opcode) {
-    if ((opcode & INSTRUCTION_MODE_MASK) != 0x0)
-        return false;
-
-    NES_Address location = 0;
-    switch (static_cast<AddrMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
-        case M2_IMMEDIATE: {
-            location = register_PC++;
-            break;
-        }
-        case M2_ZERO_PAGE: {
-            location = bus.read(register_PC++);
-            break;
-        }
-        case M2_ABSOLUTE: {
-            location = read_address(bus, register_PC);
-            register_PC += 2;
-            break;
-        }
-        case M2_INDEXED: {
-            // Address wraps around in the zero page
-            location = (bus.read(register_PC++) + register_X) & 0xff;
-            break;
-        }
-        case M2_ABSOLUTE_INDEXED: {
-            location = read_address(bus, register_PC);
-            register_PC += 2;
-            set_page_crossed(location, location + register_X);
-            location += register_X;
-            break;
-        }
-        default: return false;
-    }
-    switch (static_cast<Operation0>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
-        case BIT: {
-            NES_Address operand = bus.read(location);
-            flags.bits.Z = !(register_A & operand);
-            flags.bits.V = operand & 0x40;
-            flags.bits.N = operand & 0x80;
-            break;
-        }
-        case STY: {
-            bus.write(location, register_Y);
-            break;
-        }
-        case LDY: {
-            register_Y = bus.read(location);
-            set_ZN(register_Y);
-            break;
-        }
-        case CPY: {
-            NES_Address diff = register_Y - bus.read(location);
-            flags.bits.C = !(diff & 0x100);
-            set_ZN(diff);
-            break;
-        }
-        case CPX: {
-            NES_Address diff = register_X - bus.read(location);
-            flags.bits.C = !(diff & 0x100);
-            set_ZN(diff);
-            break;
-        }
-        default: return false;
-    }
-    return true;
-}
-
 bool CPU::type1(MainBus &bus, NES_Byte opcode) {
     if ((opcode & INSTRUCTION_MODE_MASK) != 0x1)
         return false;
@@ -303,6 +236,73 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
             auto tmp = bus.read(location) + 1;
             set_ZN(tmp);
             bus.write(location, tmp);
+            break;
+        }
+        default: return false;
+    }
+    return true;
+}
+
+bool CPU::type0(MainBus &bus, NES_Byte opcode) {
+    if ((opcode & INSTRUCTION_MODE_MASK) != 0x0)
+        return false;
+
+    NES_Address location = 0;
+    switch (static_cast<AddrMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
+        case M2_IMMEDIATE: {
+            location = register_PC++;
+            break;
+        }
+        case M2_ZERO_PAGE: {
+            location = bus.read(register_PC++);
+            break;
+        }
+        case M2_ABSOLUTE: {
+            location = read_address(bus, register_PC);
+            register_PC += 2;
+            break;
+        }
+        case M2_INDEXED: {
+            // Address wraps around in the zero page
+            location = (bus.read(register_PC++) + register_X) & 0xff;
+            break;
+        }
+        case M2_ABSOLUTE_INDEXED: {
+            location = read_address(bus, register_PC);
+            register_PC += 2;
+            set_page_crossed(location, location + register_X);
+            location += register_X;
+            break;
+        }
+        default: return false;
+    }
+    switch (static_cast<Operation0>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
+        case BIT: {
+            NES_Address operand = bus.read(location);
+            flags.bits.Z = !(register_A & operand);
+            flags.bits.V = operand & 0x40;
+            flags.bits.N = operand & 0x80;
+            break;
+        }
+        case STY: {
+            bus.write(location, register_Y);
+            break;
+        }
+        case LDY: {
+            register_Y = bus.read(location);
+            set_ZN(register_Y);
+            break;
+        }
+        case CPY: {
+            NES_Address diff = register_Y - bus.read(location);
+            flags.bits.C = !(diff & 0x100);
+            set_ZN(diff);
+            break;
+        }
+        case CPX: {
+            NES_Address diff = register_X - bus.read(location);
+            flags.bits.C = !(diff & 0x100);
+            set_ZN(diff);
             break;
         }
         default: return false;
