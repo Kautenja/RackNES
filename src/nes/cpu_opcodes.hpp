@@ -25,8 +25,8 @@ const auto RESET_VECTOR = 0xfffc;
 const auto IRQ_VECTOR = 0xfffe;
 
 enum class Operation0 {
-    BIT  = 1,
-    STY  = 4,
+    BIT = 1,
+    STY = 4,
     LDY,
     CPY,
     CPX,
@@ -44,14 +44,14 @@ enum class Operation1 {
 };
 
 enum class AddrMode1 {
-    M1_INDEXED_INDIRECT_X,
-    M1_ZERO_PAGE,
-    M1_IMMEDIATE,
-    M1_ABSOLUTE,
-    M1_INDIRECT_Y,
-    M1_INDEXED_X,
-    M1_ABSOLUTE_Y,
-    M1_ABSOLUTE_X,
+    IndexedIndirectX,
+    ZeroPage,
+    Immediate,
+    Absolute,
+    IndirectY,
+    IndexedX,
+    AbsoluteY,
+    AbsoluteX,
 };
 
 enum class Operation2 {
@@ -66,12 +66,12 @@ enum class Operation2 {
 };
 
 enum class AddrMode2 {
-    M2_IMMEDIATE,
-    M2_ZERO_PAGE,
-    M2_ACCUMULATOR,
-    M2_ABSOLUTE,
-    M2_INDEXED          = 5,
-    M2_ABSOLUTE_INDEXED = 7,
+    Immediate,
+    ZeroPage,
+    Accumulator,
+    Absolute,
+    Indexed         = 5,
+    AbsoluteIndexed = 7,
 };
 
 /// The opcodes of the MOS6502 CPU used in the Nintendo Entertainment System.

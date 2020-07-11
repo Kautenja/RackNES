@@ -17,26 +17,26 @@ bool CPU::type1(MainBus &bus, NES_Byte opcode) {
     NES_Address location = 0;
     auto op = static_cast<Operation1>((opcode & OPERATION_MASK) >> OPERATION_SHIFT);
     switch (static_cast<AddrMode1>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
-        case AddrMode1::M1_INDEXED_INDIRECT_X: {
+        case AddrMode1::IndexedIndirectX: {
             NES_Byte zero_address = register_X + bus.read(register_PC++);
             // Addresses wrap in zero page mode, thus pass through a mask
             location = bus.read(zero_address & 0xff) | bus.read((zero_address + 1) & 0xff) << 8;
             break;
         }
-        case AddrMode1::M1_ZERO_PAGE: {
+        case AddrMode1::ZeroPage: {
             location = bus.read(register_PC++);
             break;
         }
-        case AddrMode1::M1_IMMEDIATE: {
+        case AddrMode1::Immediate: {
             location = register_PC++;
             break;
         }
-        case AddrMode1::M1_ABSOLUTE: {
+        case AddrMode1::Absolute: {
             location = read_address(bus, register_PC);
             register_PC += 2;
             break;
         }
-        case AddrMode1::M1_INDIRECT_Y: {
+        case AddrMode1::IndirectY: {
             NES_Byte zero_address = bus.read(register_PC++);
             location = bus.read(zero_address & 0xff) | bus.read((zero_address + 1) & 0xff) << 8;
             if (op != Operation1::STA)
@@ -44,12 +44,12 @@ bool CPU::type1(MainBus &bus, NES_Byte opcode) {
             location += register_Y;
             break;
         }
-        case AddrMode1::M1_INDEXED_X: {
+        case AddrMode1::IndexedX: {
             // Address wraps around in the zero page
             location = (bus.read(register_PC++) + register_X) & 0xff;
             break;
         }
-        case AddrMode1::M1_ABSOLUTE_Y: {
+        case AddrMode1::AbsoluteY: {
             location = read_address(bus, register_PC);
             register_PC += 2;
             if (op != Operation1::STA)
@@ -57,7 +57,7 @@ bool CPU::type1(MainBus &bus, NES_Byte opcode) {
             location += register_Y;
             break;
         }
-        case AddrMode1::M1_ABSOLUTE_X: {
+        case AddrMode1::AbsoluteX: {
             location = read_address(bus, register_PC);
             register_PC += 2;
             if (op != Operation1::STA)
@@ -137,23 +137,23 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
     auto op = static_cast<Operation2>((opcode & OPERATION_MASK) >> OPERATION_SHIFT);
     auto address_mode = static_cast<AddrMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
     switch (address_mode) {
-        case AddrMode2::M2_IMMEDIATE: {
+        case AddrMode2::Immediate: {
             location = register_PC++;
             break;
         }
-        case AddrMode2::M2_ZERO_PAGE: {
+        case AddrMode2::ZeroPage: {
             location = bus.read(register_PC++);
             break;
         }
-        case AddrMode2::M2_ACCUMULATOR: {
+        case AddrMode2::Accumulator: {
             break;
         }
-        case AddrMode2::M2_ABSOLUTE: {
+        case AddrMode2::Absolute: {
             location = read_address(bus, register_PC);
             register_PC += 2;
             break;
         }
-        case AddrMode2::M2_INDEXED: {
+        case AddrMode2::Indexed: {
             location = bus.read(register_PC++);
             NES_Byte index;
             if (op == Operation2::LDX || op == Operation2::STX)
@@ -164,7 +164,7 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
             location = (location + index) & 0xff;
             break;
         }
-        case AddrMode2::M2_ABSOLUTE_INDEXED: {
+        case AddrMode2::AbsoluteIndexed: {
             location = read_address(bus, register_PC);
             register_PC += 2;
             NES_Byte index;
@@ -183,7 +183,7 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
     switch (op) {
         case Operation2::ASL:
         case Operation2::ROL:
-            if (address_mode == AddrMode2::M2_ACCUMULATOR) {
+            if (address_mode == AddrMode2::Accumulator) {
                 auto prev_C = flags.bits.C;
                 flags.bits.C = register_A & 0x80;
                 register_A <<= 1;
@@ -201,7 +201,7 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
             break;
         case Operation2::LSR:
         case Operation2::ROR:
-            if (address_mode == AddrMode2::M2_ACCUMULATOR) {
+            if (address_mode == AddrMode2::Accumulator) {
                 auto prev_C = flags.bits.C;
                 flags.bits.C = register_A & 1;
                 register_A >>= 1;
@@ -249,25 +249,25 @@ bool CPU::type0(MainBus &bus, NES_Byte opcode) {
 
     NES_Address location = 0;
     switch (static_cast<AddrMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
-        case AddrMode2::M2_IMMEDIATE: {
+        case AddrMode2::Immediate: {
             location = register_PC++;
             break;
         }
-        case AddrMode2::M2_ZERO_PAGE: {
+        case AddrMode2::ZeroPage: {
             location = bus.read(register_PC++);
             break;
         }
-        case AddrMode2::M2_ABSOLUTE: {
+        case AddrMode2::Absolute: {
             location = read_address(bus, register_PC);
             register_PC += 2;
             break;
         }
-        case AddrMode2::M2_INDEXED: {
+        case AddrMode2::Indexed: {
             // Address wraps around in the zero page
             location = (bus.read(register_PC++) + register_X) & 0xff;
             break;
         }
-        case AddrMode2::M2_ABSOLUTE_INDEXED: {
+        case AddrMode2::AbsoluteIndexed: {
             location = read_address(bus, register_PC);
             register_PC += 2;
             set_page_crossed(location, location + register_X);
