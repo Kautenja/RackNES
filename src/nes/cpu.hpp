@@ -54,7 +54,10 @@ class CPU {
     /// @param value the value to set the zero and negative flags using
     ///
     inline void set_ZN(NES_Byte value) {
-        flags.bits.Z = !value; flags.bits.N = value & 0x80;
+        // set zero high if the value is not zero
+        flags.bits.Z = !value;
+        // set negative high if the most significant bit is 1
+        flags.bits.N = value & 0x80;
     }
 
     /// Read a 16-bit address from the bus given an address.
