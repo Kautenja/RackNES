@@ -29,13 +29,6 @@ static constexpr auto NMI_VECTOR = 0xfffa;
 static constexpr auto RESET_VECTOR = 0xfffc;
 static constexpr auto IRQ_VECTOR = 0xfffe;
 
-enum BranchOnFlag {
-    NEGATIVE_,
-    OVERFLOW_,
-    CARRY_,
-    ZERO_,
-};
-
 enum Operation1 {
     ORA,
     AND,

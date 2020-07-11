@@ -154,49 +154,6 @@ bool CPU::implied(MainBus &bus, NES_Byte opcode) {
     return true;
 }
 
-bool CPU::branch(MainBus &bus, NES_Byte opcode) {
-    if ((opcode & BRANCH_INSTRUCTION_MASK) != BRANCH_INSTRUCTION_MASK_RESULT)
-        return false;
-
-    // branch is initialized to the condition required (for the flag
-    // specified later)
-    bool branch = opcode & BRANCH_CONDITION_MASK;
-
-    // set branch to true if the given condition is met by the given flag
-    // We use xnor here, it is true if either both operands are true or
-    // false
-    switch (opcode >> BRANCH_ON_FLAG_SHIFT) {
-        case NEGATIVE_: {
-            branch = !(branch ^ flags.bits.N);
-            break;
-        }
-        case OVERFLOW_: {
-            branch = !(branch ^ flags.bits.V);
-            break;
-        }
-        case CARRY_: {
-            branch = !(branch ^ flags.bits.C);
-            break;
-        }
-        case ZERO_: {
-            branch = !(branch ^ flags.bits.Z);
-            break;
-        }
-        default: return false;
-    }
-
-    if (branch) {
-        int8_t offset = bus.read(register_PC++);
-        ++skip_cycles;
-        auto newPC = static_cast<NES_Address>(register_PC + offset);
-        set_page_crossed(register_PC, newPC, 2);
-        register_PC = newPC;
-    } else {
-        ++register_PC;
-    }
-    return true;
-}
-
 bool CPU::type0(MainBus &bus, NES_Byte opcode) {
     if ((opcode & INSTRUCTION_MODE_MASK) != 0x0)
         return false;
