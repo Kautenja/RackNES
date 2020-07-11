@@ -117,7 +117,7 @@ class CPU {
     /// @param opcode the opcode of the operation to perform
     /// @return true if the instruction succeeds
     ///
-    inline bool branch(MainBus &bus, NES_Byte opcode) {
+    bool branch(MainBus &bus, NES_Byte opcode) {
         if ((opcode & BRANCH_INSTRUCTION_MASK) != BRANCH_INSTRUCTION_MASK_RESULT)
             return false;
         // a mask for checking the status bit of the opcode
