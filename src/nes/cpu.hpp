@@ -248,38 +248,30 @@ class CPU {
     NES_Address type2_address(MainBus &bus, NES_Byte opcode, bool is_LDX_or_STX) {
         NES_Address location = 0;
         switch (static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
-        case AddressMode2::Immediate: {
+        case AddressMode2::Immediate:
             location = register_PC++;
             break;
-        }
-        case AddressMode2::ZeroPage: {
+        case AddressMode2::ZeroPage:
             location = bus.read(register_PC++);
             break;
-        }
-        case AddressMode2::Accumulator: {
+        case AddressMode2::Accumulator:
             break;
-        }
-        case AddressMode2::Absolute: {
+        case AddressMode2::Absolute:
             location = read_address(bus, register_PC);
             register_PC += 2;
             break;
-        }
-        case AddressMode2::Indexed: {
+        case AddressMode2::Indexed:
             location = bus.read(register_PC++);
-            NES_Byte index = is_LDX_or_STX ? register_Y : register_X;
             // The mask wraps address around zero page
-            location = (location + index) & 0xff;
+            location = (location + (is_LDX_or_STX ? register_Y : register_X)) & 0xff;
             break;
-        }
-        case AddressMode2::AbsoluteIndexed: {
+        case AddressMode2::AbsoluteIndexed:
             location = read_address(bus, register_PC);
             register_PC += 2;
-            NES_Byte index = is_LDX_or_STX ? register_Y : register_X;
+            auto index = is_LDX_or_STX ? register_Y : register_X;
             set_page_crossed(location, location + index);
             location += index;
             break;
-        }
-        default: break;
         }
         return location;
     }
@@ -293,35 +285,28 @@ class CPU {
     NES_Address type0_address(MainBus &bus, NES_Byte opcode) {
         NES_Address location = 0;
         switch (static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT)) {
-        case AddressMode2::Immediate: {
+        case AddressMode2::Immediate:
             location = register_PC++;
             break;
-        }
-        case AddressMode2::ZeroPage: {
+        case AddressMode2::ZeroPage:
             location = bus.read(register_PC++);
             break;
-        }
-        case AddressMode2::Accumulator: {
+        case AddressMode2::Accumulator:
             break;
-        }
-        case AddressMode2::Absolute: {
+        case AddressMode2::Absolute:
             location = read_address(bus, register_PC);
             register_PC += 2;
             break;
-        }
-        case AddressMode2::Indexed: {
+        case AddressMode2::Indexed:
             // Address wraps around in the zero page
             location = (bus.read(register_PC++) + register_X) & 0xff;
             break;
-        }
-        case AddressMode2::AbsoluteIndexed: {
+        case AddressMode2::AbsoluteIndexed:
             location = read_address(bus, register_PC);
             register_PC += 2;
             set_page_crossed(location, location + register_X);
             location += register_X;
             break;
-        }
-        default: break;
         }
         return location;
     }
