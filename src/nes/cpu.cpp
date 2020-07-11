@@ -504,10 +504,11 @@ void CPU::cycle(MainBus &bus) {
     // Using short-circuit evaluation, call the other function only if the
     // first failed. ExecuteImplied must be called first and ExecuteBranch
     // must be before ExecuteType0
-    if (implied(bus, op) || branch(bus, op) || type1(bus, op) || type2(bus, op) || type0(bus, op))
+    if (implied(bus, op) || branch(bus, op) || type1(bus, op) || type2(bus, op) || type0(bus, op)) {
         skip_cycles += OPERATION_CYCLES[op];
-    else
+    } else {
         DEBUG("failed to execute opcode: " << std::hex << +op);
+    }
 }
 
 }  // namespace NES
