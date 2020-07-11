@@ -193,9 +193,37 @@ class CPU {
     // MARK: Type 2 Instructions
     // -----------------------------------------------------------------------
 
-    // inline void eor(MainBus &bus, NES_Byte opcode) {
+    inline void ASL(MainBus &bus, NES_Byte opcode) {
 
-    // }
+    }
+
+    inline void ROL(MainBus &bus, NES_Byte opcode) {
+
+    }
+
+    inline void LSR(MainBus &bus, NES_Byte opcode) {
+
+    }
+
+    inline void ROR(MainBus &bus, NES_Byte opcode) {
+
+    }
+
+    inline void STX(MainBus &bus, NES_Byte opcode) {
+
+    }
+
+    inline void LDX(MainBus &bus, NES_Byte opcode) {
+
+    }
+
+    inline void DEC(MainBus &bus, NES_Byte opcode) {
+
+    }
+
+    inline void INC(MainBus &bus, NES_Byte opcode) {
+
+    }
 
     /// The flag to check for a branch operation.
     enum class BranchFlagType: NES_Byte {
