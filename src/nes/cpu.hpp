@@ -379,8 +379,6 @@ class CPU {
         AbsoluteX,
     };
 
-    /// @brief Return an address for a type 1 instruction:
-    /// ORA, AND, EOR, ADC, STA, LDA, CMP, SBC
     ///
     /// @param bus the bus to read and write data from and to
     /// @param opcode the opcode of the operation to perform

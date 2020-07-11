@@ -58,6 +58,6 @@
     format
 -   fix location of manual
 
-### 1.4.2
+### 1.4.2 (2020-07-11)
 
--   more accurate CPU opcode timings based on Blargg's MOS6502 code
+-   fix cycle durations to be more accurate
