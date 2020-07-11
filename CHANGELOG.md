@@ -57,3 +57,7 @@
 -   fix mapper number calculation to include the 4-high bits in the 12-bit
     format
 -   fix location of manual
+
+### 1.4.2
+
+-   more accurate CPU opcode timings based on Blargg's MOS6502 code
