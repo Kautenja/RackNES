@@ -62,8 +62,10 @@ struct RackNES : Module {
         PARAM_SAVE, PARAM_LOAD, PARAM_HANG, PARAM_RESET,
         PARAM_PLAYER1_A, PARAM_PLAYER1_B, PARAM_PLAYER1_SELECT, PARAM_PLAYER1_START,
         PARAM_PLAYER1_UP, PARAM_PLAYER1_DOWN, PARAM_PLAYER1_LEFT, PARAM_PLAYER1_RIGHT,
+        PARAM_PLAYER1_A_TURBO, PARAM_PLAYER1_B_TURBO,
         PARAM_PLAYER2_A, PARAM_PLAYER2_B, PARAM_PLAYER2_SELECT, PARAM_PLAYER2_START,
         PARAM_PLAYER2_UP, PARAM_PLAYER2_DOWN, PARAM_PLAYER2_LEFT, PARAM_PLAYER2_RIGHT,
+        PARAM_PLAYER2_A_TURBO, PARAM_PLAYER2_B_TURBO,
         NUM_PARAMS
     };
     enum InputIds {
@@ -81,6 +83,8 @@ struct RackNES : Module {
         NUM_OUTPUTS
     };
     enum LightIds {
+        LIGHT_PLAYER1_A_TURBO, LIGHT_PLAYER1_B_TURBO,
+        LIGHT_PLAYER2_A_TURBO, LIGHT_PLAYER2_B_TURBO,
         NUM_LIGHTS
     };
 
@@ -92,9 +96,9 @@ struct RackNES : Module {
     dsp::PulseGenerator clockGenerator;
 
     /// a Schmitt Trigger for handling player 1 button inputs
-    CVButtonTrigger player1Triggers[8];
+    CVButtonTrigger player1Triggers[10];
     /// a Schmitt Trigger for handling player 2 button inputs
-    CVButtonTrigger player2Triggers[8];
+    CVButtonTrigger player2Triggers[10];
 
     /// triggers for handling button presses and CV inputs for the save input
     CVButtonTrigger saveButton;
@@ -135,22 +139,26 @@ struct RackNES : Module {
         configParam(PARAM_LOAD,  0.f, 1.f, 0.f, "Load State");
         configParam(PARAM_HANG,  0.f, 1.f, 0.f, "Hang Emulation");
         configParam(PARAM_RESET, 0.f, 1.f, 0.f, "Reset NES");
-        configParam(PARAM_PLAYER1_A,      0.f, 1.f, 0.f, "Player 1 A");
-        configParam(PARAM_PLAYER1_B,      0.f, 1.f, 0.f, "Player 1 B");
-        configParam(PARAM_PLAYER1_SELECT, 0.f, 1.f, 0.f, "Player 1 Select");
-        configParam(PARAM_PLAYER1_START,  0.f, 1.f, 0.f, "Player 1 Start");
-        configParam(PARAM_PLAYER1_UP,     0.f, 1.f, 0.f, "Player 1 Up");
-        configParam(PARAM_PLAYER1_DOWN,   0.f, 1.f, 0.f, "Player 1 Down");
-        configParam(PARAM_PLAYER1_LEFT,   0.f, 1.f, 0.f, "Player 1 Left");
-        configParam(PARAM_PLAYER1_RIGHT,  0.f, 1.f, 0.f, "Player 1 Right");
-        configParam(PARAM_PLAYER2_A,      0.f, 1.f, 0.f, "Player 2 A");
-        configParam(PARAM_PLAYER2_B,      0.f, 1.f, 0.f, "Player 2 B");
-        configParam(PARAM_PLAYER2_SELECT, 0.f, 1.f, 0.f, "Player 2 Select");
-        configParam(PARAM_PLAYER2_START,  0.f, 1.f, 0.f, "Player 2 Start");
-        configParam(PARAM_PLAYER2_UP,     0.f, 1.f, 0.f, "Player 2 Up");
-        configParam(PARAM_PLAYER2_DOWN,   0.f, 1.f, 0.f, "Player 2 Down");
-        configParam(PARAM_PLAYER2_LEFT,   0.f, 1.f, 0.f, "Player 2 Left");
-        configParam(PARAM_PLAYER2_RIGHT,  0.f, 1.f, 0.f, "Player 2 Right");
+        configParam(PARAM_PLAYER1_A,       0.f, 1.f, 0.f, "Player 1 A");
+        configParam(PARAM_PLAYER1_B,       0.f, 1.f, 0.f, "Player 1 B");
+        configParam(PARAM_PLAYER1_SELECT,  0.f, 1.f, 0.f, "Player 1 Select");
+        configParam(PARAM_PLAYER1_START,   0.f, 1.f, 0.f, "Player 1 Start");
+        configParam(PARAM_PLAYER1_UP,      0.f, 1.f, 0.f, "Player 1 Up");
+        configParam(PARAM_PLAYER1_DOWN,    0.f, 1.f, 0.f, "Player 1 Down");
+        configParam(PARAM_PLAYER1_LEFT,    0.f, 1.f, 0.f, "Player 1 Left");
+        configParam(PARAM_PLAYER1_RIGHT,   0.f, 1.f, 0.f, "Player 1 Right");
+        configParam(PARAM_PLAYER1_A,       0.f, 1.f, 0.f, "Player 1 A");
+        configParam(PARAM_PLAYER1_B,       0.f, 1.f, 0.f, "Player 1 B");
+        configParam(PARAM_PLAYER1_A_TURBO, 0.f, 1.f, 0.f, "Player 1 A Turbo");
+        configParam(PARAM_PLAYER1_B_TURBO, 0.f, 1.f, 0.f, "Player 1 B Turbo");
+        configParam(PARAM_PLAYER2_SELECT,  0.f, 1.f, 0.f, "Player 2 Select");
+        configParam(PARAM_PLAYER2_START,   0.f, 1.f, 0.f, "Player 2 Start");
+        configParam(PARAM_PLAYER2_UP,      0.f, 1.f, 0.f, "Player 2 Up");
+        configParam(PARAM_PLAYER2_DOWN,    0.f, 1.f, 0.f, "Player 2 Down");
+        configParam(PARAM_PLAYER2_LEFT,    0.f, 1.f, 0.f, "Player 2 Left");
+        configParam(PARAM_PLAYER2_RIGHT,   0.f, 1.f, 0.f, "Player 2 Right");
+        configParam(PARAM_PLAYER2_A_TURBO, 0.f, 1.f, 0.f, "Player 2 A Turbo");
+        configParam(PARAM_PLAYER2_B_TURBO, 0.f, 1.f, 0.f, "Player 2 B Turbo");
         // draw the initial screen
         initalizeScreen();
         // set the emulator's clock rate to the Rack rate
@@ -275,6 +283,28 @@ struct RackNES : Module {
                 );
                 // the position for the current button's index
                 player2 += player2Triggers[button].isHigh() << button;
+            }
+        }
+        // iterate over the turbo controls
+        for (std::size_t button = 8; button < 10; button++) {
+            {  // player 1 scope
+                // TODO:
+                // // process the voltage with the Schmitt Trigger
+                // player1Triggers[button].process(
+                //     params[PARAM_PLAYER1_A + button].getValue(),
+                //     inputs[INPUT_PLAYER1_A + button].getVoltage()
+                // );
+                // // the position for the current button's index
+                // player1 += player1Triggers[button].isHigh() << button;
+            } {  // player 2 scope
+                // TODO:
+                // // process the voltage with the Schmitt Trigger
+                // player2Triggers[button].process(
+                //     params[PARAM_PLAYER2_A + button].getValue(),
+                //     inputs[INPUT_PLAYER2_A + button].getVoltage()
+                // );
+                // // the position for the current button's index
+                // player2 += player2Triggers[button].isHigh() << button;
             }
         }
         // set the controller values
@@ -511,6 +541,8 @@ struct RackNESWidget : ModuleWidget {
         addParam(createParam<CKD6>(Vec(24, 244), module, RackNES::PARAM_PLAYER1_START));
         addParam(createParam<CKD6_NES_Red>(Vec(24, 290), module, RackNES::PARAM_PLAYER1_B));
         addParam(createParam<CKD6_NES_Red>(Vec(24, 336), module, RackNES::PARAM_PLAYER1_A));
+        addParam(createParam<CKSS>(Vec(100, 290), module, RackNES::PARAM_PLAYER1_B_TURBO));
+        addParam(createParam<CKSS>(Vec(100, 336), module, RackNES::PARAM_PLAYER1_A_TURBO));
         // player 2 inputs
         addInput(createInput<PJ301MPort>(Vec(482, 22),  module, RackNES::INPUT_PLAYER2_UP));
         addInput(createInput<PJ301MPort>(Vec(482, 68),  module, RackNES::INPUT_PLAYER2_DOWN));
@@ -529,6 +561,8 @@ struct RackNESWidget : ModuleWidget {
         addParam(createParam<CKD6>(Vec(515, 244), module, RackNES::PARAM_PLAYER2_START));
         addParam(createParam<CKD6_NES_Red>(Vec(515, 290), module, RackNES::PARAM_PLAYER2_B));
         addParam(createParam<CKD6_NES_Red>(Vec(515, 336), module, RackNES::PARAM_PLAYER2_A));
+        addParam(createParam<CKSS>(Vec(455, 290), module, RackNES::PARAM_PLAYER2_B_TURBO));
+        addParam(createParam<CKSS>(Vec(455, 336), module, RackNES::PARAM_PLAYER2_A_TURBO));
     }
 
     /// Draw the widget in the rack window.
