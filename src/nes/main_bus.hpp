@@ -114,9 +114,9 @@ class MainBus {
         if (address < 0x2000)
             return &ram[address & 0x7ff];
         else if (address < 0x4020)
-            LOG(Error) << "Register address memory pointer access attempt" << std::endl;
+            LOG << "Register address memory pointer access attempt" << std::endl;
         else if (address < 0x6000)
-            LOG(Error) << "Expansion ROM access attempted, which is unsupported" << std::endl;
+            LOG << "Expansion ROM access attempted, which is unsupported" << std::endl;
         else if (address < 0x8000 && mapper->hasExtendedRAM())
             return &extended_ram[address - 0x6000];
         return nullptr;
@@ -143,19 +143,19 @@ class MainBus {
                 if (read_callbacks.count(reg))
                     return read_callbacks.at(reg)();
                 else
-                    LOG(InfoVerbose) << "No read callback registered for I/O register at: " << std::hex << +address << std::endl;
+                    LOG << "No read callback registered for I/O register at: " << std::hex << +address << std::endl;
             } else if (address < 0x4018 && address >= 0x4000) {  // only *some* IO registers (mostly APU)
                 auto reg = static_cast<IORegisters>(address);
                 if (read_callbacks.count(reg))
                     return read_callbacks.at(reg)();
                 else
-                    LOG(InfoVerbose) << "No read callback registered for I/O register at: " << std::hex << +address << std::endl;
+                    LOG << "No read callback registered for I/O register at: " << std::hex << +address << std::endl;
             }
             else {
-                LOG(InfoVerbose) << "Read access attempt at: " << std::hex << +address << std::endl;
+                LOG << "Read access attempt at: " << std::hex << +address << std::endl;
             }
         } else if (address < 0x6000) {
-            LOG(InfoVerbose) << "Expansion ROM read attempted. This is currently unsupported" << std::endl;
+            LOG << "Expansion ROM read attempted. This is currently unsupported" << std::endl;
         } else if (address < 0x8000) {
             if (mapper->hasExtendedRAM()) return extended_ram[address - 0x6000];
         } else {
@@ -178,18 +178,18 @@ class MainBus {
                 if (write_callbacks.count(reg))
                     return write_callbacks.at(reg)(value);
                 else
-                    LOG(InfoVerbose) << "No write callback registered for I/O register at: " << std::hex << +address << std::endl;
+                    LOG << "No write callback registered for I/O register at: " << std::hex << +address << std::endl;
             } else if (address < 0x4018 && address >= 0x4000) {  // only some registers (mostly APU)
                 auto reg = static_cast<IORegisters>(address);
                 if (write_callbacks.count(reg))
                     return write_callbacks.at(reg)(value);
                 else
-                    LOG(InfoVerbose) << "No write callback registered for I/O register at: " << std::hex << +address << std::endl;
+                    LOG << "No write callback registered for I/O register at: " << std::hex << +address << std::endl;
             } else {
-                LOG(InfoVerbose) << "Write access attmept at: " << std::hex << +address << std::endl;
+                LOG << "Write access attmept at: " << std::hex << +address << std::endl;
             }
         } else if (address < 0x6000) {
-            LOG(InfoVerbose) << "Expansion ROM write access attempted. This is currently unsupported" << std::endl;
+            LOG << "Expansion ROM write access attempted. This is currently unsupported" << std::endl;
         } else if (address < 0x8000) {
             if (mapper->hasExtendedRAM()) extended_ram[address - 0x6000] = value;
         } else {

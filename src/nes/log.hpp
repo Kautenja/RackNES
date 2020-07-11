@@ -12,16 +12,8 @@
 
 #define debug_disabled true
 
-#define LOG(level) \
+#define LOG \
     if (debug_disabled) {} \
     else std::cerr
-
-enum Level {
-    None,
-    Error,
-    Info,
-    InfoVerbose,
-    CpuTrace
-};
 
 #endif  // NES_LOG_HPP

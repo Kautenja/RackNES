@@ -550,7 +550,7 @@ void CPU::cycle(MainBus &bus) {
     if (implied(bus, op) || branch(bus, op) || type1(bus, op) || type2(bus, op) || type0(bus, op))
         skip_cycles += OPERATION_CYCLES[op];
     else
-        LOG(Error) << "failed to execute opcode: " << std::hex << +op << std::endl;
+        LOG << "failed to execute opcode: " << std::hex << +op << std::endl;
 }
 
 }  // namespace NES

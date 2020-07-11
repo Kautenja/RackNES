@@ -286,7 +286,7 @@ void PPU::cycle(PictureBus& bus) {
             break;
         }
         default:
-            LOG(Error) << "Well, this shouldn't have happened." << std::endl;
+            LOG << "Well, this shouldn't have happened." << std::endl;
     }
     ++cycles;
 }

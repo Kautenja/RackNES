@@ -38,7 +38,7 @@ class MapperUNROM : public ROM::Mapper {
         select_prg(0) {
         if (has_character_ram) {
             character_ram.resize(0x2000);
-            LOG(Info) << "Uses character RAM" << std::endl;
+            LOG << "Uses character RAM" << std::endl;
         }
     }
 
@@ -97,7 +97,7 @@ class MapperUNROM : public ROM::Mapper {
         if (has_character_ram)
             character_ram[address] = value;
         else
-            LOG(Info) << "Read-only CHR memory write attempt at " <<
+            LOG << "Read-only CHR memory write attempt at " <<
                 std::hex << address << std::endl;
     }
 
