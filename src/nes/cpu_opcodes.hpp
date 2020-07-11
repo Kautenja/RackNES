@@ -12,22 +12,22 @@
 
 namespace NES {
 
-const auto INSTRUCTION_MODE_MASK = 0x3;
+static constexpr auto INSTRUCTION_MODE_MASK = 0x3;
 
-const auto OPERATION_MASK = 0xe0;
-const auto OPERATION_SHIFT = 5;
+static constexpr auto OPERATION_MASK = 0xe0;
+static constexpr auto OPERATION_SHIFT = 5;
 
-const auto ADRESS_MODE_MASK = 0x1c;
-const auto ADDRESS_MODE_SHIFT = 2;
+static constexpr auto ADRESS_MODE_MASK = 0x1c;
+static constexpr auto ADDRESS_MODE_SHIFT = 2;
 
-const auto BRANCH_INSTRUCTION_MASK = 0x1f;
-const auto BRANCH_INSTRUCTION_MASK_RESULT = 0x10;
-const auto BRANCH_CONDITION_MASK = 0x20;
-const auto BRANCH_ON_FLAG_SHIFT = 6;
+static constexpr auto BRANCH_INSTRUCTION_MASK = 0x1f;
+static constexpr auto BRANCH_INSTRUCTION_MASK_RESULT = 0x10;
+static constexpr auto BRANCH_CONDITION_MASK = 0x20;
+static constexpr auto BRANCH_ON_FLAG_SHIFT = 6;
 
-const auto NMI_VECTOR = 0xfffa;
-const auto RESET_VECTOR = 0xfffc;
-const auto IRQ_VECTOR = 0xfffe;
+static constexpr auto NMI_VECTOR = 0xfffa;
+static constexpr auto RESET_VECTOR = 0xfffc;
+static constexpr auto IRQ_VECTOR = 0xfffe;
 
 enum BranchOnFlag {
     NEGATIVE_,
