@@ -111,14 +111,15 @@ class MainBus {
     /// Return a pointer to the page in memory.
     const NES_Byte* get_page_pointer(NES_Byte page) const {
         NES_Address address = page << 8;
-        if (address < 0x2000)
+        if (address < 0x2000) {
             return &ram[address & 0x7ff];
-        else if (address < 0x4020)
+        } else if (address < 0x4020) {
             DEBUG("Register address memory pointer access attempt");
-        else if (address < 0x6000)
+        } else if (address < 0x6000) {
             DEBUG("Expansion ROM access attempted, which is unsupported");
-        else if (address < 0x8000 && mapper->hasExtendedRAM())
+        } else if (address < 0x8000 && mapper->hasExtendedRAM()) {
             return &extended_ram[address - 0x6000];
+        }
         return nullptr;
     }
 
@@ -140,16 +141,18 @@ class MainBus {
         } else if (address < 0x4020) {
             if (address < 0x4000) {  // PPU registers, mirrored
                 auto reg = static_cast<IORegisters>(address & 0x2007);
-                if (read_callbacks.count(reg))
+                if (read_callbacks.count(reg)) {
                     return read_callbacks.at(reg)();
-                else
+                } else {
                     DEBUG("No read callback registered for I/O register at: " << std::hex << +address);
+                }
             } else if (address < 0x4018 && address >= 0x4000) {  // only *some* IO registers (mostly APU)
                 auto reg = static_cast<IORegisters>(address);
-                if (read_callbacks.count(reg))
+                if (read_callbacks.count(reg)) {
                     return read_callbacks.at(reg)();
-                else
+                } else {
                     DEBUG("No read callback registered for I/O register at: " << std::hex << +address);
+                }
             }
             else {
                 DEBUG("Read access attempt at: " << std::hex << +address);
@@ -175,16 +178,18 @@ class MainBus {
         } else if (address < 0x4020) {
             if (address < 0x4000) {  // PPU registers, mirrored
                 auto reg = static_cast<IORegisters>(address & 0x2007);
-                if (write_callbacks.count(reg))
+                if (write_callbacks.count(reg)) {
                     return write_callbacks.at(reg)(value);
-                else
+                } else {
                     DEBUG("No write callback registered for I/O register at: " << std::hex << +address);
+                }
             } else if (address < 0x4018 && address >= 0x4000) {  // only some registers (mostly APU)
                 auto reg = static_cast<IORegisters>(address);
-                if (write_callbacks.count(reg))
+                if (write_callbacks.count(reg)) {
                     return write_callbacks.at(reg)(value);
-                else
+                } else {
                     DEBUG("No write callback registered for I/O register at: " << std::hex << +address);
+                }
             } else {
                 DEBUG("Write access attmept at: " << std::hex << +address);
             }

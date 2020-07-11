@@ -94,10 +94,11 @@ class MapperUNROM : public ROM::Mapper {
     /// @param value the byte to write to the given address
     ///
     inline void writeCHR(NES_Address address, NES_Byte value) override {
-        if (has_character_ram)
+        if (has_character_ram) {
             character_ram[address] = value;
-        else
+        } else {
             DEBUG("Read-only CHR memory write attempt at " << std::hex << address);
+        }
     }
 
     /// Convert the object's state to a JSON object.
