@@ -12,168 +12,168 @@ namespace NES {
 
 bool CPU::decode_execute(NES_Byte opcode, MainBus &bus) {
     switch (static_cast<OpcodeTable>(opcode)) {
-        case OpcodeTable::BRK: {
-            interrupt(bus, BRK_INTERRUPT);
-            break;
-        }
-        case OpcodeTable::PHP: {
-            push_stack(bus, flags.byte);
-            break;
-        }
-        // case OpcodeTable::BPL: {
-        //     break;
-        // }
-        case OpcodeTable::CLC: {
-            flags.bits.C = false;
-            break;
-        }
-        case OpcodeTable::JSR: {
-            // Push address of next instruction - 1, thus register_PC + 1
-            // instead of register_PC + 2 since register_PC and
-            // register_PC + 1 are address of subroutine
-            push_stack(bus, static_cast<NES_Byte>((register_PC + 1) >> 8));
-            push_stack(bus, static_cast<NES_Byte>(register_PC + 1));
-            register_PC = read_address(bus, register_PC);
-            break;
-        }
-        case OpcodeTable::PLP: {
-            flags.byte = pop_stack(bus);
-            break;
-        }
-        // case OpcodeTable::BMI: {
-        //     break;
-        // }
-        case OpcodeTable::SEC: {
-            flags.bits.C = true;
-            break;
-        }
-        case OpcodeTable::RTI: {
-            flags.byte = pop_stack(bus);
-            register_PC = pop_stack(bus);
-            register_PC |= pop_stack(bus) << 8;
-            break;
-        }
-        case OpcodeTable::PHA: {
-            push_stack(bus, register_A);
-            break;
-        }
-        case OpcodeTable::JMP__ABSOLUTE: {
-            register_PC = read_address(bus, register_PC);
-            break;
-        }
-        // case OpcodeTable::BVC: {
-        //     break;
-        // }
-        case OpcodeTable::CLI: {
-            flags.bits.I = false;
-            break;
-        }
-        case OpcodeTable::RTS: {
-            register_PC = pop_stack(bus);
-            register_PC |= pop_stack(bus) << 8;
-            ++register_PC;
-            break;
-        }
-        case OpcodeTable::PLA: {
-            register_A = pop_stack(bus);
-            set_ZN(register_A);
-            break;
-        }
-        case OpcodeTable::JMP__INDIRECT: {
-            NES_Address location = read_address(bus, register_PC);
-            // 6502 has a bug such that the when the vector of an indirect
-            // address begins at the last byte of a page, the second byte
-            // is fetched from the beginning of that page rather than the
-            // beginning of the next
-            // Recreating here:
-            NES_Address Page = location & 0xff00;
-            register_PC = bus.read(location) | bus.read(Page | ((location + 1) & 0xff)) << 8;
-            break;
-        }
-        // case OpcodeTable::BVS: {
-        //     break;
-        // }
-        case OpcodeTable::SEI: {
-            flags.bits.I = true;
-            break;
-        }
-        case OpcodeTable::DEY: {
-            --register_Y;
-            set_ZN(register_Y);
-            break;
-        }
-        case OpcodeTable::TXA: {
-            register_A = register_X;
-            set_ZN(register_A);
-            break;
-        }
-        // case OpcodeTable::BCC: {
-        //     break;
-        // }
-        case OpcodeTable::TYA: {
-            register_A = register_Y;
-            set_ZN(register_A);
-            break;
-        }
-        case OpcodeTable::TXS: {
-            register_SP = register_X;
-            break;
-        }
-        case OpcodeTable::TAY: {
-            register_Y = register_A;
-            set_ZN(register_Y);
-            break;
-        }
-        case OpcodeTable::TAX: {
-            register_X = register_A;
-            set_ZN(register_X);
-            break;
-        }
-        // case OpcodeTable::BCS: {
-        //     break;
-        // }
-        case OpcodeTable::CLV: {
-            flags.bits.V = false;
-            break;
-        }
-        case OpcodeTable::TSX: {
-            register_X = register_SP;
-            set_ZN(register_X);
-            break;
-        }
-        case OpcodeTable::INY: {
-            ++register_Y;
-            set_ZN(register_Y);
-            break;
-        }
-        case OpcodeTable::DEX: {
-            --register_X;
-            set_ZN(register_X);
-            break;
-        }
-        // case OpcodeTable::BNE: {
-        //     break;
-        // }
-        case OpcodeTable::CLD: {
-            flags.bits.D = false;
-            break;
-        }
-        case OpcodeTable::INX: {
-            ++register_X;
-            set_ZN(register_X);
-            break;
-        }
-        case OpcodeTable::NOP: {
-            break;
-        }
-        // case OpcodeTable::BEQ: {
-        //     break;
-        // }
-        case OpcodeTable::SED: {
-            flags.bits.D = true;
-            break;
-        }
-        default: return false;
+    case OpcodeTable::BRK: {
+        interrupt(bus, BRK_INTERRUPT);
+        break;
+    }
+    case OpcodeTable::PHP: {
+        push_stack(bus, flags.byte);
+        break;
+    }
+    // case OpcodeTable::BPL: {
+    //     break;
+    // }
+    case OpcodeTable::CLC: {
+        flags.bits.C = false;
+        break;
+    }
+    case OpcodeTable::JSR: {
+        // Push address of next instruction - 1, thus register_PC + 1
+        // instead of register_PC + 2 since register_PC and
+        // register_PC + 1 are address of subroutine
+        push_stack(bus, static_cast<NES_Byte>((register_PC + 1) >> 8));
+        push_stack(bus, static_cast<NES_Byte>(register_PC + 1));
+        register_PC = read_address(bus, register_PC);
+        break;
+    }
+    case OpcodeTable::PLP: {
+        flags.byte = pop_stack(bus);
+        break;
+    }
+    // case OpcodeTable::BMI: {
+    //     break;
+    // }
+    case OpcodeTable::SEC: {
+        flags.bits.C = true;
+        break;
+    }
+    case OpcodeTable::RTI: {
+        flags.byte = pop_stack(bus);
+        register_PC = pop_stack(bus);
+        register_PC |= pop_stack(bus) << 8;
+        break;
+    }
+    case OpcodeTable::PHA: {
+        push_stack(bus, register_A);
+        break;
+    }
+    case OpcodeTable::JMP__ABSOLUTE: {
+        register_PC = read_address(bus, register_PC);
+        break;
+    }
+    // case OpcodeTable::BVC: {
+    //     break;
+    // }
+    case OpcodeTable::CLI: {
+        flags.bits.I = false;
+        break;
+    }
+    case OpcodeTable::RTS: {
+        register_PC = pop_stack(bus);
+        register_PC |= pop_stack(bus) << 8;
+        ++register_PC;
+        break;
+    }
+    case OpcodeTable::PLA: {
+        register_A = pop_stack(bus);
+        set_ZN(register_A);
+        break;
+    }
+    case OpcodeTable::JMP__INDIRECT: {
+        NES_Address location = read_address(bus, register_PC);
+        // 6502 has a bug such that the when the vector of an indirect
+        // address begins at the last byte of a page, the second byte
+        // is fetched from the beginning of that page rather than the
+        // beginning of the next
+        // Recreating here:
+        NES_Address Page = location & 0xff00;
+        register_PC = bus.read(location) | bus.read(Page | ((location + 1) & 0xff)) << 8;
+        break;
+    }
+    // case OpcodeTable::BVS: {
+    //     break;
+    // }
+    case OpcodeTable::SEI: {
+        flags.bits.I = true;
+        break;
+    }
+    case OpcodeTable::DEY: {
+        --register_Y;
+        set_ZN(register_Y);
+        break;
+    }
+    case OpcodeTable::TXA: {
+        register_A = register_X;
+        set_ZN(register_A);
+        break;
+    }
+    // case OpcodeTable::BCC: {
+    //     break;
+    // }
+    case OpcodeTable::TYA: {
+        register_A = register_Y;
+        set_ZN(register_A);
+        break;
+    }
+    case OpcodeTable::TXS: {
+        register_SP = register_X;
+        break;
+    }
+    case OpcodeTable::TAY: {
+        register_Y = register_A;
+        set_ZN(register_Y);
+        break;
+    }
+    case OpcodeTable::TAX: {
+        register_X = register_A;
+        set_ZN(register_X);
+        break;
+    }
+    // case OpcodeTable::BCS: {
+    //     break;
+    // }
+    case OpcodeTable::CLV: {
+        flags.bits.V = false;
+        break;
+    }
+    case OpcodeTable::TSX: {
+        register_X = register_SP;
+        set_ZN(register_X);
+        break;
+    }
+    case OpcodeTable::INY: {
+        ++register_Y;
+        set_ZN(register_Y);
+        break;
+    }
+    case OpcodeTable::DEX: {
+        --register_X;
+        set_ZN(register_X);
+        break;
+    }
+    // case OpcodeTable::BNE: {
+    //     break;
+    // }
+    case OpcodeTable::CLD: {
+        flags.bits.D = false;
+        break;
+    }
+    case OpcodeTable::INX: {
+        ++register_X;
+        set_ZN(register_X);
+        break;
+    }
+    case OpcodeTable::NOP: {
+        break;
+    }
+    // case OpcodeTable::BEQ: {
+    //     break;
+    // }
+    case OpcodeTable::SED: {
+        flags.bits.D = true;
+        break;
+    }
+    default: return false;
     }
     return true;
 }
