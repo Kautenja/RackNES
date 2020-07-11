@@ -81,8 +81,8 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
     if ((opcode & INSTRUCTION_MODE_MASK) != 2)
         return false;
 
-    NES_Address address = type2_address(bus, opcode);
     auto op = static_cast<Operation2>((opcode & OPERATION_MASK) >> OPERATION_SHIFT);
+    NES_Address address = type2_address(bus, opcode, op == Operation2::LDX || op == Operation2::STX);
     auto address_mode = static_cast<AddressMode2>((opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT);
     NES_Address operand = 0;
     switch (op) {
