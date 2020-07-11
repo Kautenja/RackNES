@@ -63,9 +63,11 @@ struct RackNES : Module {
         PARAM_PLAYER1_A, PARAM_PLAYER1_B, PARAM_PLAYER1_SELECT, PARAM_PLAYER1_START,
         PARAM_PLAYER1_UP, PARAM_PLAYER1_DOWN, PARAM_PLAYER1_LEFT, PARAM_PLAYER1_RIGHT,
         PARAM_PLAYER1_A_TURBO, PARAM_PLAYER1_B_TURBO,
+        PARAM_PLAYER1_A_TURBO_RATE, PARAM_PLAYER1_B_TURBO_RATE,
         PARAM_PLAYER2_A, PARAM_PLAYER2_B, PARAM_PLAYER2_SELECT, PARAM_PLAYER2_START,
         PARAM_PLAYER2_UP, PARAM_PLAYER2_DOWN, PARAM_PLAYER2_LEFT, PARAM_PLAYER2_RIGHT,
         PARAM_PLAYER2_A_TURBO, PARAM_PLAYER2_B_TURBO,
+        PARAM_PLAYER2_A_TURBO_RATE, PARAM_PLAYER2_B_TURBO_RATE,
         NUM_PARAMS
     };
     enum InputIds {
@@ -159,6 +161,10 @@ struct RackNES : Module {
         configParam(PARAM_PLAYER2_RIGHT,   0.f, 1.f, 0.f, "Player 2 Right");
         configParam(PARAM_PLAYER2_A_TURBO, 0.f, 1.f, 0.f, "Player 2 A Turbo");
         configParam(PARAM_PLAYER2_B_TURBO, 0.f, 1.f, 0.f, "Player 2 B Turbo");
+        configParam(PARAM_PLAYER1_A_TURBO_RATE, 0.f, 1.f, 0.f, "Player 1 A Turbo Rate");
+        configParam(PARAM_PLAYER1_B_TURBO_RATE, 0.f, 1.f, 0.f, "Player 1 B Turbo Rate");
+        configParam(PARAM_PLAYER2_A_TURBO_RATE, 0.f, 1.f, 0.f, "Player 2 A Turbo Rate");
+        configParam(PARAM_PLAYER2_B_TURBO_RATE, 0.f, 1.f, 0.f, "Player 2 B Turbo Rate");
         // draw the initial screen
         initalizeScreen();
         // set the emulator's clock rate to the Rack rate
@@ -541,8 +547,13 @@ struct RackNESWidget : ModuleWidget {
         addParam(createParam<CKD6>(Vec(24, 244), module, RackNES::PARAM_PLAYER1_START));
         addParam(createParam<CKD6_NES_Red>(Vec(24, 290), module, RackNES::PARAM_PLAYER1_B));
         addParam(createParam<CKD6_NES_Red>(Vec(24, 336), module, RackNES::PARAM_PLAYER1_A));
+        // player 1 turbo
+        addParam(createParam<Rogan3PSNES>(Vec(118, 290), module, RackNES::PARAM_PLAYER1_B_TURBO_RATE));
+        addParam(createParam<Rogan3PSNES>(Vec(118, 336), module, RackNES::PARAM_PLAYER1_A_TURBO_RATE));
         addParam(createParam<CKSS>(Vec(100, 290), module, RackNES::PARAM_PLAYER1_B_TURBO));
         addParam(createParam<CKSS>(Vec(100, 336), module, RackNES::PARAM_PLAYER1_A_TURBO));
+        addChild(createLight<MediumLight<RedLight>>(Vec(100, 310), module, RackNES::LIGHT_PLAYER1_B_TURBO));
+        addChild(createLight<MediumLight<RedLight>>(Vec(100, 356), module, RackNES::LIGHT_PLAYER1_A_TURBO));
         // player 2 inputs
         addInput(createInput<PJ301MPort>(Vec(482, 22),  module, RackNES::INPUT_PLAYER2_UP));
         addInput(createInput<PJ301MPort>(Vec(482, 68),  module, RackNES::INPUT_PLAYER2_DOWN));
@@ -561,8 +572,13 @@ struct RackNESWidget : ModuleWidget {
         addParam(createParam<CKD6>(Vec(515, 244), module, RackNES::PARAM_PLAYER2_START));
         addParam(createParam<CKD6_NES_Red>(Vec(515, 290), module, RackNES::PARAM_PLAYER2_B));
         addParam(createParam<CKD6_NES_Red>(Vec(515, 336), module, RackNES::PARAM_PLAYER2_A));
+        // player 2 turbo
+        addParam(createParam<Rogan3PSNES>(Vec(412, 290), module, RackNES::PARAM_PLAYER2_B_TURBO_RATE));
+        addParam(createParam<Rogan3PSNES>(Vec(412, 336), module, RackNES::PARAM_PLAYER2_A_TURBO_RATE));
         addParam(createParam<CKSS>(Vec(455, 290), module, RackNES::PARAM_PLAYER2_B_TURBO));
         addParam(createParam<CKSS>(Vec(455, 336), module, RackNES::PARAM_PLAYER2_A_TURBO));
+        addChild(createLight<MediumLight<RedLight>>(Vec(455, 310), module, RackNES::LIGHT_PLAYER2_B_TURBO));
+        addChild(createLight<MediumLight<RedLight>>(Vec(455, 356), module, RackNES::LIGHT_PLAYER2_A_TURBO));
     }
 
     /// Draw the widget in the rack window.
