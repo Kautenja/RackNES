@@ -13,7 +13,7 @@
 namespace NES {
 
 /// a NOP debugging statement
-#define DEBUG(x)
+#define DEBUG(x) do {} while (0)
 /// the actual debugging statement
 // #define DEBUG(x) do { std::cerr << x << std::endl; } while (0)
 
