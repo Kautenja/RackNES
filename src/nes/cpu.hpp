@@ -152,6 +152,11 @@ class CPU {
         return;
     }
 
+    /// a mask for determining addressing mode from opcode
+    static constexpr auto ADRESS_MODE_MASK = 0x1c;
+    /// the number of shifts to turn masked address mode into an enumeration
+    static constexpr auto ADDRESS_MODE_SHIFT = 2;
+
     /// Addressing modes for type 1 instructions:
     /// ORA, AND, EOR, ADC, STA, LDA, CMP, SBC
     enum class AddressMode1: NES_Byte {
@@ -181,19 +186,16 @@ class CPU {
             location = bus.read(zero_address & 0xff) | bus.read((zero_address + 1) & 0xff) << 8;
             break;
         }
-        case AddressMode1::ZeroPage: {
+        case AddressMode1::ZeroPage:
             location = bus.read(register_PC++);
             break;
-        }
-        case AddressMode1::Immediate: {
+        case AddressMode1::Immediate:
             location = register_PC++;
             break;
-        }
-        case AddressMode1::Absolute: {
+        case AddressMode1::Absolute:
             location = read_address(bus, register_PC);
             register_PC += 2;
             break;
-        }
         case AddressMode1::IndirectY: {
             NES_Byte zero_address = bus.read(register_PC++);
             location = bus.read(zero_address & 0xff) | bus.read((zero_address + 1) & 0xff) << 8;
@@ -201,26 +203,22 @@ class CPU {
             location += register_Y;
             break;
         }
-        case AddressMode1::IndexedX: {
+        case AddressMode1::IndexedX:
             // Address wraps around in the zero page
             location = (bus.read(register_PC++) + register_X) & 0xff;
             break;
-        }
-        case AddressMode1::AbsoluteY: {
+        case AddressMode1::AbsoluteY:
             location = read_address(bus, register_PC);
             register_PC += 2;
             if (!is_STA) set_page_crossed(location, location + register_Y);
             location += register_Y;
             break;
-        }
-        case AddressMode1::AbsoluteX: {
+        case AddressMode1::AbsoluteX:
             location = read_address(bus, register_PC);
             register_PC += 2;
             if (!is_STA) set_page_crossed(location, location + register_X);
             location += register_X;
             break;
-        }
-        default: break;
         }
         return location;
     }
