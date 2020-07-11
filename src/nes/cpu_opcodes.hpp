@@ -24,7 +24,15 @@ const auto NMI_VECTOR = 0xfffa;
 const auto RESET_VECTOR = 0xfffc;
 const auto IRQ_VECTOR = 0xfffe;
 
-enum Operation1 {
+enum class Operation0 {
+    BIT  = 1,
+    STY  = 4,
+    LDY,
+    CPY,
+    CPX,
+};
+
+enum class Operation1 {
     ORA,
     AND,
     EOR,
@@ -35,7 +43,7 @@ enum Operation1 {
     SBC,
 };
 
-enum AddrMode1 {
+enum class AddrMode1 {
     M1_INDEXED_INDIRECT_X,
     M1_ZERO_PAGE,
     M1_IMMEDIATE,
@@ -46,7 +54,7 @@ enum AddrMode1 {
     M1_ABSOLUTE_X,
 };
 
-enum Operation2 {
+enum class Operation2 {
     ASL,
     ROL,
     LSR,
@@ -57,21 +65,13 @@ enum Operation2 {
     INC,
 };
 
-enum AddrMode2 {
+enum class AddrMode2 {
     M2_IMMEDIATE,
     M2_ZERO_PAGE,
     M2_ACCUMULATOR,
     M2_ABSOLUTE,
     M2_INDEXED          = 5,
     M2_ABSOLUTE_INDEXED = 7,
-};
-
-enum Operation0 {
-    BIT  = 1,
-    STY  = 4,
-    LDY,
-    CPY,
-    CPX,
 };
 
 /// The opcodes of the MOS6502 CPU used in the Nintendo Entertainment System.
@@ -248,7 +248,7 @@ enum class OpcodeTable: NES_Byte {
 };
 
 /// a mapping of opcodes to the number of cycles used by the opcode.
-const NES_Byte OPERATION_CYCLES[256] = {
+static constexpr NES_Byte OPERATION_CYCLES[256] = {
 //  0 1 2 3 4 5 6 7 8 9 A B C D E F
     0,6,2,8,3,3,5,5,3,2,2,2,4,4,6,6,// 0
     3,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,// 1
