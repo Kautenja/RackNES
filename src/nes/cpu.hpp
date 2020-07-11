@@ -99,6 +99,38 @@ class CPU {
     }
 
     // -----------------------------------------------------------------------
+    // MARK: Type 0 Instructions
+    // -----------------------------------------------------------------------
+
+    inline void BIT(MainBus &bus, NES_Byte opcode) {
+            NES_Address operand = bus.read(type0_address(bus, opcode));
+            flags.bits.Z = !(register_A & operand);
+            flags.bits.V = operand & 0x40;
+            flags.bits.N = operand & 0x80;
+    }
+
+    inline void STY(MainBus &bus, NES_Byte opcode) {
+            bus.write(type0_address(bus, opcode), register_Y);
+    }
+
+    inline void LDY(MainBus &bus, NES_Byte opcode) {
+            register_Y = bus.read(type0_address(bus, opcode));
+            set_ZN(register_Y);
+    }
+
+    inline void CPY(MainBus &bus, NES_Byte opcode) {
+            NES_Address diff = register_Y - bus.read(type0_address(bus, opcode));
+            flags.bits.C = !(diff & 0x100);
+            set_ZN(diff);
+    }
+
+    inline void CPX(MainBus &bus, NES_Byte opcode) {
+            NES_Address diff = register_X - bus.read(type0_address(bus, opcode));
+            flags.bits.C = !(diff & 0x100);
+            set_ZN(diff);
+    }
+
+    // -----------------------------------------------------------------------
     // MARK: Type 1 Instructions
     // -----------------------------------------------------------------------
 
@@ -156,6 +188,10 @@ class CPU {
         register_A = diff;
         set_ZN(diff);
     }
+
+    // -----------------------------------------------------------------------
+    // MARK: Type 2 Instructions
+    // -----------------------------------------------------------------------
 
     // inline void eor(MainBus &bus, NES_Byte opcode) {
 
@@ -380,9 +416,7 @@ class CPU {
     ///
     bool type1(MainBus &bus, NES_Byte opcode) {
         if ((opcode & INSTRUCTION_MODE_MASK) != 0x1) return false;
-        // Location of the operand, could be in RAM
-        auto op = static_cast<Operation1>((opcode & OPERATION_MASK) >> OPERATION_SHIFT);
-        switch (op) {
+        switch (static_cast<Operation1>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
         case Operation1::ORA: ORA(bus, opcode); break;
         case Operation1::AND: AND(bus, opcode); break;
         case Operation1::EOR: EOR(bus, opcode); break;
@@ -410,7 +444,18 @@ class CPU {
     /// @param opcode the opcode of the operation to perform
     /// @return true if the instruction succeeds
     ///
-    bool type0(MainBus &bus, NES_Byte opcode);
+    bool type0(MainBus &bus, NES_Byte opcode) {
+        if ((opcode & INSTRUCTION_MODE_MASK) != 0x0) return false;
+        switch (static_cast<Operation0>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
+        case Operation0::BIT: BIT(bus, opcode); break;
+        case Operation0::STY: STY(bus, opcode); break;
+        case Operation0::LDY: LDY(bus, opcode); break;
+        case Operation0::CPY: CPY(bus, opcode); break;
+        case Operation0::CPX: CPX(bus, opcode); break;
+        default: return false;
+        }
+        return true;
+    }
 
     /// Decode and execute the given opcode using the given bus.
     ///

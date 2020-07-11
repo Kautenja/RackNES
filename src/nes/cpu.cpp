@@ -81,45 +81,6 @@ bool CPU::type2(MainBus &bus, NES_Byte opcode) {
     return true;
 }
 
-bool CPU::type0(MainBus &bus, NES_Byte opcode) {
-    if ((opcode & INSTRUCTION_MODE_MASK) != 0x0)
-        return false;
-
-    NES_Address address = type0_address(bus, opcode);
-    switch (static_cast<Operation0>((opcode & OPERATION_MASK) >> OPERATION_SHIFT)) {
-        case Operation0::BIT: {
-            NES_Address operand = bus.read(address);
-            flags.bits.Z = !(register_A & operand);
-            flags.bits.V = operand & 0x40;
-            flags.bits.N = operand & 0x80;
-            break;
-        }
-        case Operation0::STY: {
-            bus.write(address, register_Y);
-            break;
-        }
-        case Operation0::LDY: {
-            register_Y = bus.read(address);
-            set_ZN(register_Y);
-            break;
-        }
-        case Operation0::CPY: {
-            NES_Address diff = register_Y - bus.read(address);
-            flags.bits.C = !(diff & 0x100);
-            set_ZN(diff);
-            break;
-        }
-        case Operation0::CPX: {
-            NES_Address diff = register_X - bus.read(address);
-            flags.bits.C = !(diff & 0x100);
-            set_ZN(diff);
-            break;
-        }
-        default: return false;
-    }
-    return true;
-}
-
 bool CPU::decode_execute(MainBus &bus, NES_Byte opcode) {
     // NES_Byte address_mode = (opcode & ADRESS_MODE_MASK) >> ADDRESS_MODE_SHIFT;
     switch (static_cast<OpcodeTable>(opcode)) {
