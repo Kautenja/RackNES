@@ -61,3 +61,7 @@
 ### 1.4.2 (2020-07-11)
 
 -   fix cycle durations to be more accurate
+
+### 1.4.3 ()
+
+-   CV acquisition at _1/16x_ sample rate
