@@ -120,6 +120,9 @@ struct RackNES : Module {
     /// a flag for telling the widget that a ROM file load (from JSON) failed
     bool rom_reload_failed_signal = false;
 
+    // a clock divider for running CV acquisition slower than audio rate
+    dsp::ClockDivider cvDivider;
+
     /// Initialize a new Nintendo Entertainment System (NES) module.
     RackNES() {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -151,6 +154,7 @@ struct RackNES : Module {
         configParam(PARAM_PLAYER2_DOWN,   0.f, 1.f, 0.f, "Player 2 Down");
         configParam(PARAM_PLAYER2_LEFT,   0.f, 1.f, 0.f, "Player 2 Left");
         configParam(PARAM_PLAYER2_RIGHT,  0.f, 1.f, 0.f, "Player 2 Right");
+        cvDivider.setDivision(16);
         // draw the initial screen
         initalizeScreen();
         // set the emulator's clock rate to the Rack rate
@@ -203,23 +207,8 @@ struct RackNES : Module {
         return NES::CLOCK_RATE * powf(2.f, clamp(param + cv, -4.f, 4.f));
     }
 
-    /// Process a sample.
-    void process(const ProcessArgs &args) override {
-        // check for a new ROM to load
-        if (!rom_path_signal.empty()) {
-            handleNewROM();
-            // clear the ROM path signal from the widget
-            rom_path_signal = "";
-            // set the sample rate of the emulator
-            new_sample_rate = true;
-        }
-
-        // check for sample rate changes from the engine to send to the NES
-        if (new_sample_rate) {
-            emulator.set_sample_rate(static_cast<uint32_t>(args.sampleRate));
-            new_sample_rate = false;
-        }
-
+    /// Process the inputs from the panel.
+    void processCV() {
         // process the hang input for hanging the emulation
         hangButton.process(
             params[PARAM_HANG].getValue(),
@@ -279,7 +268,27 @@ struct RackNES : Module {
         }
         // set the controller values
         emulator.set_controllers(player1, player2);
+    }
 
+    /// Process a sample.
+    void process(const ProcessArgs &args) override {
+        // check for a new ROM to load
+        if (!rom_path_signal.empty()) {
+            handleNewROM();
+            // clear the ROM path signal from the widget
+            rom_path_signal = "";
+            // set the sample rate of the emulator
+            new_sample_rate = true;
+        }
+
+        // check for sample rate changes from the engine to send to the NES
+        if (new_sample_rate) {
+            emulator.set_sample_rate(static_cast<uint32_t>(args.sampleRate));
+            new_sample_rate = false;
+        }
+        // process CV if the CV clock divider is high
+        // if (cvDivider.process())
+            processCV();
         // run the number of cycles through the NES that are required. pass a
         // callback to copy the screen every time a new frame renders
         for (std::size_t i = 0; i < getClockSpeed() / args.sampleRate; i++)
