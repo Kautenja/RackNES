@@ -287,7 +287,7 @@ struct RackNES : Module {
             new_sample_rate = false;
         }
         // process CV if the CV clock divider is high
-        // if (cvDivider.process())
+        if (cvDivider.process())
             processCV();
         // run the number of cycles through the NES that are required. pass a
         // callback to copy the screen every time a new frame renders
