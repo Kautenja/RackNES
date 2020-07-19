@@ -21,7 +21,7 @@
 #include "rack.hpp"
 
 /// A widget that displays a 32-bit RGBA pixel buffer.
-struct Display : rack::TransparentWidget {
+struct Display : rack::LightWidget {
  private:
     /// the size of the internal pixel buffer to render
     const rack::Vec image_size;
@@ -51,7 +51,7 @@ struct Display : rack::TransparentWidget {
         rack::Vec image_size_,
         rack::Vec render_size
     ) :
-        TransparentWidget(), image_size(image_size_), pixels(pixels_) {
+        LightWidget(), image_size(image_size_), pixels(pixels_) {
         setPosition(position);
         setSize(render_size);
     }
