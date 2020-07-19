@@ -25,7 +25,8 @@ struct Display : rack::TransparentWidget {
  private:
     /// the size of the internal pixel buffer to render
     const rack::Vec image_size;
-    /// a pointer to the pixels to render
+    /// a pointer to the pixels to render. A pixel is represented as 4 bytes
+    /// in RGBA order
     const uint8_t* pixels;
     /// a pointer to the image to draw the display to
     int screen = -1;
@@ -37,9 +38,12 @@ struct Display : rack::TransparentWidget {
     /// @brief Initialize a new display widget.
     ///
     /// @param position the position of the screen on the module
-    /// @param pixels_ the pixels on the display to render
-    /// @param image_size the size of the input image
-    /// @param render_size the output size of the display to render
+    /// @param pixels_ the pixels on the display to render. A pixel is
+    /// represented as 4 bytes in RGBA order
+    /// @param image_size_ the size of the input image
+    /// @param render_size the output size of the display to render. NanoSVG
+    /// will provide interpolation logic between the image_size_ and the
+    /// render_size.
     ///
     explicit Display(
         rack::Vec position,
@@ -57,10 +61,14 @@ struct Display : rack::TransparentWidget {
     /// @param args the arguments for the draw context for this widget
     ///
     void draw(const DrawArgs& args) override {
-        // the x position of the screen
+        // the image flags for creating the screen
+        static constexpr int imageFlags = 0;
+        // the x position of the screen (relative, not absolute)
         static constexpr int x = 0;
-        // the y position of the screen
+        // the y position of the screen (relative, not absolute)
         static constexpr int y = 0;
+        // the angle to draw the screen at
+        static constexpr float angle = 0;
         // the alpha value of the SVG image
         static constexpr float alpha = 1.f;
         // don't do anything if the screen is not on
@@ -71,7 +79,7 @@ struct Display : rack::TransparentWidget {
         // create / update the image container
         // -------------------------------------------------------------------
         if (screen == -1)  // check if the screen has been initialized yet
-            screen = nvgCreateImageRGBA(args.vg, image_size.x, image_size.y, 0, pixels);
+            screen = nvgCreateImageRGBA(args.vg, image_size.x, image_size.y, imageFlags, pixels);
         else  // update the screen with the pixel data
             nvgUpdateImage(args.vg, screen, pixels);
         // -------------------------------------------------------------------
@@ -79,7 +87,7 @@ struct Display : rack::TransparentWidget {
         // -------------------------------------------------------------------
         nvgBeginPath(args.vg);
         nvgRect(args.vg, x, y, box.size.x, box.size.y);
-        nvgFillPaint(args.vg, nvgImagePattern(args.vg, x, y, box.size.x, box.size.y, 0, screen, alpha));
+        nvgFillPaint(args.vg, nvgImagePattern(args.vg, x, y, box.size.x, box.size.y, angle, screen, alpha));
         nvgFill(args.vg);
         nvgClosePath(args.vg);
     }
