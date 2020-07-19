@@ -21,7 +21,7 @@
 #include "plugin.hpp"
 #include "osdialog.h"
 #include "components.hpp"
-#include "widgets/display.hpp"
+#include "widget/display.hpp"
 #include "nes/emulator.hpp"
 
 /// a trigger for a button with a CV input.
