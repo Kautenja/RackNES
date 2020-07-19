@@ -65,22 +65,23 @@ struct Display : rack::TransparentWidget {
         static constexpr float alpha = 1.f;
         // don't do anything if the screen is not on
         if (!is_on) return;
-        // return if the pixels aren't on the screen yet
+        // return if the pixels aren't set for the screen yet
         if (pixels == nullptr) return;
-        // draw the screen
+        // -------------------------------------------------------------------
+        // create / update the image container
+        // -------------------------------------------------------------------
         if (screen == -1)  // check if the screen has been initialized yet
             screen = nvgCreateImageRGBA(args.vg, image_size.x, image_size.y, 0, pixels);
         else  // update the screen with the pixel data
             nvgUpdateImage(args.vg, screen, pixels);
-        // get the screen as a fill paint (for a rectangle)
-        auto imgPaint = nvgImagePattern(args.vg, x, y, box.size.x, box.size.y, 0, screen, alpha);
-        // create a path for the rectangle to show the screen
+        // -------------------------------------------------------------------
+        // draw the screen
+        // -------------------------------------------------------------------
         nvgBeginPath(args.vg);
-        // create a rectangle to draw the screen
         nvgRect(args.vg, x, y, box.size.x, box.size.y);
-        // paint the rectangle's fill from the screen
-        nvgFillPaint(args.vg, imgPaint);
+        nvgFillPaint(args.vg, nvgImagePattern(args.vg, x, y, box.size.x, box.size.y, 0, screen, alpha));
         nvgFill(args.vg);
+        nvgClosePath(args.vg);
     }
 };
 
