@@ -152,6 +152,9 @@ ENV/
 *.out
 *.app
 
+## VS Code configuration
+.vscode
+
 
 
 # MARK: scons Files
