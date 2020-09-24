@@ -110,8 +110,6 @@ struct RackNES : Module {
 
     /// a data signal from the widget for when the user selects a new ROM
     std::string rom_path_signal = "";
-    /// a signal flag for detecting sample rate changes
-    bool new_sample_rate = false;
     /// a flag for telling the widget that a ROM file load was attempted for a
     /// ROM with a mapper that has not been implemented yet
     bool mapper_not_found_signal = false;
@@ -121,10 +119,10 @@ struct RackNES : Module {
     /// a flag for telling the widget that a ROM file load (from JSON) failed
     bool rom_reload_failed_signal = false;
 
-    // a clock divider for running CV acquisition slower than audio rate
+    /// a clock divider for running CV acquisition slower than audio rate
     dsp::ClockDivider cvDivider;
 
-    // messages from CV Genie expander
+    /// messages from CV Genie expander
     uint16_t rightMessages[2][8][2] = {};
 
     /// Initialize a new Nintendo Entertainment System (NES) module.
@@ -163,6 +161,7 @@ struct RackNES : Module {
         initalizeScreen();
         // set the emulator's clock rate to the Rack rate
         emulator.set_clock_rate(768000);
+        emulator.set_sample_rate(APP->engine->getSampleRate());
         // initialize expander messages
         rightExpander.producerMessage = rightMessages[0];
         rightExpander.consumerMessage = rightMessages[1];
@@ -177,6 +176,7 @@ struct RackNES : Module {
                 // remove the existing backup if there is one
                 if (backup != nullptr) delete backup;
                 backup = nullptr;
+                // done loading, return to caller
                 return;
             }
             // ROM load failed, initialize screen and send error signal
@@ -276,12 +276,11 @@ struct RackNES : Module {
         // set the controller values
         emulator.set_controllers(player1, player2);
 
-        // check for expander
-        if (rightExpander.module) {
+        if (rightExpander.module) {  // an expander exists to the right
             // check if the expander is an Input Genie
             if (rightExpander.module->model == modelInputGenie) {
                 // Get message from the Input Genie
-                uint16_t *message = (uint16_t*) rightExpander.consumerMessage;
+                uint16_t *message = reinterpret_cast<uint16_t*>(rightExpander.consumerMessage);
                 // Write requested values from message to requested memory locations
                 for (int i = 0; i < 16; i += 2) {
                     if (message[i] != 0) {
@@ -311,14 +310,9 @@ struct RackNES : Module {
             // clear the ROM path signal from the widget
             rom_path_signal = "";
             // set the sample rate of the emulator
-            new_sample_rate = true;
+            // onSampleRateChange();
         }
 
-        // check for sample rate changes from the engine to send to the NES
-        if (new_sample_rate) {
-            emulator.set_sample_rate(static_cast<uint32_t>(args.sampleRate));
-            new_sample_rate = false;
-        }
         // process CV if the CV clock divider is high
         if (cvDivider.process())
             processCV();
@@ -346,17 +340,22 @@ struct RackNES : Module {
         outputs[OUTPUT_MIX].setVoltage(params[PARAM_MIX].getValue() * mix);
     }
 
-    /// Respond to the change of sample rate in the engine.
-    void onSampleRateChange() override { new_sample_rate = true; }
+    /// @brief Respond to sample rate of the host environment changing.
+    void onSampleRateChange() override {
+        emulator.set_sample_rate(APP->engine->getSampleRate());
+    }
 
-    /// Respond to the user resetting the module with the "Initialize" action.
+    /// @brief Respond to the module being reset by the host environment.
     void onReset() override {
         emulator.remove_game();
         if (backup != nullptr) { delete backup; backup = nullptr; }
         initalizeScreen();
     }
 
-    /// Convert the module's state to a JSON object.
+    /// @brief Convert the module's state to a JSON object.
+    ///
+    /// @returns a pointer to a new json_t object with the module's state
+    ///
     json_t* dataToJson() override {
         json_t* rootJ = json_object();
         json_object_set_new(rootJ, "emulator", emulator.dataToJson());
@@ -367,7 +366,10 @@ struct RackNES : Module {
         return rootJ;
     }
 
-    /// Load the module's state from a JSON object.
+    /// @brief Load the module's state from a JSON object.
+    ///
+    /// @param rootJ a pointer to a json_t with state data for this module
+    ///
     void dataFromJson(json_t* rootJ) override {
         json_t* emulator_data = json_object_get(rootJ, "emulator");
         // load emulator
@@ -377,7 +379,6 @@ struct RackNES : Module {
             rom_reload_failed_signal = !emulator.dataFromJson(emulator_data);
             // if the reload failed, get out of here
             if (rom_reload_failed_signal) return;
-            new_sample_rate = true;
         }
         // load backup
         json_t* backup_data = json_object_get(rootJ, "backup");
@@ -566,6 +567,5 @@ struct RackNESWidget : ModuleWidget {
         static_cast<RackNES*>(module)->rom_path_signal = std::string(event.paths[0]);
     }
 };
-
 
 Model *modelRackNES = createModel<RackNES, RackNESWidget>("RackNES");
