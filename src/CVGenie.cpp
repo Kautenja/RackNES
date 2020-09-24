@@ -147,7 +147,7 @@ struct CVGenie : Module {
         json_object_set_new(rootJ, "Memory Locations", memLocationsJ);
         return rootJ;
     }
-    
+
     void dataFromJson(json_t* rootJ) override {
         gameMap.setGame(json_integer_value(json_object_get(rootJ, "Game")));
         json_t* memLocationsJ = json_object_get(rootJ, "Memory Locations");
@@ -392,7 +392,7 @@ struct OutputGenieWidget : ModuleWidget {
     ///
     /// @param module the module to create a widget for
     ///
-    OutputGenieWidget(TOutputGenie* module) {
+    explicit OutputGenieWidget(TOutputGenie* module) {
         setModule(module);
         setPanel(APP->window->loadSvg(asset::plugin(plugin_instance, "res/CVGenie.svg")));
         // panel screws
