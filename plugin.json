@@ -20,6 +20,14 @@
         "Sampler",
         "Visual"
       ]
+    },
+    {
+      "slug": "InputGenie",
+      "name": "CV Genie (Input)",
+      "description": "Expander for RackNES",
+      "tags": [
+        "Expander"
+      ]
     }
   ]
 }

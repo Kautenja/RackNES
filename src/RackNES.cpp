@@ -124,6 +124,9 @@ struct RackNES : Module {
     // a clock divider for running CV acquisition slower than audio rate
     dsp::ClockDivider cvDivider;
 
+    // messages from CV Genie expander
+    uint16_t rightMessages[2][8][2] = {};
+
     /// Initialize a new Nintendo Entertainment System (NES) module.
     RackNES() {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
@@ -160,6 +163,9 @@ struct RackNES : Module {
         initalizeScreen();
         // set the emulator's clock rate to the Rack rate
         emulator.set_clock_rate(768000);
+        // initialize expander messages
+        rightExpander.producerMessage = rightMessages[0];
+        rightExpander.consumerMessage = rightMessages[1];
     }
 
     /// Handle a new ROM being loaded into the emulator.
@@ -269,6 +275,32 @@ struct RackNES : Module {
         }
         // set the controller values
         emulator.set_controllers(player1, player2);
+        
+        // check for expander
+        if (rightExpander.module) {
+            // check if the expander is an Input Genie
+            if (rightExpander.module->model == modelInputGenie) {
+                // Get message from the Input Genie
+                uint16_t *message = (uint16_t*) rightExpander.consumerMessage;
+                // Write requested values from message to requested memory locations
+                for (int i = 0; i < 16; i += 2) {
+                    if (message[i] != 0) {
+                        emulator.bus.write(message[i], message[i + 1]);
+                    } 
+                }
+            }
+            /// TODO: Output Genie
+            /* // check if the expander is an Output Genie
+            else if (rightExpander.module->model == modelOutputGenie) {
+                // get producer message from RackNES in order to fill it and flip it into a consumer message for RackNES
+                uint16_t *message = (uint16_t*) rightExpander.module->leftExpander.producerMessage;
+                // iterate over all of the Output Genie's memory location selectors
+                for (int i = 0; i < 8; i++) {
+                    // check if the selector has been assigned
+
+                }
+            } */
+        }
     }
 
     /// Process a sample.

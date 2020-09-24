@@ -24,3 +24,5 @@ extern Plugin* plugin_instance;
 
 /// the global instance of the RackNES model
 extern Model *modelRackNES;
+extern Model *modelInputGenie;
+//extern Model *modelOutputGenie;

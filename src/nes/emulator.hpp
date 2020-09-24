@@ -32,8 +32,6 @@ class Emulator {
     /// the 2 controllers on the emulator
     Controller controllers[2];
 
-    /// the main data bus (RAM and data passing / IO registers)
-    MainBus bus;
     /// the picture bus (graphic data passing / IO registers)
     PictureBus picture_bus;
 
@@ -45,6 +43,8 @@ class Emulator {
     APU apu;
 
  public:
+    /// the main data bus (RAM and data passing / IO registers)
+    MainBus bus;
     /// The width of the NES screen in pixels (after NTSC filtering)
     static constexpr int WIDTH = SCANLINE_VISIBLE_DOTS_NTSC;
     /// The height of the NES screen in pixels
