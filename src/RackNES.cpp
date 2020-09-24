@@ -275,7 +275,10 @@ struct RackNES : Module {
         }
         // set the controller values
         emulator.set_controllers(player1, player2);
+    }
 
+    /// Process messages to/from expander modules.
+    void processExpanders() {
         if (rightExpander.module) {  // an expander exists to the right
             // check if the expander is an Input Genie
             if (rightExpander.module->model == modelInputGenie) {
@@ -283,8 +286,11 @@ struct RackNES : Module {
                 uint16_t *message = reinterpret_cast<uint16_t*>(rightExpander.consumerMessage);
                 // Write requested values from message to requested memory locations
                 for (int i = 0; i < 16; i += 2) {
-                    if (message[i] != 0) {
+                    if (message[i] != 0) {  // data available for consumption
+                        // write the address, data tuple to the emulator
                         emulator.get_memory_buffer()[message[i]] = message[i + 1];
+                        // consume the data by setting the address to 0
+                        message[i] = 0;
                     }
                 }
             }
@@ -316,6 +322,9 @@ struct RackNES : Module {
         // process CV if the CV clock divider is high
         if (cvDivider.process())
             processCV();
+        // process expanders at every sample step
+        processExpanders();
+
         // run the number of cycles through the NES that are required. pass a
         // callback to copy the screen every time a new frame renders
         for (std::size_t i = 0; i < getClockSpeed() / args.sampleRate; i++)

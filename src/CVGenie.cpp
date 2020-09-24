@@ -5,8 +5,11 @@
 // MARK: Module
 // ---------------------------------------------------------------------------
 
-// Expander Modules for reading from and writing to RackNES emulator RAM
-// Template only valid for <0, 8> and <8, 0>
+/// An Expander Module for reading from and writing to RackNES emulator RAM
+/// @tparam INPUTS the number of inputs
+/// @tparam OUTPUTS the number of outputs
+/// @details
+/// INPUTS, OUTPUTS only valid as either <0, 8> or <8, 0>
 template <int INPUTS, int OUTPUTS>
 struct CVGenie : Module {
     enum ParamIds {
@@ -29,10 +32,11 @@ struct CVGenie : Module {
     /// The currently selected memory locations
     int memLoc[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 
-    /// A Schmitt Trigger used when a memory location is marked as a toggle (only two valid values)
+    /// A Schmitt Trigger used when a memory location is marked as a boolean
+    /// toggle (i.e., with only two valid values)
     dsp::SchmittTrigger cvTrigger[8];
     /// The current state of selected & toggleable memory locations
-    bool toggleState[8] = {};
+    bool toggleState[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
     /// Initialize a new CV Genie module
     CVGenie() {
@@ -40,20 +44,19 @@ struct CVGenie : Module {
     }
 
     /// Reset module to initialized state
-    void onReset() override {
+    void onReset() final {
         gameMap.gameId = -1;
-        for (int i = 0; i < 8; i++)
-            memLoc[i] = -1;
+        memset(memLoc, -1, sizeof memLoc);
     }
 
     /// Randomize the memory-location selectors
-    void onRandomize() override {
+    void onRandomize() final {
         for (int i = 0; i < 8; i++)
             memLoc[i] = random::uniform() * gameMap.elements.size();
     }
 
     /// Process a sample.
-    void process(const ProcessArgs &args) override {
+    void process(const ProcessArgs &args) final {
         // check if a RackNES module is immediately to the left of this module
 		if (leftExpander.module && leftExpander.module->model == modelRackNES) {
             // check if this is an Input Genie
@@ -68,7 +71,8 @@ struct CVGenie : Module {
                         // check if the associated memory location is a toggle
                         if (gameMap.isToggle(memLoc[i / 2])) {  // NOTE: toggle often takes a few triggers to work...
                             // check if a trigger has been received at the input
-                            if (cvTrigger[i / 2].process(inputs[INPUT_MEMVAL + i / 2].getVoltage())) {
+                            auto cv = inputs[INPUT_MEMVAL + i / 2].getVoltage();
+                            if (cvTrigger[i / 2].process(rescale(cv, 0.1, 2, 0, 1))) {
                                 // flip the state of the toggle
                                 toggleState[i / 2] ^= true;
                                 // write the selected memory address to submessage 1
