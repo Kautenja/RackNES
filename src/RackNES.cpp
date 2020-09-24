@@ -275,7 +275,7 @@ struct RackNES : Module {
         }
         // set the controller values
         emulator.set_controllers(player1, player2);
-        
+
         // check for expander
         if (rightExpander.module) {
             // check if the expander is an Input Genie
@@ -285,8 +285,8 @@ struct RackNES : Module {
                 // Write requested values from message to requested memory locations
                 for (int i = 0; i < 16; i += 2) {
                     if (message[i] != 0) {
-                        emulator.bus.write(message[i], message[i + 1]);
-                    } 
+                        emulator.get_memory_buffer()[message[i]] = message[i + 1];
+                    }
                 }
             }
             /// TODO: Output Genie
