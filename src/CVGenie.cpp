@@ -200,7 +200,7 @@ struct ElementChoice : LedDisplayChoice {
         /// add a label to the top of the menu
 		menu->addChild(createMenuLabel("Game Element"));
         /// add all available memory locations for the currently selected game
-        for (int i = -1; i < (int)module->gameMap.getMap().size(); i++) {
+        for (int i = -1; i < (int)module->gameMap.elements.size(); i++) {
             /// create a menu item for a memory location
 			ElementItem<TModule, SELECTOR_ID>* item = new ElementItem<TModule, SELECTOR_ID>;
             item->setModule(module);

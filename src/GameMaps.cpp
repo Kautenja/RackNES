@@ -2,17 +2,20 @@
 
 #include "plugin.hpp"
 
+/// IDs for the presently supported games
 enum GameIds {
     PLUMBER,
     TUNIC,
     NUM_GAMES
 };
 
+/// A memory location within a particular game
 struct GameElement {
     uint16_t address = 0x0000;
     uint8_t minVal = 0x00;
     uint8_t maxVal = 0xFF;
     std::string name = "";
+    // sets whether this location has only two valid values. when true, CV Genie expects a trigger to flip the value from one to the other
     bool toggle = false;
 
     GameElement(uint16_t addr, uint8_t min, uint8_t max, std::string s, bool tog = false) {
@@ -23,40 +26,44 @@ struct GameElement {
     }
 };
 
+/// A container for memory maps of NES games
 struct GameMap {
     int gameId = -1;
+    // the underlying data structure
     std::vector<GameElement> elements;
 
     GameMap() {};
 
+    // return the memory address for a given ID
     uint16_t getAddress(int elementId) {
         uint16_t address = elements[elementId].address;
         return address;
     }
 
+    // return the minimum value for the memory address associated with a given ID
     uint8_t getMinValue(int elementId) {
         uint8_t minVal = elements[elementId].minVal;
         return minVal;
     }
 
+    // return the maximum value for the memory address associated with a given ID
     uint8_t getMaxValue(int elementId) {
         uint8_t maxVal = elements[elementId].maxVal;
         return maxVal;
     }
 
+    // return whether the memory address associated with a given ID has only two possible values
     bool isToggle(int elementId) {
         return elements[elementId].toggle;
     }
 
+    // return the human-friendly name for the memory address associated with a given ID (eg. "Coin Count")
     std::string getName(int elementId) {
         std::string name = elements[elementId].name;
         return name;
     }
 
-    std::vector<GameElement> getMap() {
-        return elements;
-    }
-
+    // return the name for the game associated with a given ID
     std::string getGameName(int id) {
         switch (id) {
             case PLUMBER:
@@ -73,7 +80,9 @@ struct GameMap {
 
     void setGame(int id) {
         gameId = id;
+        // clear the map
         elements.clear();
+        // check which game is selected, then add all known memory locations
         switch (gameId) {
             case PLUMBER:
                 elements.push_back(GameElement(0x000E, 0x00, 0x0C, "Player State"));
