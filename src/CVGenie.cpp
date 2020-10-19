@@ -328,7 +328,7 @@ struct InputGenieWidget : ModuleWidget {
     ///
     /// @param module the module to create a widget for
     ///
-    InputGenieWidget(TInputGenie* module) {
+    explicit InputGenieWidget(TInputGenie* module) {
         setModule(module);
         setPanel(APP->window->loadSvg(asset::plugin(plugin_instance, "res/CVGenie.svg")));
         // panel screws
