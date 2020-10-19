@@ -10,6 +10,7 @@
   "manualUrl": "https://github.com/Kautenja/RackNES/releases/latest/download/RackNES.pdf",
   "sourceUrl": "https://github.com/Kautenja/RackNES",
   "changelogUrl": "https://github.com/Kautenja/RackNES/blob/master/CHANGELOG.md",
+  "donateUrl": "https://maps.org/donate",
   "modules": [
     {
       "slug": "RackNES",

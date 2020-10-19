@@ -1,0 +1,470 @@
+{
+  "version": "1.dev.eefe794",
+  "modules": [
+    {
+      "id": 1,
+      "plugin": "Core",
+      "version": "1.1.6",
+      "model": "AudioInterface",
+      "params": [],
+      "leftModuleId": 2,
+      "data": {
+        "audio": {
+          "driver": 5,
+          "deviceName": "Apple Inc.: Built-in Output",
+          "offset": 0,
+          "maxChannels": 8,
+          "sampleRate": 44100,
+          "blockSize": 256
+        }
+      },
+      "pos": [
+        81,
+        0
+      ]
+    },
+    {
+      "id": 2,
+      "plugin": "Fundamental",
+      "version": "1.4.0",
+      "model": "VCMixer",
+      "params": [
+        {
+          "id": 0,
+          "value": 1.0
+        },
+        {
+          "id": 1,
+          "value": 1.0
+        },
+        {
+          "id": 2,
+          "value": 1.0
+        },
+        {
+          "id": 3,
+          "value": 1.0
+        },
+        {
+          "id": 4,
+          "value": 1.0
+        }
+      ],
+      "leftModuleId": 7,
+      "rightModuleId": 1,
+      "pos": [
+        71,
+        0
+      ]
+    },
+    {
+      "id": 5,
+      "plugin": "Core",
+      "version": "1.1.6",
+      "model": "MIDIToCVInterface",
+      "params": [],
+      "rightModuleId": 157,
+      "data": {
+        "channels": 1,
+        "polyMode": 0,
+        "clockDivision": 24,
+        "lastPitch": 8192,
+        "lastMod": 0,
+        "midi": {
+          "driver": -11,
+          "deviceName": "QWERTY keyboard (US)",
+          "channel": -1
+        }
+      },
+      "pos": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": 7,
+      "plugin": "Fundamental",
+      "version": "1.4.0",
+      "model": "Scope",
+      "params": [
+        {
+          "id": 0,
+          "value": 0.0
+        },
+        {
+          "id": 1,
+          "value": 0.0
+        },
+        {
+          "id": 2,
+          "value": 0.0
+        },
+        {
+          "id": 3,
+          "value": 0.0
+        },
+        {
+          "id": 4,
+          "value": 14.0
+        },
+        {
+          "id": 5,
+          "value": 0.0
+        },
+        {
+          "id": 6,
+          "value": 0.0
+        },
+        {
+          "id": 7,
+          "value": 0.0
+        }
+      ],
+      "leftModuleId": 158,
+      "rightModuleId": 2,
+      "data": {
+        "lissajous": 0,
+        "external": 0
+      },
+      "pos": [
+        58,
+        0
+      ]
+    },
+    {
+      "id": 157,
+      "plugin": "KautenjaDSP-RackNES",
+      "version": "1.4.3",
+      "model": "RackNES",
+      "params": [
+        {
+          "id": 0,
+          "value": 0.0
+        },
+        {
+          "id": 1,
+          "value": 0.0
+        },
+        {
+          "id": 2,
+          "value": 1.0
+        },
+        {
+          "id": 3,
+          "value": 1.0
+        },
+        {
+          "id": 4,
+          "value": 1.0
+        },
+        {
+          "id": 5,
+          "value": 1.0
+        },
+        {
+          "id": 6,
+          "value": 1.0
+        },
+        {
+          "id": 7,
+          "value": 0.324999899
+        },
+        {
+          "id": 8,
+          "value": 0.0
+        },
+        {
+          "id": 9,
+          "value": 0.0
+        },
+        {
+          "id": 10,
+          "value": 0.0
+        },
+        {
+          "id": 11,
+          "value": 0.0
+        },
+        {
+          "id": 12,
+          "value": 0.0
+        },
+        {
+          "id": 13,
+          "value": 0.0
+        },
+        {
+          "id": 14,
+          "value": 0.0
+        },
+        {
+          "id": 15,
+          "value": 0.0
+        },
+        {
+          "id": 16,
+          "value": 0.0
+        },
+        {
+          "id": 17,
+          "value": 0.0
+        },
+        {
+          "id": 18,
+          "value": 0.0
+        },
+        {
+          "id": 19,
+          "value": 0.0
+        },
+        {
+          "id": 20,
+          "value": 0.0
+        },
+        {
+          "id": 21,
+          "value": 0.0
+        },
+        {
+          "id": 22,
+          "value": 0.0
+        },
+        {
+          "id": 23,
+          "value": 0.0
+        },
+        {
+          "id": 24,
+          "value": 0.0
+        },
+        {
+          "id": 25,
+          "value": 0.0
+        },
+        {
+          "id": 26,
+          "value": 0.0
+        },
+        {
+          "id": 27,
+          "value": 0.0
+        }
+      ],
+      "leftModuleId": 5,
+      "rightModuleId": 158,
+      "data": {
+        "emulator": {
+          "cartridge": {
+            "rom_path": "/Users/jameskauten/Documents/ROMs/games/SuperMarioBros1.nes",
+            "mapper": {
+              "is_one_bank": false,
+              "has_character_ram": false,
+              "character_ram": ""
+            }
+          },
+          "controllers[0]": {
+            "is_strobe": false,
+            "joypad_buttons": 0,
+            "joypad_bits": 0
+          },
+          "controllers[1]": {
+            "is_strobe": false,
+            "joypad_buttons": 0,
+            "joypad_bits": 0
+          },
+          "bus": {
+            "ram": "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",
+            "extended_ram": ""
+          },
+          "picture_bus": {
+            "ram": "JCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJBYKGxIYJCQkJCQkJCQkJCAYGxUNJCQdEhYOJCQkJCQkAAAAAAAAJCQuKQAAJCQkJAEoASQkJCQBBwAkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkNjckJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJDUlJTgkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkOTo7PCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJDEyJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQwJjQzJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkMCYmJiYzJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJDAmNCYmNCYzJCQkJCQkJCQkJCQkJCQkNjc2NzY3JCQwJiYmJiYmJiYzJCQkJCQkJCQkJCQkJDUlJSUlJSU4JLS1tLW0tbS1tLW0tbS1tLW0tbS1tLW0tbS1tLW0tbS1tre2t7a3tre2t7a3tre2t7a3tre2t7a3tre2t7a3tre0tbS1tLW0tbS1tLW0tbS1tLW0tbS1tLW0tbS1tLW0tba3tre2t7a3tre2t7a3tre2t7a3tre2t7a3tre2t7a3qqrqqqqqqqoAAAAAoCAAAAAAAAAKAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUFBQUFBQUFAFBQUFBQUFBSQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQ2NyQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkNSUlOCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQ5Ojs8JCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkU1QkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCRVViQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJFNUJCQkJCQkRUVTVEVFU1QkJCQkJCQkJCQkJCQkJCQkVVYkJCQkJCRHR1VWR0dVViQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJDEyJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQwJjQzJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkMCYmJiYzJCQkJCQkJCQkNSQkJCQkJCQkJCQkJCQkJCS0tbS1tLW0tbS1tLW0tbS1JCQkJCQkJCQkJCQkJCQkJLa3tre2t7a3tre2t7a3trckJCQkJCQkJCQkJCQkJCQktLW0tbS1tLW0tbS1tLW0tSQkJCQkJCQkJCQkJCQkJCS2t7a3tre2t7a3tre2t7a3JCQkJCQkJCQkJCQkJCQkJAAAAAAAAAAAAIiqAAAAAAAAAAAwAAAAAAAAAAAAAAAAMADQ0AAAAAAAAAAAAAAAAFBQUFAAAAAABQUFBQAAAAA=",
+            "name_tables[0]": 0,
+            "name_tables[1]": 1024,
+            "name_tables[2]": 0,
+            "name_tables[3]": 1024,
+            "palette": "IikaDw82Fw8PMCEPDwcXDwAWJxgPGjAnDxYwJw8PNhc="
+          },
+          "cpu": {
+            "register_PC": 32855,
+            "register_SP": 255,
+            "register_A": 144,
+            "register_X": 5,
+            "register_Y": 1,
+            "flags": 165,
+            "skip_cycles": 1,
+            "cycles": 284336387
+          },
+          "ppu": {
+            "sprite_memory": "GP8jWLD8AACw/AAIuPwAALj8AAjAOgAAwDcACMhPAADIT0AI+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAPgAAAD4AAAA+AAAAA==",
+            "scanline_sprites": "AwQ=",
+            "pipeline_state": 1,
+            "cycles": 340,
+            "scanline": 191,
+            "is_even_frame": true,
+            "is_vblank": true,
+            "is_sprite_zero_hit": true,
+            "data_address": 768,
+            "temp_address": 0,
+            "fine_x_scroll": 0,
+            "is_first_write": true,
+            "data_buffer": 255,
+            "sprite_data_address": 0,
+            "is_showing_sprites": true,
+            "is_showing_background": true,
+            "is_hiding_edge_sprites": false,
+            "is_hiding_edge_background": false,
+            "is_long_sprites": false,
+            "is_interrupting": true,
+            "background_page": 1,
+            "sprite_page": 0,
+            "data_address_increment": 1
+          },
+          "apu": {
+            "apu": {
+              "w40xx": "ln8nCZZ/rwgfACcJHAADGBAwAAA=",
+              "w4015": 15,
+              "w4017": 255,
+              "delay": 13782,
+              "step": 0,
+              "irq_flag": 0,
+              "square1": {
+                "delay": 415,
+                "env[0]": 5,
+                "env[1]": 10,
+                "env[2]": 0,
+                "length": 247,
+                "phase": 5,
+                "swp_delay": 7,
+                "swp_reset": 0
+              },
+              "square2": {
+                "delay": 13,
+                "env[0]": 5,
+                "env[1]": 10,
+                "env[2]": 0,
+                "length": 247,
+                "phase": 6,
+                "swp_delay": 7,
+                "swp_reset": 0
+              },
+              "triangle": {
+                "delay": 0,
+                "length": 235,
+                "phase": 28,
+                "linear_counter": 0,
+                "linear_mode": 0
+              },
+              "noise": {
+                "delay": 11,
+                "env[0]": 6,
+                "env[1]": 15,
+                "env[2]": 0,
+                "length": 0,
+                "shift_reg": 23932
+              },
+              "dmc": {
+                "delay": 277,
+                "remain": 0,
+                "addr": 32768,
+                "buf": 0,
+                "bits_remain": 7,
+                "bits": 0,
+                "buf_empty": 1,
+                "silence": 1,
+                "irq_flag": 0
+              }
+            }
+          }
+        }
+      },
+      "pos": [
+        8,
+        0
+      ]
+    },
+    {
+      "id": 158,
+      "plugin": "KautenjaDSP-RackNES",
+      "version": "1.4.3",
+      "model": "InputGenie",
+      "params": [],
+      "leftModuleId": 157,
+      "rightModuleId": 7,
+      "data": {
+        "Game": 0,
+        "Memory Locations": [
+          {
+            "Location": 6
+          },
+          {
+            "Location": -1
+          },
+          {
+            "Location": -1
+          },
+          {
+            "Location": -1
+          },
+          {
+            "Location": -1
+          },
+          {
+            "Location": -1
+          },
+          {
+            "Location": -1
+          },
+          {
+            "Location": -1
+          }
+        ]
+      },
+      "pos": [
+        46,
+        0
+      ]
+    }
+  ],
+  "cables": [
+    {
+      "id": 856,
+      "outputModuleId": 2,
+      "outputId": 0,
+      "inputModuleId": 1,
+      "inputId": 0,
+      "color": "#0986ad"
+    },
+    {
+      "id": 857,
+      "outputModuleId": 2,
+      "outputId": 0,
+      "inputModuleId": 1,
+      "inputId": 1,
+      "color": "#c9b70e"
+    },
+    {
+      "id": 868,
+      "outputModuleId": 157,
+      "outputId": 6,
+      "inputModuleId": 7,
+      "inputId": 0,
+      "color": "#0986ad"
+    },
+    {
+      "id": 869,
+      "outputModuleId": 157,
+      "outputId": 6,
+      "inputModuleId": 2,
+      "inputId": 2,
+      "color": "#c9b70e"
+    },
+    {
+      "id": 872,
+      "outputModuleId": 5,
+      "outputId": 1,
+      "inputModuleId": 158,
+      "inputId": 0,
+      "color": "#c9b70e"
+    }
+  ]
+}
