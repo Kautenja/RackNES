@@ -4,7 +4,7 @@ All **source code** in the `src/` folder is copyright © 2020-2024 Christian Kau
 
 The **visual design of the modules** is copyright © 2020-2024 Christian Kauten and licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). Commercial use and derivative works **ARE NOT** allowed. This includes all graphics in the `res/` and `manual/` folders.
 
-The **KautenjaDSP logo and icon** are copyright © 2020-2024 Christian Kauten and licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). Commercial use and derivative works **ARE NOT** allowed.
+The **KautenjaDSP logo and icon** are copyright © 2020-2024 Christian Kauten and licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). Commercial use and derivative works **ARE NOT** allowed. This includes all graphics in the `res/` and `manual/` folders.
 
 **Dependencies** included in the binary distributable may have other licenses.
 See [LICENSE-dist.txt](LICENSE-dist.txt) for a full list.
