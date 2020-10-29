@@ -1,1 +1,0 @@
-The [`SimpleNES`](https://github.com/amhndu/SimpleNES) NES emulator is adapted for this project under the GNU GPL-3.0 license.
