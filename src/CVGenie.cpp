@@ -1,5 +1,5 @@
 #include "plugin.hpp"
-#include "GameMaps.cpp"
+#include "GameMaps.hpp"
 
 // ---------------------------------------------------------------------------
 // MARK: Module
@@ -52,7 +52,7 @@ struct CVGenie : Module {
     /// Randomize the memory-location selectors
     void onRandomize() final {
         for (int i = 0; i < 8; i++)
-            memLoc[i] = random::uniform() * gameMap.elements.size();
+            memLoc[i] = random::uniform() * gameMap.getNumCheats();
     }
 
     /// Process a sample.
@@ -153,7 +153,7 @@ struct CVGenie : Module {
     }
 
     void dataFromJson(json_t* rootJ) override {
-        gameMap.setGame(json_integer_value(json_object_get(rootJ, "Game")));
+        gameMap.setGame(static_cast<GameIds>(json_integer_value(json_object_get(rootJ, "Game"))));
         json_t* memLocationsJ = json_object_get(rootJ, "Memory Locations");
         json_t* locationJ; size_t locationIndex;
         json_array_foreach(memLocationsJ, locationIndex, locationJ) {
@@ -204,7 +204,7 @@ struct ElementChoice : LedDisplayChoice {
         /// add a label to the top of the menu
 		menu->addChild(createMenuLabel("Game Element"));
         /// add all available memory locations for the currently selected game
-        for (int i = -1; i < (int)module->gameMap.elements.size(); i++) {
+        for (int i = -1; i < (int)module->gameMap.getNumCheats(); i++) {
             /// create a menu item for a memory location
 			ElementItem<TModule, SELECTOR_ID>* item = new ElementItem<TModule, SELECTOR_ID>;
             item->setModule(module);
@@ -249,7 +249,7 @@ struct GameItem : ui::MenuItem {
     /// the module associated with the menu item
     TModule* module;
     /// the ID of the menu item
-    int gameId;
+    GameIds gameId;
 
     /// Respond to an action on the menu item
     void onAction(const event::Action& e) override {
@@ -285,7 +285,7 @@ struct GameChoice : LedDisplayChoice {
             /// create a menu item for a game
 			GameItem<TModule>* item = new GameItem<TModule>;
             item->setModule(module);
-            item->gameId = i;
+            item->gameId = static_cast<GameIds>(i);
 			item->text = module->gameMap.getGameName(i);
             /// add a checkmark if a game has been previously selected
 			item->rightText = CHECKMARK(item->gameId == module->gameMap.gameId);
