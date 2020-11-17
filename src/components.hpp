@@ -15,10 +15,30 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
-#ifndef RACKNES_COMPONENTS_HPP
-#define RACKNES_COMPONENTS_HPP
+#ifndef COMPONENTS_HPP_
+#define COMPONENTS_HPP_
 
 #include "plugin.hpp"
+
+/// @brief A parameter quantity for a boolean switch.
+struct BooleanParamQuantity : rack::ParamQuantity {
+    /// @brief Return the value as a formatted string.
+    inline std::string getDisplayValueString() override {
+        if (getValue()) return "On";
+        return "Off";
+    }
+};
+
+/// @brief A parameter quantity for a trigger button.
+struct TriggerParamQuantity : rack::ParamQuantity {
+    /// @brief Return the parameter description instead of the value text.
+    inline std::string getDisplayValueString() override {
+        return rack::ParamQuantity::getLabel();
+    }
+
+    /// @brief Return the parameter description (disabled for this trigger).
+    inline std::string getLabel() override { return ""; }
+};
 
 /// @brief A knob in the style of the NES turbo knob, but the shape of Rogan 1P.
 struct Rogan1PSNES : rack::Rogan {
@@ -67,4 +87,4 @@ struct CKD6_NES_Red : app::SvgSwitch {
     }
 };
 
-#endif  // RACKNES_COMPONENTS_HPP
+#endif  // COMPONENTS_HPP_
