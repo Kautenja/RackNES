@@ -67,10 +67,10 @@ struct GameMap {
     std::string getGameName(int id) {
         switch (id) {
             case PLUMBER:
-                return "Plumber";
+                return "Super Mario Bros.";
                 break;
             case TUNIC:
-                return "Tunic";
+                return "The Legend of Zelda";
                 break;
             default:
                 return "I AM ERROR";
