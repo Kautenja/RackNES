@@ -5,7 +5,7 @@
 [BuildStatus]:  https://travis-ci.org/Kautenja/RackNES.svg?branch=master
 [BuildServer]:  https://travis-ci.org/Kautenja/RackNES
 
-A Nintendo Entertainment System (NES) emulator with Control Voltage (CV) for VCV Rack.
+A Nintendo Entertainment System (NES) emulator as if it were designed by Bob Moog.
 
 <p align="center">
 <img alt="RackNES" src="manual/img/Plugin.svg" height="380px">
