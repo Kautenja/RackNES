@@ -219,8 +219,6 @@ struct RackNES : Module {
             params[PARAM_HANG].getValue(),
             inputs[INPUT_HANG].getVoltage()
         );
-        // if the hang input is high, stop processing
-        if (hangButton.isHigh()) return;
 
         // NOTE: process the save, reset, restore in given order to ensure
         // that when all go high on the same frame, the emulator stays in its
@@ -322,6 +320,9 @@ struct RackNES : Module {
             processCV();
         // process expanders at every sample step
         processExpanders();
+
+        // if the hang input is high, stop processing
+        if (hangButton.isHigh()) return;
 
         // run the number of cycles through the NES that are required. pass a
         // callback to copy the screen every time a new frame renders
