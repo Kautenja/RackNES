@@ -155,6 +155,36 @@ struct RackNES : Module {
         configParam<TriggerParamQuantity>(PARAM_PLAYER2_DOWN,   0.f, 1.f, 0.f, "Player 2 Down");
         configParam<TriggerParamQuantity>(PARAM_PLAYER2_LEFT,   0.f, 1.f, 0.f, "Player 2 Left");
         configParam<TriggerParamQuantity>(PARAM_PLAYER2_RIGHT,  0.f, 1.f, 0.f, "Player 2 Right");
+        // Configure metadata for the input and output ports
+        configInput(INPUT_PLAYER1_A, "Player 1 \"A\" gate");
+        configInput(INPUT_PLAYER1_B, "Player 1 \"B\" gate");
+        configInput(INPUT_PLAYER1_SELECT, "Player 1 \"Select\" gate");
+        configInput(INPUT_PLAYER1_START,"Player 1 \"Start\" gate");
+        configInput(INPUT_PLAYER1_UP, "Player 1 \"Up\" gate");
+        configInput(INPUT_PLAYER1_DOWN, "Player 1 \"Down\" gate");
+        configInput(INPUT_PLAYER1_LEFT, "Player 1 \"Left\" gate");
+        configInput(INPUT_PLAYER1_RIGHT,"Player 1 \"Right\" gate");
+        configInput(INPUT_PLAYER2_A, "Player 2 \"A\" gate");
+        configInput(INPUT_PLAYER2_B, "Player 2 \"B\" gate");
+        configInput(INPUT_PLAYER2_SELECT, "Player 2 \"Select\" gate");
+        configInput(INPUT_PLAYER2_START, "Player 2 \"Start\" gate");
+        configInput(INPUT_PLAYER2_UP, "Player 2 \"Up\" gate");
+        configInput(INPUT_PLAYER2_DOWN, "Player 2 \"Down\" gate");
+        configInput(INPUT_PLAYER2_LEFT, "Player 2 \"Left\" gate");
+        configInput(INPUT_PLAYER2_RIGHT, "Player 2 \"Right\" gate");
+        configInput(INPUT_CLOCK, "CPU clock speed");
+        configInput(INPUT_SAVE, "Save state trigger");
+        configInput(INPUT_LOAD, "Load state trigger");
+        configInput(INPUT_HANG, "Hang gate");
+        configInput(INPUT_RESET, "Reset trigger");
+        configOutput(OUTPUT_CLOCK, "CPU clock");
+        configOutput(OUTPUT_CH + 0, "Square voice 1");
+        configOutput(OUTPUT_CH + 1, "Square voice 2");
+        configOutput(OUTPUT_CH + 2, "Triangle voice");
+        configOutput(OUTPUT_CH + 3, "Noise voice");
+        configOutput(OUTPUT_CH + 4, "DMC sample voice");
+        configOutput(OUTPUT_MIX, "Audio mix");
+        // set the division for the CV processing
         cvDivider.setDivision(16);
         // draw the initial screen
         initalizeScreen();
