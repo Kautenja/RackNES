@@ -14,6 +14,7 @@
 //
 
 #include <cstring>
+#include <filesystem>
 #include <string>
 #include <jansson.h>
 #include "plugin.hpp"
@@ -414,7 +415,7 @@ struct ROMMenuItem : MenuItem {
         auto rom_path = module->emulator.get_rom_path();
         // if the ROM path is empty, fall back on the user's home directory
         auto dir = rom_path.empty() ?
-            asset::user("") : string::directory(rom_path);
+            asset::user("") : rack::system::getDirectory(rom_path);
         // filter to for files with a ".nes" or ".NES" extension
         auto filter = osdialog_filters_parse("NES ROM:nes,NES");
         auto path = osdialog_file(OSDIALOG_OPEN, dir.c_str(), NULL, filter);
