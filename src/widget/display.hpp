@@ -21,7 +21,7 @@
 #include "rack.hpp"
 
 /// A widget that displays a 32-bit RGBA pixel buffer.
-struct Display : rack::LightWidget {
+struct Display : rack::TransparentWidget {
  private:
     /// the size of the internal pixel buffer to render
     const rack::Vec image_size;
@@ -51,7 +51,7 @@ struct Display : rack::LightWidget {
         rack::Vec image_size_,
         rack::Vec render_size
     ) :
-        LightWidget(), image_size(image_size_), pixels(pixels_) {
+        TransparentWidget(), image_size(image_size_), pixels(pixels_) {
         setPosition(position);
         setSize(render_size);
     }
@@ -60,36 +60,39 @@ struct Display : rack::LightWidget {
     ///
     /// @param args the arguments for the draw context for this widget
     ///
-    void draw(const DrawArgs& args) override {
-        // the image flags for creating the screen
-        static constexpr int imageFlags = 0;
-        // the x position of the screen (relative, not absolute)
-        static constexpr int x = 0;
-        // the y position of the screen (relative, not absolute)
-        static constexpr int y = 0;
-        // the angle to draw the screen at
-        static constexpr float angle = 0;
-        // the alpha value of the SVG image
-        static constexpr float alpha = 1.f;
-        // don't do anything if the screen is not on
-        if (!is_on) return;
-        // return if the pixels aren't set for the screen yet
-        if (pixels == nullptr) return;
-        // -------------------------------------------------------------------
-        // create / update the image container
-        // -------------------------------------------------------------------
-        if (screen == -1)  // check if the screen has been initialized yet
-            screen = nvgCreateImageRGBA(args.vg, image_size.x, image_size.y, imageFlags, pixels);
-        else  // update the screen with the pixel data
-            nvgUpdateImage(args.vg, screen, pixels);
-        // -------------------------------------------------------------------
-        // draw the screen
-        // -------------------------------------------------------------------
-        nvgBeginPath(args.vg);
-        nvgRect(args.vg, x, y, box.size.x, box.size.y);
-        nvgFillPaint(args.vg, nvgImagePattern(args.vg, x, y, box.size.x, box.size.y, angle, screen, alpha));
-        nvgFill(args.vg);
-        nvgClosePath(args.vg);
+    void drawLayer(const DrawArgs& args, int layer) override {
+        if (layer == 1) {  // draw the screen regardless of brightness settings
+            // the image flags for creating the screen
+            static constexpr int imageFlags = 0;
+            // the x position of the screen (relative, not absolute)
+            static constexpr int x = 0;
+            // the y position of the screen (relative, not absolute)
+            static constexpr int y = 0;
+            // the angle to draw the screen at
+            static constexpr float angle = 0;
+            // the alpha value of the SVG image
+            static constexpr float alpha = 1.f;
+            // don't do anything if the screen is not on
+            if (!is_on) return;
+            // return if the pixels aren't set for the screen yet
+            if (pixels == nullptr) return;
+            // -------------------------------------------------------------------
+            // create / update the image container
+            // -------------------------------------------------------------------
+            if (screen == -1)  // check if the screen has been initialized yet
+                screen = nvgCreateImageRGBA(args.vg, image_size.x, image_size.y, imageFlags, pixels);
+            else  // update the screen with the pixel data
+                nvgUpdateImage(args.vg, screen, pixels);
+            // -------------------------------------------------------------------
+            // draw the screen
+            // -------------------------------------------------------------------
+            nvgBeginPath(args.vg);
+            nvgRect(args.vg, x, y, box.size.x, box.size.y);
+            nvgFillPaint(args.vg, nvgImagePattern(args.vg, x, y, box.size.x, box.size.y, angle, screen, alpha));
+            nvgFill(args.vg);
+            nvgClosePath(args.vg);
+        }
+        Widget::drawLayer(args, layer);
     }
 };
 
