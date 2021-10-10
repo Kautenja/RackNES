@@ -67,3 +67,7 @@
 -   CV acquisition at _1/16x_ sample rate
 -   support for dark mode (the NES display no longer dims)
 -   fix logic for changing the sample rate
+
+### 2.0.0
+
+-   support for Rackv2
