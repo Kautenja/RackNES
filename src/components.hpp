@@ -27,17 +27,6 @@ struct BooleanParamQuantity : rack::ParamQuantity {
     }
 };
 
-/// @brief A parameter quantity for a trigger button.
-struct TriggerParamQuantity : rack::ParamQuantity {
-    /// @brief Return the parameter description instead of the value text.
-    inline std::string getDisplayValueString() override {
-        return rack::ParamQuantity::getLabel();
-    }
-
-    /// @brief Return the parameter description (disabled for this trigger).
-    inline std::string getLabel() override { return ""; }
-};
-
 /// @brief A knob in the style of the NES turbo knob, but the shape of Rogan 1P.
 struct Rogan1PSNES : rack::Rogan {
     Rogan1PSNES() {
