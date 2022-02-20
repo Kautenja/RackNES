@@ -11,10 +11,6 @@ A Nintendo Entertainment System (NES) emulator as if it were designed by Bob Moo
 <img alt="RackNES" src="manual/RackNES/img/Plugin.svg" height="380px">
 </p>
 
-<p align="center">
-<img alt="CVGenie" src="manual/CVGenie/img/Plugin.svg" height="380px">
-</p>
-
 ## Features
 
 -   **Clock Source:** Use NES frame-rate (FPS) as a clock source for downstream
@@ -33,6 +29,19 @@ See the [Manual][RackNES] for more information about the features of this
 module.
 
 [RackNES]: https://github.com/Kautenja/RackNES/releases/latest/download/RackNES.pdf
+
+## CV Genie
+
+CV Genie is a Game Genie emulator for RackNES!
+
+<p align="center">
+<img alt="CVGenie" src="manual/CVGenie/img/Plugin.svg" height="380px">
+</p>
+
+See the [Manual][CVGenie] for more information about the features of this
+module.
+
+[CVGenie]: https://github.com/Kautenja/RackNES/releases/latest/download/CVGenie.pdf
 
 ## Acknowledgments
 
