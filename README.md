@@ -8,7 +8,11 @@
 A Nintendo Entertainment System (NES) emulator as if it were designed by Bob Moog.
 
 <p align="center">
-<img alt="RackNES" src="manual/img/Plugin.svg" height="380px">
+<img alt="RackNES" src="manual/RackNES/img/Plugin.svg" height="380px">
+</p>
+
+<p align="center">
+<img alt="CVGenie" src="manual/CVGenie/img/Plugin.svg" height="380px">
 </p>
 
 ## Features

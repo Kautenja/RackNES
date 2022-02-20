@@ -1,0 +1,154 @@
+\documentclass[12pt,a4paper]{article}
+
+% -------------------
+% MARK: Packages
+% -------------------
+
+% import geometry package to update the document margins
+\usepackage[margin=1in]{geometry}
+% set the font to helvectica
+\usepackage[scaled]{helvet}
+\renewcommand\familydefault{\sfdefault}
+% for type-setting
+\usepackage{amsmath, amssymb, amsfonts, verbatim, pifont}
+% for slashed out text
+\usepackage[normalem]{ulem}
+% for units and scientific notation
+\usepackage[table]{xcolor}
+\usepackage{siunitx}
+% for references and URLs
+\usepackage{hyperref, url}
+% Natbib setup for author-year style
+\usepackage{natbib}
+ \bibpunct[, ]{(}{)}{,}{a}{}{,}%
+ \def\bibfont{\small}%
+ \def\bibsep{\smallskipamount}%
+ \def\bibhang{24pt}%
+ \def\newblock{\ }%
+ \def\BIBand{and}%
+% for graphics and figures
+\usepackage{graphicx, subfig, tikz}
+% force figures to stay in their sections
+\usepackage[section]{placeins}
+% for tables
+\usepackage{booktabs, longtable, tabularx}
+\usepackage{multicol, multirow}
+\usepackage{adjustbox}
+\usepackage[flushleft]{threeparttable}
+% a package for working with .csv data for tables
+\usepackage{csvsimple}
+% setup the algorithm package
+% ruled: show bars around title and bar at bottom
+% lined: show the line column on the left of the algorithm
+% linesnumbered: print line numbers for each line
+\usepackage[ruled,lined,linesnumbered]{algorithm2e}
+\DontPrintSemicolon % don't print the semicolon that \; usually prints
+% fix overfull hbox errors from oddities like using
+% quotes (``foo'') and etc.
+\usepackage{microtype}
+
+% -------------------
+% MARK: Debugging Packages
+% -------------------
+
+% import a debugging package to show the margin boxes
+% \usepackage{showframe}
+
+% -------------------
+% MARK: Declarations
+% -------------------
+
+% setup captions for tables and figures
+\captionsetup[table]{%
+  labelfont={bf},
+  name={Table},
+  labelsep=colon,
+  justification=raggedright,
+  singlelinecheck=false}
+\captionsetup[figure]{%
+  labelfont={bf},
+  name={Figure},
+  labelsep=colon,
+  justification=raggedright,
+  singlelinecheck=false}
+\captionsetup[algorithm2e]{%
+  labelfont={bf},
+  name={Figure},
+  labelsep=colon,
+  justification=raggedright,
+  singlelinecheck=false}
+
+% set the graphics path to the img directory
+\graphicspath{{img/}}
+
+% -----------------------------------------------------------------------------
+% MARK: algorithm2e stuff
+% -----------------------------------------------------------------------------
+
+% params
+% \SetKwInOut{Objects}{$\CKmatrix{O}$}
+% \SetKwInOut{Weights}{$\CKvector{w}$}
+
+% -------------------
+% MARK: Headers
+% -------------------
+
+% headers and footers
+\usepackage{fancyhdr}
+\setlength{\headheight}{15pt}
+\pagestyle{fancy}
+\lhead{KautenjaDSP}
+\rhead{\itshape CVGenie v2.0.0}
+\cfoot{\thepage}
+
+% start the document
+\begin{document}
+
+% -------------------
+% MARK: Title Page
+% -------------------
+
+% fancyhdr directive to remove headers from this title page
+\thispagestyle{empty}
+% center the title page contents
+\vspace*{\fill}
+\begin{center}
+\includegraphics[width=0.8\textwidth]{CVGenie-Logo}
+\linebreak\linebreak\linebreak\linebreak
+\includegraphics{CVGenie-Module}
+\linebreak\linebreak\linebreak\linebreak
+\includegraphics[width=0.8\textwidth]{KautenjaDSP}
+\end{center}
+\vspace*{\fill}
+\clearpage
+
+% -------------------
+% MARK: Overview
+% -------------------
+
+\section{Overview}
+
+CVGenie is a Game Genie emulator for RackNES with eight parameter banks for
+directly controlling RAM addresses on the NES.
+
+\begin{figure}[!htp]
+\centering
+\includegraphics{CVGenie-Manual}
+\end{figure}
+
+\begin{enumerate}
+  \item Game selection and display. Used to select the game and load the known addresses.
+  \item Parameter banks for selecting controls and manipulating with CV.
+\end{enumerate}
+
+% -------------------
+% MARK: References
+% -------------------
+
+% \clearpage
+% \renewcommand\refname{References \& Acknowledgments}
+% \nocite{*}
+% \bibliographystyle{apalike}
+% \bibliography{references}
+
+\end{document}
