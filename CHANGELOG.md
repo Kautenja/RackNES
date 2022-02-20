@@ -62,12 +62,13 @@
 
 -   fix cycle durations to be more accurate
 
-### 1.4.3 ()
+### 1.4.3 (TBD)
 
 -   CV acquisition at _1/16x_ sample rate
 -   support for dark mode (the NES display no longer dims)
 -   fix logic for changing the sample rate
 
-### 2.0.0
+### 2.0.0 (2022-02-20)
 
 -   support for Rackv2
+-   pre-release of CV genie
