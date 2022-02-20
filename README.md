@@ -32,7 +32,8 @@ module.
 
 ## CV Genie
 
-CV Genie is a Game Genie emulator for RackNES!
+CV Genie is a Game Genie emulator and expander module for RackNES developed by
+[@anlexmatos][anlexmatos]!
 
 <p align="center">
 <img alt="CVGenie" src="manual/CVGenie/img/Plugin.svg" height="380px">
