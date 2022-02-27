@@ -72,3 +72,8 @@
 
 -   support for Rackv2
 -   pre-release of CV genie
+
+### 2.1.0 (2022-02-26)
+
+-   theme support
+    -   new dark theme
