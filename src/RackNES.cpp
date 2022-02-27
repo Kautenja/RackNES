@@ -22,6 +22,7 @@
 #include "components.hpp"
 #include "widget/display.hpp"
 #include "nes/emulator.hpp"
+#include "theme.hpp"
 
 /// a trigger for a button with a CV input.
 struct CVButtonTrigger {
@@ -458,8 +459,11 @@ struct ROMMenuItem : MenuItem {
     }
 };
 
+/// The basename for the RackNES panel files.
+const char BASENAME[] = "res/RackNES";
+
 /// The widget structure that lays out the panel of the module and the UI menus.
-struct RackNESWidget : ModuleWidget {
+struct RackNESWidget : ThemedWidget<BASENAME> {
     /// a pointer to the display to render the NES screen to
     Display* display = nullptr;
 
@@ -469,8 +473,6 @@ struct RackNESWidget : ModuleWidget {
     ///
     RackNESWidget(RackNES* module) {
         setModule(module);
-        static constexpr auto panel = "res/RackNES.svg";
-        setPanel(APP->window->loadSvg(asset::plugin(plugin_instance, panel)));
         // setup the display for the NES screen
         display = new Display(
             Vec(157, 18),                                         // screen position
@@ -589,13 +591,14 @@ struct RackNESWidget : ModuleWidget {
     /// @param menu the menu to add the context items to
     ///
     inline void appendContextMenu(ui::Menu* menu) override {
-        menu->addChild(construct<MenuSeparator>());
+        menu->addChild(new MenuSeparator);
         menu->addChild(construct<ROMMenuItem>(
             &ROMMenuItem::text,
             "Load ROM",
             &ROMMenuItem::module,
             static_cast<RackNES*>(this->module)
         ));
+        ThemedWidget<BASENAME>::appendContextMenu(menu);
     }
 
     /// Respond to a path being dropped onto the module.
