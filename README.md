@@ -1,10 +1,5 @@
 # RackNES
 
-[![Travis CI Build Status][BuildStatus]][BuildServer]
-
-[BuildStatus]:  https://travis-ci.org/Kautenja/RackNES.svg?branch=master
-[BuildServer]:  https://travis-ci.org/Kautenja/RackNES
-
 A Nintendo Entertainment System (NES) emulator as if it were designed by Bob Moog.
 
 <p align="center">
