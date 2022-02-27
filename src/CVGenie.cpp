@@ -15,6 +15,7 @@
 
 #include "plugin.hpp"
 #include "GameMaps.hpp"
+#include "theme.hpp"
 
 // ---------------------------------------------------------------------------
 // MARK: Module
@@ -335,8 +336,11 @@ struct GenieGameSelectorWidget : LedDisplay {
     }
 };
 
+/// The basename for the RackNES panel files.
+const char BASENAME[] = "res/CVGenie";
+
 /// The widget structure that lays out the panel of an Input Genie and the UI menus.
-struct InputGenieWidget : ModuleWidget {
+struct InputGenieWidget : ThemedWidget<BASENAME> {
     typedef CVGenie<8, 0> TInputGenie;
 
     /// Create a new Input Genie widget for the given Input Genie module.
@@ -345,7 +349,6 @@ struct InputGenieWidget : ModuleWidget {
     ///
     explicit InputGenieWidget(TInputGenie* module) {
         setModule(module);
-        setPanel(APP->window->loadSvg(asset::plugin(plugin_instance, "res/CVGenie.svg")));
         // panel screws
         addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 30, 0)));
@@ -404,7 +407,7 @@ struct InputGenieWidget : ModuleWidget {
 Model* modelInputGenie = createModel<CVGenie<8, 0>, InputGenieWidget>("InputGenie");
 
 /// The widget structure that lays out the panel of an Output Genie and the UI menus.
-struct OutputGenieWidget : ModuleWidget {
+struct OutputGenieWidget : ThemedWidget<BASENAME> {
     typedef CVGenie<0, 8> TOutputGenie;
 
     /// Create a new Output Genie widget for the given Output Genie module.
@@ -413,7 +416,6 @@ struct OutputGenieWidget : ModuleWidget {
     ///
     explicit OutputGenieWidget(TOutputGenie* module) {
         setModule(module);
-        setPanel(APP->window->loadSvg(asset::plugin(plugin_instance, "res/CVGenie.svg")));
         // panel screws
         addChild(createWidget<ScrewSilver>(Vec(15, 0)));
 		addChild(createWidget<ScrewSilver>(Vec(box.size.x - 30, 0)));
