@@ -11,8 +11,7 @@ authors:
   - family-names: Kauten
     given-names: Christian
 repository-code: "https://github.com/Kautenja/RackNES"
-version: "2.1.0"
-date-released: "2022-02-26"
+version: "2.2.0"
 license: GPL-3.0-or-later
 keywords:
   - Nintendo Entertainment System
