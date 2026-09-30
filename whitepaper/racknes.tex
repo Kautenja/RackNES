@@ -168,8 +168,10 @@ The NESdev technical reference documents the console's timing and sound
 architecture, including the NTSC CPU--PPU clock relationship and nonlinear
 audio mixing~\cite{nesclock,nesmixer}. These are useful reference points for
 understanding the system being modeled; they do not certify an emulator's
-fidelity. RackNES adapts Amish Naidu's SimpleNES core and uses Shay Green's
-\emph{Nes\_Snd\_Emu} and \emph{Blip\_Buffer} libraries~\cite{simplenes,green}.
+fidelity. RackNES adapts Amish Naidu and contributors' SimpleNES core~\cite{simplenes},
+through the author's \emph{nes-py} project~\cite{nespy}. Its audio path uses
+Shay Green's (blargg's) \emph{Nes\_Snd\_Emu} and \emph{Blip\_Buffer}
+libraries~\cite{green}.
 Blip\_Buffer represents sound through timed amplitude changes and converts
 these events to band-limited samples. This separates the sound chip's clocked
 events from the host's sample stream.
@@ -505,13 +507,17 @@ become host audio.
 \section*{Acknowledgments and Availability}
 CV Genie was contributed by \code{@anlexmatos}; its memory-map source credits
 the Data Crystal reverse-engineering wiki. The implementation builds on
-SimpleNES, Nes\_Snd\_Emu, Blip\_Buffer, nes\_ntsc, cpp-base64, and VCV Rack;
-the original authors retain credit for these components. Source, manuals,
+Amish Naidu and contributors' SimpleNES~\cite{simplenes}, adapted through
+the author's nes-py~\cite{nespy}; Shay Green's (blargg's) Nes\_Snd\_Emu,
+Blip\_Buffer, and nes\_ntsc~\cite{green,ntsc}; Ren\'e Nyffenegger's
+cpp-base64~\cite{base64}; and VCV Rack~\cite{rack}. Source, manuals,
 and the report are available from
 \href{https://github.com/Kautenja/RackNES}{github.com/Kautenja/RackNES}.
 The report's \code{sources.md} records the inspected revision, source locations,
 and literature provenance. The source-code license is GPL-3.0-or-later, with
-separate artwork and dependency terms recorded in the repository. Cartridge
+separate artwork and dependency terms recorded in the repository's
+\href{https://github.com/Kautenja/RackNES/blob/master/LICENSE.md}{license guide}
+and \href{https://github.com/Kautenja/RackNES/blob/master/docs/licenses/THIRD-PARTY.txt}{bundled notices}. Cartridge
 images are not supplied with this report.
 
 \balance
@@ -587,13 +593,18 @@ A. Naidu and contributors, ``SimpleNES,'' software and project documentation.
 Accessed September 30, 2026.
 \url{https://github.com/amhndu/SimpleNES}.
 
+\bibitem{nespy}
+C. Kauten and contributors, ``nes-py,'' software and project documentation.
+Accessed September 30, 2026.
+\url{https://github.com/Kautenja/nes-py}.
+
 \bibitem{green}
-S. Green, ``Blargg's audio libraries,'' author documentation for
+S. Green (blargg), ``Blargg's audio libraries,'' author documentation for
 Nes\_Snd\_Emu and Blip\_Buffer. Accessed September 30, 2026.
 \url{https://www.slack.net/~ant/libs/audio.html}.
 
 \bibitem{ntsc}
-S. Green, ``NTSC video filter libraries,'' author documentation for nes\_ntsc.
+S. Green (blargg), ``Blargg's NTSC libraries,'' author documentation for nes\_ntsc.
 Accessed September 30, 2026.
 \url{https://www.slack.net/~ant/libs/ntsc.html}.
 

@@ -83,5 +83,5 @@ python3 tools/capture/make_demo_rom.py /tmp/arhythmetic-units.nes
 
 Code is GPL-3.0-or-later. The original title-card pixel art/lettering and
 rendered panel assets use the project's CC-BY-NC-ND-4.0 visual-asset terms;
-see [LICENSING.md](../../LICENSING.md). No commercial game ROM, font, or graphics
+see [LICENSE.md](../../LICENSE.md). No commercial game ROM, font, or graphics
 are included. Distributing the combined ROM requires respecting both scopes.

@@ -19,7 +19,7 @@ Read the relevant sources before editing:
     and panel references.
 -   [plugin.json](plugin.json): plugin identity, registered modules, and version.
 -   [CHANGELOG.md](CHANGELOG.md): historical behavior and compatibility fixes.
--   [LICENSING.md](LICENSING.md): source, visual-asset, and dependency terms.
+-   [LICENSE.md](LICENSE.md): source, visual-asset, and dependency terms.
 -   [C++ Style Guide](docs/style-guides/cpp.md): required for C++ source,
     headers, and regression checks.
 -   [Markdown Style Guide](docs/style-guides/markdown.md): required for

@@ -90,7 +90,7 @@ The panel logo outlines in `../res/ArhythmeticUnits.svg` come from Fourier's
 `12ac3236e332b7d0a01b2d750fa07a0849132341`. Keep the four runtime panel SVGs
 aligned with that source; captures inherit their artwork directly. Retain the
 CV Genie collaborator credit alongside the brand. Preserve the visual-asset
-license terms in [LICENSING.md](../LICENSING.md).
+license terms in [LICENSE.md](../LICENSE.md).
 The white paper is an independent publication and is not changed by these builds.
 
 ## Verify Content Against The Code

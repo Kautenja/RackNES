@@ -474,5 +474,5 @@ diff before commit.
 [module]: ../src/RackNES.cpp
 [nes-apu]: ../src/nes/apu/Nes_Apu.h
 [fme7-apu]: ../src/nes/apu/Nes_Fme7_Apu.cpp
-[license]: ../LICENSING.md
+[license]: ../LICENSE.md
 [manual-guide]: ../manual/README.md

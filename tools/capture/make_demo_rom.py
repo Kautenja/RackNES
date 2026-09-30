@@ -2,7 +2,7 @@
 """Build an original silent NROM-128 title card; Python standard library only.
 
 Copyright 2026 Arhythmetic Units. SPDX-License-Identifier: GPL-3.0-or-later
-Original pixel lettering/artwork: CC-BY-NC-ND-4.0; see ../../LICENSING.md.
+Original pixel lettering/artwork: CC-BY-NC-ND-4.0; see ../../LICENSE.md.
 No external fonts, game code, graphics, or assembler are used.
 """
 import argparse

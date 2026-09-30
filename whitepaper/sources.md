@@ -35,6 +35,7 @@ used to check metadata and claims; a DOI is supplied only where verified.
 | `nesclock` | NESdev contributors. “Cycle reference chart.” [NESdev technical reference](https://www.nesdev.org/wiki/Cycle_reference_chart). | Supports the NTSC nominal CPU frequency and 3:1 PPU-to-CPU relationship. The indexed page identified revision 22030 and includes conditional frame timing and PAL differences. It describes hardware/reference behavior; RackNES's integer frame counter is separately documented below. |
 | `nesmixer` | NESdev contributors. “APU Mixer.” [NESdev technical reference](https://www.nesdev.org/wiki/APU_Mixer); supporting [APU overview](https://www.nesdev.org/wiki/NES_APU). | Supports nonlinear mixing and interaction among NES channels. It does not establish audible error magnitude for RackNES's separated-voice mix. Direct NESdev page opens encountered HTTP 403 during research; substantive indexed text returned by web search was inspected for both the cycle chart and mixer, not merely a result title. This access limitation prevents claiming a fresh direct-page revision audit. |
 | `simplenes` | Amish Kumar Naidu and contributors. *SimpleNES*. [Project repository](https://github.com/amhndu/SimpleNES); [maintainer profile](https://github.com/amhndu). | Attribution and general C++ NES-emulator provenance. RackNES's own [license statement][license] explicitly records adaptation. Current upstream features and compatibility are not transferred to the pinned RackNES implementation. |
+| `nespy` | Christian Kauten and contributors. *nes-py*. [Project repository](https://github.com/Kautenja/nes-py); [native CPU source](https://github.com/Kautenja/nes-py/blob/master/nes_emu/src/nes_emu/cpu.cpp). | Historical adaptation between SimpleNES and RackNES, supported by the import evidence below. The current nes-py implementation and planned integration are not the core inspected for this report. No exact imported upstream revision has been established. |
 | `green` | Shay Green. “Blargg's Audio Libraries.” [Author documentation](https://www.slack.net/~ant/libs/audio.html); additional [algorithm explanation](https://www.slack.net/~ant/bl-synth/). | Documents Nes_Snd_Emu and Blip_Buffer: timed amplitude changes, source-clock/output-rate conversion, and band-limited synthesis. The bundled source also identifies Green and Nes_Snd_Emu 0.1.7. Dependency capability is not a claim that RackNES's host integration preserves every generated sample or achieves hardware fidelity. |
 | `ntsc` | Shay Green. “Blargg's NTSC Libraries.” [Author documentation](https://www.slack.net/~ant/libs/ntsc.html); bundled [readme][ntsc-readme]. | Attribution and intended image-filtering function. The bundled readme identifies nes_ntsc 0.2.2. Performance numbers in the upstream readme concern other systems and are not used as RackNES measurements. |
 | `rack` | VCV. “Plugin API Guide.” [Official VCV Rack manual](https://vcvrack.com/manual/PluginGuide). | Documents module processing, ports, state serialization, and double-buffered expander messages. The current guide explains a one-engine-frame message handoff, but is not a pinned historical Rack binary or an end-to-end latency measurement. The report uses the actual RackNES calls as implementation evidence. |
@@ -45,6 +46,24 @@ that were consulted only as discovery aids. A literature review establishes
 context and antecedents; it does not require a comparative evaluation of these
 systems. The manuscript's three-layer vocabulary and proposed patch recipes
 are the report's synthesis, not terminology attributed to the cited works.
+
+## Emulator And Library Attribution
+
+RackNES's [initial emulator import](https://github.com/Kautenja/RackNES/commit/1743db436a8da773069e61d82039e8e09b896129),
+dated June 14, 2020, already contains `Program: nes-py` source headers. The
+[acknowledgment added the same day](https://github.com/Kautenja/RackNES/commit/c19b6256f971a2ee2640f1c748a44614bd95aacc)
+credits SimpleNES and Nes_Snd_Emu. Together with nes-py's own SimpleNES
+attribution and the matching PPU structure, these support the lineage
+SimpleNES -> nes-py -> RackNES. These RackNES commits do not identify the
+exact SimpleNES or nes-py revision imported.
+
+The audio and video libraries have separate authorship: Shay Green (blargg)
+is credited in the bundled Nes_Snd_Emu, Blip_Buffer, and nes_ntsc headers.
+The `green` and `ntsc` references cite his author-hosted documentation;
+current library descriptions do not change the versions identified in the
+bundled source. License notices and full texts are distributed separately
+from scholarly citations; see [LICENSE.md](../LICENSE.md) and the
+[component notices](../docs/licenses/THIRD-PARTY.txt).
 
 ## Implementation evidence at the pinned revision
 

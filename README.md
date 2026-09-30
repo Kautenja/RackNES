@@ -7,7 +7,7 @@ into musical patterns. Add **CV Genie** to put game memory under voltage control
 
 [![Latest GitHub Release][ReleaseBadge]][LatestRelease]
 [![VCV Library: Rack 2][VCVBadge]][VCVLibrary]
-[![Source License: GPL-3.0-or-later][LicenseBadge]](LICENSING.md)
+[![Source License: GPL-3.0-or-later][LicenseBadge]](LICENSE.md)
 
 **[Get it on VCV Library][VCVLibrary]** |
 [RackNES manual (PDF)][RackNES] | [CV Genie manual (PDF)][CVGenie] |
@@ -192,10 +192,15 @@ publication status.
 
 RackNES builds on the work of these projects:
 
--   [SimpleNES][SimpleNES]: the NES emulator.
--   [Nes_Snd_Emu][Nes_Snd_Emu]: NES audio synthesis.
--   [nes_ntsc][nes_ntsc]: the NTSC video filter.
--   [cpp-base64][cpp-base64]: Base64 encoding and decoding.
+-   [SimpleNES][SimpleNES], by Amish Naidu and contributors: the emulator core.
+-   [Nes_Snd_Emu][Nes_Snd_Emu] and [Blip_Buffer][Blip_Buffer], by Shay Green
+    (blargg): NES audio emulation and band-limited sound synthesis.
+-   [nes_ntsc][nes_ntsc], by Shay Green (blargg): the NTSC video filter.
+-   [cpp-base64][cpp-base64], by René Nyffenegger: Base64 encoding and decoding.
+
+The [technical report](whitepaper/README.md) cites these sources and records
+the emulator's nes-py lineage. See the [bundled notices](docs/licenses/THIRD-PARTY.txt)
+for component licenses and attribution.
 
 ## Contributors
 
@@ -204,12 +209,12 @@ expander module.
 
 ## License
 
-RackNES source code is licensed under [GPL-3.0-or-later](LICENSE). The module
-graphics and branding in `res/` and `manual/` are separately licensed under
+RackNES source code is licensed under [GPL-3.0-or-later](LICENSE-GPLv3.txt).
+The module graphics and branding in `res/` and `manual/` are separately licensed under
 [CC BY-NC-ND 4.0](docs/licenses/CC-BY-NC-ND-4.0.txt). Bundled dependencies retain
 their own license notices.
 
-See [LICENSING.md](LICENSING.md) for the scope of each license and
+See [LICENSE.md](LICENSE.md) for the scope of each license and
 [third-party notices](docs/licenses/THIRD-PARTY.txt) for bundled components.
 The software license does not grant the same permissions for the artwork.
 
@@ -223,5 +228,6 @@ The software license does not grant the same permissions for the artwork.
 [anlexmatos]: https://github.com/anlexmatos
 [SimpleNES]: https://github.com/amhndu/SimpleNES
 [Nes_Snd_Emu]: https://www.slack.net/~ant/libs/audio.html#Nes_Snd_Emu
-[nes_ntsc]: http://slack.net/~ant/libs/ntsc.html#nes_ntsc
+[Blip_Buffer]: https://www.slack.net/~ant/libs/audio.html#Blip_Buffer
+[nes_ntsc]: https://slack.net/~ant/libs/ntsc.html#nes_ntsc
 [cpp-base64]: https://github.com/ReneNyffenegger/cpp-base64

@@ -2,23 +2,30 @@ RackNES bundled dependency notices
 ==================================
 
 These notices describe third-party code bundled in the RackNES source and
-plugin. See ../../LICENSING.md for the separate RackNES source and artwork terms.
+plugin. See ../../LICENSE.md for the separate RackNES source and artwork terms.
 Original notices in individual source files remain in effect.
 
 SimpleNES
 ---------
 Upstream: https://github.com/amhndu/SimpleNES
+Adaptation: https://github.com/Kautenja/nes-py
 Files: adapted emulator code in src/nes/, excluding the separately listed
        sound and NTSC libraries below.
-License: GNU General Public License version 3 (see ../../LICENSE).
-Attribution: the SimpleNES authors and contributors; RackNES adaptations
-retain their individual file notices.
+License: GNU General Public License version 3 (see ../../LICENSE-GPLv3.txt).
+Attribution: Amish Naidu and the SimpleNES contributors; Christian Kauten
+and the nes-py contributors. RackNES adaptations retain their individual
+file notices.
+
+Historical provenance and import evidence:
+https://github.com/Kautenja/RackNES/blob/master/whitepaper/sources.md
+The exact upstream import revision is unknown.
 
 Nes_Snd_Emu, Blip_Buffer, and related sound-emulation code
 ------------------------------------------------------
 Upstream: https://www.slack.net/~ant/libs/audio.html
 Files: src/nes/apu/
 Copyright (C) 2003-2006 Shay Green (individual file years vary).
+Author: Shay Green, also known as blargg.
 License: GNU Lesser General Public License version 2.1 or, at your option,
 any later version (see LGPL-2.1.txt).
 The bundled files identify Nes_Snd_Emu 0.1.7, Blip_Buffer 0.3.3, and
@@ -31,6 +38,7 @@ Upstream: https://www.slack.net/~ant/libs/ntsc.html
 Files: src/nes/ntsc/
 Version: 0.2.2
 Copyright (C) 2006-2007 Shay Green (individual file years vary).
+Author: Shay Green, also known as blargg.
 License: GNU Lesser General Public License version 2.1 or, at your option,
 any later version (see LGPL-2.1.txt).
 
