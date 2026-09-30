@@ -4,11 +4,15 @@ Replace duplicated panel illustrations with instructional LaTeX wireframes
 and screenshots rendered from the production Rack widgets. Preserve all
 module behavior, identifiers, saved patches, and existing artwork notices.
 
+Status: COMPLETE
+
+Created: September 30, 2026
+
 ## Delivery
 
 Work on the current `techreport` branch. Commit and push this specification
 first, then complete and commit/push each item in order. Record validation
-with each item. Move this document to `docs/specs/archive/` on completion.
+with each item. Move this document to `specs/archive/` on completion.
 
 ## Work Items
 

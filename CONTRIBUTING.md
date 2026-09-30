@@ -107,6 +107,10 @@ runtime search paths and sanitizer limitations.
     `patches/debugCVGenie.vcv` is an existing integration/debug patch.
 -   `whitepaper/racknes.tex`: standalone technical report, with supporting
     evidence recorded in `whitepaper/sources.md`.
+-   `specs/NNN-feature-name.md`: numbered specifications for planned or active
+    work; `specs/archive/` retains completed or abandoned specs and their
+    evidence. Follow [Planning And Completion](AGENTS.md#planning-and-completion)
+    for the format and lifecycle.
 
 Do not renumber existing parameter, port, or light IDs, rename slugs, or change
 saved JSON meanings without an intentional compatibility plan and verification

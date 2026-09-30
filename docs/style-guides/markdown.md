@@ -28,7 +28,8 @@ Keep public product information in `README.md` and the user manuals.
 Put contributor setup, architecture, and validation guidance in
 [CONTRIBUTING.md](../../CONTRIBUTING.md), agent workflow in
 [AGENTS.md](../../AGENTS.md), style guides in `docs/style-guides/`, and
-feature-specific acceptance/completion evidence in its own spec when one exists.
+feature-specific acceptance/completion evidence in its own [spec](../../specs/)
+when one exists.
 Follow `whitepaper/README.md` for the technical report and citation metadata.
 Avoid duplicating the same rule across documents.
 

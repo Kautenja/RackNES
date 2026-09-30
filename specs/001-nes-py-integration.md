@@ -7,6 +7,10 @@ five-channel APU, NTSC display, CV behavior, and saved patches. This document
 proposes implementation work; it does not claim that the port is implemented
 or validated in Rack.
 
+Status: PLANNED
+
+Created: September 30, 2026
+
 ## Baseline And Evidence
 
 Prepared September 30, 2026 against these source revisions:
@@ -460,15 +464,15 @@ diff before commit.
 [upstream-tests]: https://github.com/Kautenja/nes-py/tree/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/test/nes_emu
 [mmc3-fix]: https://github.com/Kautenja/nes-py/commit/c5231f8
 [mmc3-stabilize]: https://github.com/Kautenja/nes-py/commit/da7702c
-[local-emulator]: ../../src/nes/emulator.hpp
-[apu]: ../../src/nes/apu.hpp
-[rom]: ../../src/nes/rom.hpp
-[cartridge]: ../../src/nes/cartridge.hpp
-[main-bus]: ../../src/nes/main_bus.hpp
-[picture-bus]: ../../src/nes/picture_bus.hpp
-[ppu]: ../../src/nes/ppu.cpp
-[module]: ../../src/RackNES.cpp
-[nes-apu]: ../../src/nes/apu/Nes_Apu.h
-[fme7-apu]: ../../src/nes/apu/Nes_Fme7_Apu.cpp
-[license]: ../../LICENSE.md
-[manual-guide]: ../../manual/README.md
+[local-emulator]: ../src/nes/emulator.hpp
+[apu]: ../src/nes/apu.hpp
+[rom]: ../src/nes/rom.hpp
+[cartridge]: ../src/nes/cartridge.hpp
+[main-bus]: ../src/nes/main_bus.hpp
+[picture-bus]: ../src/nes/picture_bus.hpp
+[ppu]: ../src/nes/ppu.cpp
+[module]: ../src/RackNES.cpp
+[nes-apu]: ../src/nes/apu/Nes_Apu.h
+[fme7-apu]: ../src/nes/apu/Nes_Fme7_Apu.cpp
+[license]: ../LICENSING.md
+[manual-guide]: ../manual/README.md

@@ -154,10 +154,22 @@ and VCV Library submission are separate actions. Verify current VCV requirements
 when a submission is requested, and do not claim availability in Rack merely
 because a tag, release, or update request exists.
 
-Small changes can be planned in chat. For substantial work, create a durable
-specification when useful or requested, with behavior examples, acceptance
-criteria, and exact validation commands. Avoid duplicate progress diaries or
-making a specification a prerequisite for every edit.
+## Planning And Completion
+
+Small changes can be planned in chat. For substantial work that needs a
+durable specification, use `specs/NNN-feature-name.md` and include the goal,
+behavior examples, requirements, non-goals, testable acceptance criteria,
+and exact validation commands. Create specs when useful or requested, not
+as a prerequisite for every edit. Use the next unused three-digit number
+across `specs/` and `specs/archive/`; preserve it when archiving. Include a
+creation date and an explicit status such as `Status: PLANNED` or
+`Status: IN PROGRESS`.
+
+Keep completion evidence in the owning spec when one exists: date,
+decisions, commands and results, manual checks, and limitations. Mark a
+verified spec `Status: COMPLETE` and move it to `specs/archive/`, updating
+links. Mark intentionally dropped work `Status: ABANDONED` before archiving.
+Do not create duplicate completion diaries or attempt counters.
 
 Finish with a concise summary of the changes, validation actually run, and
 unresolved failures or skipped checks. Include the commit and push result when
