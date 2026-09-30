@@ -80,6 +80,15 @@
 
 ### 2.2.0 (Unreleased)
 
+-   Safely serialize empty CHR RAM on NROM, MMC1, and UxROM cartridges without
+    changing saved JSON. Correct MMC1's initial CHR-ROM bank pair and 8 KiB bank
+    alignment when selecting banks or changing CHR modes.
+
+-   Restore controller button and serial-stream bytes from patch JSON correctly,
+    ignoring malformed byte values. Decode high mapper bits only for NES 2.0
+    headers, prevent unsupported high mapper IDs from aliasing IDs 0--3, and
+    stop patch restoration when cartridge loading rejects an unsupported mapper.
+
 -   Add curated CV Genie maps for Mega Man 1--2, Castlevania 1--2, Contra,
     Metroid, Ninja Gaiden, and Nintendo Tetris. Preserve existing saved map
     indices. Replace manual address tables with a generated supported-game

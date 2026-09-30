@@ -8,6 +8,7 @@
 #ifndef NES_MAPPER_FACTORY_HPP
 #define NES_MAPPER_FACTORY_HPP
 
+#include <cstdint>
 #include <string>
 #include <jansson.h>
 #include "rom.hpp"
@@ -32,7 +33,7 @@ class Cartridge : public ROM {
 
  public:
     /// an enumeration of supported mapper IDs
-    enum class MapperID : NES_Byte {
+    enum class MapperID : uint16_t {
         NROM   = 0,
         MMC1   = 1,
         UNROM  = 2,

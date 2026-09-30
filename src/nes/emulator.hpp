@@ -332,7 +332,7 @@ class Emulator {
     ///
     /// @param rootJ the JSON object containing the emulator data
     /// @returns true if no errors occurred, false if the ROM path existed, but
-    /// points to an invalid ROM file
+    /// points to an invalid or unsupported ROM file
     ///
     bool dataFromJson(json_t* rootJ) {
         // load cartridge
@@ -350,7 +350,7 @@ class Emulator {
             if (!ROM::is_valid_rom(rom_path_string)) return false;
             // load the game into the machine before loading the cartridge
             // data (because cartridge may be nullptr)
-            load_game(rom_path_string);
+            if (!load_game(rom_path_string)) return false;
             cartridge->dataFromJson(json_data);
         }
         // load controllers[0]

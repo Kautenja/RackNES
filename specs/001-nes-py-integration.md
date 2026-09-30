@@ -4,10 +4,10 @@ This specification defines a selective integration of nes-py's newer native
 emulator into RackNES. The objective is broader cartridge compatibility and
 targeted correctness improvements while retaining RackNES's musical timing,
 five-channel APU, NTSC display, CV behavior, and saved patches. This document
-proposes implementation work; it does not claim that the port is implemented
-or validated in Rack.
+tracks implementation work; the port remains incomplete and is not validated
+in Rack. See the partial progress record below for completed local fixes.
 
-Status: PLANNED
+Status: IN PROGRESS
 
 Created: September 30, 2026
 
@@ -20,10 +20,11 @@ Prepared September 30, 2026 against these source revisions:
 -   nes-py: [commit 301da52f7f75de380e6e195fd36621c3d5b03757][upstream], the
     `master` tip retrieved for this review. Pin implementation comparisons to
     this revision rather than a moving branch or package version.
--   The working tree already contains independent RackNES/CV Genie fixes and
-    untracked standalone regression checks in `tests/`. Those changes are
-    outside this specification commit. Reconcile with their final committed
+-   At preparation, the working tree contained independent RackNES/CV Genie
+    fixes and untracked standalone regression checks in `tests/`. Those changes
+    are outside this specification commit. Reconcile with their final committed
     form before implementation; do not overwrite or silently absorb them.
+    The standalone harness is now tracked and includes a `check` target.
 
 The authoritative inventory is the [upstream mapper factory][factory] and
 source, not the larger mapper queue in the gym-nes umbrella repository.
@@ -144,7 +145,7 @@ not merely file movement or renamed methods, when documenting improvements.
 ### Cartridge Metadata And Ownership
 
 Use a mapper ID type at least 16 bits wide throughout parsing, dispatch, state,
-and diagnostics. RackNES's current factory enum has an 8-bit underlying type;
+and diagnostics. The factory enum now has a 16-bit underlying type;
 high mapper IDs must never alias IDs 0 through 3. Read NES 2.0 high bits only
 when the header actually declares that format.
 
@@ -292,9 +293,9 @@ upstream members:
     internal RAM. Define new-state precedence explicitly; reject inconsistent
     sizes instead of truncating, aliasing, or silently losing data.
 -   Preserve CPU status as a numeric byte and controller state as byte values,
-    including held buttons and a partially read serial stream. Correct the
-    existing controller loader's boolean conversion of byte fields as part
-    of migration coverage.
+    including held buttons and a partially read serial stream. Retain the
+    controller loader's corrected integer decoding in migration coverage,
+    with malformed byte values left unchanged.
 -   Serialize each new mapper's registers, writable PRG/CHR/nametable/ExRAM,
     protection state, IRQ counters/pending state, PPU latch/filter history,
     and expansion-register state. Save emulation frame phase and scheduler
@@ -405,12 +406,11 @@ relax a failing golden test.
 
 ### Commands And Test Deliverables
 
-For implementation, extend or reconcile the existing in-progress standalone
-`tests/Makefile` so that `check` runs the new emulator cases as well as the host
-checks. At the reviewed committed baseline that harness is not tracked; the
-commands below are implementation acceptance requirements, not claims that a
-test suite already exists in the committed repository. A small assertion-based
-runner is sufficient. Do not add a root `make test` fiction or rely on `-DTEST`.
+Extend the tracked standalone `tests/Makefile` so that `check` runs the new
+emulator cases as well as the host checks. The harness was untracked at the
+reviewed baseline; it now includes the focused checks recorded below, not the
+complete acceptance matrix. A small assertion-based runner is sufficient.
+Do not add a root `make test` fiction or rely on `-DTEST`.
 
 From the repository root, with a prepared Rack 2 tree at `../..`, a C++11
 compiler, Jansson/Rack headers and libraries, and supported sanitizers:
@@ -474,14 +474,67 @@ benchmarks cannot establish a RackNES speedup.
 
 ## Specification Review Record
 
-This specification was based on source inspection, a pinned upstream checkout,
-and comparison of the current native implementations and tests. No upstream
-code was imported, and no plugin build, executable emulator regression,
+The initial specification was based on source inspection, a pinned upstream
+checkout, and comparison of the current native implementations and tests. No
+upstream code was imported, and no plugin build, executable emulator regression,
 performance benchmark, or manual Rack session was performed for this
 documentation-only change. Implementation gates above remain open.
 Documentation validation checks relative links, pinned upstream source paths,
 command prerequisites, Markdown formatting, and the complete specification
 diff before commit.
+
+### Partial Progress: September 30, 2026
+
+Implemented a small local correctness pass without importing upstream code:
+
+-   Controller JSON restores integer button and serial-stream bytes, preserving
+    held buttons and partially consumed reads. Non-integers and values outside
+    0--255 leave the corresponding byte unchanged.
+-   Mapper dispatch uses a 16-bit ID. High mapper bits are read only when
+    header byte 7 matches the NES 2.0 marker `(byte & 0x0C) == 0x08`.
+    Legacy iNES byte 8 no longer contributes mapper bits; NES 2.0 IDs
+    `0x100`--`0x103` are rejected instead of aliasing supported IDs 0--3.
+-   Patch restoration returns failure immediately if cartridge loading rejects
+    the mapper, before dereferencing or restoring cartridge state.
+-   NROM, MMC1, and UxROM serialize empty CHR RAM using `vector::data()` without
+    indexing an empty vector. The `character_ram` key and empty Base64 string
+    remain unchanged.
+-   MMC1 CHR-ROM startup maps banks 0 and 1 into the two 4 KiB windows. Both
+    register-write paths clear the low bank bit in 8 KiB mode, rather than
+    setting it. Independent 4 KiB selection remains intact. This intentionally
+    corrects graphics after insertion and bank/mode writes; it does not migrate
+    previously serialized derived bank offsets.
+-   Reconciled the specification with the now-tracked assertion harness and
+    updated the changelog and test coverage notes. All integration completion
+    gates remain open; enabled mapper IDs remain 0--3.
+
+Validation on macOS arm64 with Apple Clang 21 and the prepared Rack tree at
+`../..`, from the repository root:
+
+-   The new controller stream assertion failed before the production fix.
+-   The new MMC1 startup assertion failed before its fix. After fixing CHR
+    mapping, UndefinedBehaviorSanitizer reproduced the empty-vector reference
+    in mapper serialization before the `data()` replacements.
+-   `make -C tests -j2`: passed CV Genie and RackNES checks with AddressSanitizer
+    and UndefinedBehaviorSanitizer. Added focused controller and synthetic
+    cartridge-header cases, including unsupported-mapper restoration into empty
+    and active emulators. CHR-ROM fixtures also verify empty-RAM mapper JSON
+    round trips for IDs 0--2 and MMC1 startup, odd/even selections, and 4/8 KiB
+    mode transitions. Generated ROMs stay in ignored `tests/.build/` and are
+    removed after successful checks.
+-   `make -j4`: plugin build passed. Existing Rack SDK deprecation warnings
+    remain.
+-   `git diff --check`: passed.
+-   No manual Rack session, listening/display comparison, other-platform build,
+    full emulator characterization, or performance measurement was performed.
+
+Remaining work includes PRG/CHR bank bounds, full parser/size/submapper/region
+validation, ownership and callback rebinding, transactional state migration,
+CPU opcode/status fixes, audio-aware bus/DMA/IRQ changes, all five new mappers,
+and the complete audio/timing/state acceptance matrix. The load-failure guard
+is not a general malformed-state validator or a complete transactional restore
+implementation. No claim of complete NES 2.0 support is made by the mapper-ID
+correction.
 
 [upstream]: https://github.com/Kautenja/nes-py/tree/301da52f7f75de380e6e195fd36621c3d5b03757
 [factory]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/mapper_factory.cpp

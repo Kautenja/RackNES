@@ -70,7 +70,14 @@ complete emulator or UI validation.
     [the SMB disassembly](https://6502disassembly.com/nes-smb/SuperMarioBros.html#SymEnemy_MovingDir).
 -   RackNES: empty-emulator serialization, snapshot release on SAVE, reset,
     patch restoration, and destruction; preserving the display after an invalid
-    ROM path; and expander RAM boundaries and row precedence.
+    ROM path; and expander RAM boundaries and row precedence. Controller checks
+    restore held buttons and partially read streams and ignore malformed bytes.
+    Synthetic cartridge headers check NES 2.0 format detection, legacy byte-8
+    handling, and rejection of high mapper IDs without aliasing IDs 0--3 or
+    continuing patch restoration in an empty or active emulator. CHR-ROM
+    fixtures round-trip empty CHR RAM through mapper JSON for IDs 0--2 and
+    check MMC1's initial CHR banks, odd/even bank selections, and transitions
+    between 4 KiB and 8 KiB modes using distinct patterns in each 4 KiB bank.
 
 The Genie fixture uses a real Rack `Module` neighbor with two explicit expander
 buffers. Tests connect input channels as Rack's engine would: `setChannels()`

@@ -251,7 +251,9 @@ class ROM {
     /// @returns the iNES mapper ID for the cartridge mapper
     ///
     inline uint16_t get_mapper_number() const {
-        return (flags8.flags.mapper_high << 8) |
+        // Byte 8 contains PRG RAM size in iNES, not high mapper bits.
+        const uint16_t high = (flags7.byte & 0x0C) == 0x08 ? flags8.flags.mapper_high : 0;
+        return (high << 8) |
                (flags7.flags.mapper_mid  << 4) |
                 flags6.flags.mapper_low;
     }

@@ -86,12 +86,16 @@ class Controller {
         // load joypad_buttons
         {
             json_t* json_data = json_object_get(rootJ, "joypad_buttons");
-            if (json_data) joypad_buttons = json_boolean_value(json_data);
+            if (json_is_integer(json_data) && json_integer_value(json_data) >= 0 &&
+                json_integer_value(json_data) <= 0xFF)
+                joypad_buttons = static_cast<NES_Byte>(json_integer_value(json_data));
         }
         // load joypad_bits
         {
             json_t* json_data = json_object_get(rootJ, "joypad_bits");
-            if (json_data) joypad_bits = json_boolean_value(json_data);
+            if (json_is_integer(json_data) && json_integer_value(json_data) >= 0 &&
+                json_integer_value(json_data) <= 0xFF)
+                joypad_bits = static_cast<NES_Byte>(json_integer_value(json_data));
         }
     }
 };

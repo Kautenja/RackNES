@@ -93,7 +93,7 @@ class MapperMMC1 : public ROM::Mapper {
             NES_DEBUG("Using CHR-ROM");
             has_character_ram = false;
             first_bank_chr = 0;
-            second_bank_chr = 0x1000 * register_chr1;
+            second_bank_chr = 0x1000;
         }
     }
 
@@ -165,7 +165,7 @@ class MapperMMC1 : public ROM::Mapper {
                     // Recalculate CHR pointers
                     if (mode_chr == 0) {  // one 8KB bank
                         // ignore last bit
-                        first_bank_chr = 0x1000 * (register_chr0 | 1);
+                        first_bank_chr = 0x1000 * (register_chr0 & ~1);
                         second_bank_chr = first_bank_chr + 0x1000;
                     } else {  // two 4KB banks
                         first_bank_chr = 0x1000 * register_chr0;
@@ -173,8 +173,8 @@ class MapperMMC1 : public ROM::Mapper {
                     }
                 } else if (address <= 0xbfff) {  // CHR Reg 0
                     register_chr0 = temp_register;
-                    // OR 1 if 8KB mode
-                    first_bank_chr = 0x1000 * (temp_register | (1 - mode_chr));
+                    // Ignore the low bit in 8KB mode.
+                    first_bank_chr = 0x1000 * (temp_register & ~(1 - mode_chr));
                     if (mode_chr == 0)
                         second_bank_chr = first_bank_chr + 0x1000;
                 } else if (address <= 0xdfff) {
@@ -246,7 +246,7 @@ class MapperMMC1 : public ROM::Mapper {
         json_object_set_new(rootJ, "first_bank_chr", json_integer(first_bank_chr));
         json_object_set_new(rootJ, "second_bank_chr", json_integer(second_bank_chr));
         {
-            auto data_string = base64_encode(&character_ram[0], character_ram.size());
+            auto data_string = base64_encode(character_ram.data(), character_ram.size());
             json_object_set_new(rootJ, "character_ram", json_string(data_string.c_str()));
         }
         return rootJ;
