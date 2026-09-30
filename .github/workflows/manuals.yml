@@ -71,7 +71,8 @@ jobs:
               assert pdf.trailer['/Root']['/Lang'] == 'en-US', module
               assert pdf.xmp_metadata, module
               text = '\n'.join(page.extract_text() or '' for page in pdf.pages)
-              assert 'KautenjaDSP' in text and '??' not in text, module
+              assert 'Arhythmetic Units' in text and 'KautenjaDSP' not in text, module
+              assert '??' not in text, module
           PY
           mkdir -p manual-pdfs
           cp manual/RackNES/.build/manual.pdf manual-pdfs/RackNES.pdf

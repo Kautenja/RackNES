@@ -6,5 +6,12 @@ The **visual design of the modules** is copyright © 2020-2024 Christian Kauten 
 
 The **KautenjaDSP logo and icon** are copyright © 2020-2024 Christian Kauten and licensed under [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/). Commercial use and derivative works **ARE NOT** allowed. This includes all graphics in the `res/` and `manual/` folders.
 
+The **Arhythmetic Units logo and icon** are copyright © 2025-2026 Arhythmetic
+Units and licensed under
+[CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
+Commercial use and derivative works **ARE NOT** allowed. This includes the
+branding in `res/` and `manual/`, adapted from the
+[Fourier artwork](https://github.com/Kautenja/ArhythmeticUnits-Fourier).
+
 **Dependencies** included in the binary distributable may have other licenses.
 See [LICENSE-dist.txt](LICENSE-dist.txt) for a full list.

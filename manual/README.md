@@ -1,7 +1,7 @@
 # RackNES User Manuals
 
 The RackNES and CV Genie manuals describe the current implementation and
-retain the original KautenjaDSP logos, panel artwork, red accents, and
+use Arhythmetic Units branding with the original panel artwork, red accents, and
 Helvetica typography. The version in each `manual.tex` follows `plugin.json`.
 Do not document planned features as available controls.
 
@@ -23,7 +23,7 @@ make -C manual/CVGenie
 Outputs are `RackNES/.build/manual.pdf` and `CVGenie/.build/manual.pdf`, relative
 to this directory. No Rack SDK, plugin build, ROM, or running Rack instance is
 needed. Install a TeX distribution with `latexmk`, `pdflatex`, the recommended
-fonts, and the packages used by `latex/kautenjadsp-manual.sty`. On Ubuntu, the
+fonts, and the packages used by `latex/arhythmetic-manual.sty`. On Ubuntu, the
 workflow uses `texlive-latex-extra`, `texlive-fonts-recommended`, `cm-super`, and `latexmk`.
 Poppler (`pdfinfo`, `pdftoppm`) supports PDF inspection.
 
@@ -41,16 +41,41 @@ rejects an output directory containing a copied `manual.tex`.
 
 ## Source Layout
 
--   `latex/kautenjadsp-manual.sty`: shared type, covers, headers, navigation, metadata.
+-   `latex/arhythmetic-manual.sty`: shared type, covers, headers, navigation, metadata.
 -   `latex/manual.mk`: shared build and cleanup rules.
 -   `RackNES/manual.tex`, `CVGenie/manual.tex`: identity, version, section order.
 -   Each `sections/` directory: operating guide and reference content.
--   Each `img/` directory: original logos and panel illustrations, read in place.
+-   Each `img/` directory: module logos, brand wordmarks, and panel
+    illustrations, read in place.
 
 Keep the annotated panel numbers aligned with their explanations. The supplied
 panel artwork is an illustration, not a new runtime screenshot. Preserve the
-KautenjaDSP identity and the visual-asset license terms in the root `LICENSE.md`.
+Arhythmetic Units identity and the visual-asset license terms in the root
+`LICENSE.md`.
 The white paper is an independent publication and is not changed by these builds.
+
+The `ArhythmeticUnits.pdf` wordmarks are copied from Fourier's manual assets.
+The panel logo outlines in `../res/ArhythmeticUnits.svg` come from Fourier's
+`src/rack_extensions/panel_artwork.hpp` at revision
+`12ac3236e332b7d0a01b2d750fa07a0849132341`. The same outlines are embedded
+in the four runtime panels and six manual/README illustrations. Keep those
+copies aligned; retain the CV Genie collaborator credit alongside the brand.
+
+After editing the illustration SVGs, regenerate their PDFs from the repository
+root with CairoSVG (2.9.1 was used for this branding update):
+
+```shell
+for module in RackNES CVGenie; do
+    for asset in "$module-Module" "$module-Manual" Plugin; do
+        cairosvg "manual/$module/img/$asset.svg" -o "manual/$module/img/$asset.pdf"
+    done
+done
+cairosvg manual/CVGenie/img/Plugin.svg -o manual/CVGenie/img/Plugin.png
+```
+
+CairoSVG requires Cairo. On macOS, a Homebrew Cairo installation may require
+`DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib` when running these commands.
+These exports are tracked artwork assets; compiled manuals remain ignored.
 
 ## Verify Content Against The Code
 

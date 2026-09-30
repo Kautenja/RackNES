@@ -1,6 +1,7 @@
 # RackNES
 
-A Nintendo Entertainment System (NES) emulator as if it were designed by Bob Moog.
+An Arhythmetic Units Nintendo Entertainment System (NES) emulator as if it were
+designed by Bob Moog.
 
 <p align="center">
 <img alt="RackNES" src="manual/RackNES/img/Plugin.svg" height="380px">

@@ -77,3 +77,8 @@
 
 -   theme support
     -   new dark theme
+
+### Unreleased
+
+-   Rebrand RackNES and CV Genie as Arhythmetic Units, including panel and
+    manual artwork. Preserve existing plugin and module slugs for saved patches.
