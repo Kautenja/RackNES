@@ -4,6 +4,9 @@
 //
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
+//  Mirroring decoding adapted from nes-py 301da52f7f75de38 (MIT).
+//  See docs/licenses/THIRD-PARTY.txt for the upstream notice.
+//
 
 #ifndef NES_CARTRIDGE_HPP
 #define NES_CARTRIDGE_HPP
@@ -243,7 +246,8 @@ class ROM {
     /// @returns the name table mirroring mode used by the ROM
     ///
     inline NameTableMirroring getNameTableMirroring() const {
-        return static_cast<NameTableMirroring>(flags6.name_table_mirroring & 0xB);
+        if (flags6.byte & 0x08) return FOUR_SCREEN;
+        return flags6.byte & 0x01 ? VERTICAL : HORIZONTAL;
     }
 
     /// @brief Return the mapper ID number.

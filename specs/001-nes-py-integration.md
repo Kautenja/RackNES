@@ -536,6 +536,50 @@ is not a general malformed-state validator or a complete transactional restore
 implementation. No claim of complete NES 2.0 support is made by the mapper-ID
 correction.
 
+### Selective Upstream Graphics Port: September 30, 2026
+
+Compared the clean local nes-py checkout at pinned revision
+`301da52f7f75de380e6e195fd36621c3d5b03757` against RackNES `42b99d8` and
+adapted two graphics-only fixes:
+
+| Upstream Source | Local Decision |
+| --- | --- |
+| `nes_emu/src/nes_emu/cartridge.cpp` | Adapt explicit mirroring-bit decoding to `ROM::getNameTableMirroring()`: the battery bit is independent and four-screen metadata has priority. No parser or RAM ownership rewrite. |
+| `nes_emu/include/nes_emu/mapper_bank.hpp` and `mappers/mapper_CNROM.hpp` | Adapt complete-bank counting, bank wrapping, and the empty-memory guard to CNROM CHR reads. Keep RackNES's two-bit write latch and raw `select_chr` JSON field; resolve it on reads, including legacy restores. No direct pages, PRG changes, or new board variants. |
+| `nes_emu/test/nes_emu/test_cartridge.cpp` and `mappers/test_mapper_CNROM.cpp` | Adapt mirroring and available-bank cases into the existing assertion runner. Extend with 0/1/2/4 CHR banks, all byte write values, read-only CHR, legacy JSON, and PRG-window checks. |
+
+Retained original file attribution and added the upstream MIT notice and exact
+source inventory to `docs/licenses/THIRD-PARTY.txt`. No CPU, APU, DMC callback,
+main-bus routing, scheduler, sample conversion, or module output routing changes
+are part of this port. The PPU still lacks four-screen storage/routing; correct
+metadata alone is not four-screen support. CNROM still does not model bus
+conflicts or gain CHR-RAM support; absent CHR data reads as zero.
+
+Validation uses macOS arm64, Apple Clang 21, and the same prepared Rack tree as
+the earlier pass. The new mirroring assertion failed before the fix; after
+that correction, UBSan reproduced CNROM's empty-CHR read before its guard.
+`make -C tests -j2` passes the default ASan/UBSan regressions, and `make -j4`
+builds the plugin. `git diff --check` passes. Existing SDK warnings remain.
+
+The new optional `--audio-only` fixture runs actual CPU bus writes for both
+pulses, triangle, noise, and looping DMC, comparing NROM and CNROM PCM at
+44.1/48/96/192 kHz for 2,000 samples per rate at nominal CPU speed. Before and
+after this port, the uninstrumented core-default-clock PCM fingerprint was
+`f5146c03e0a6ceb2`; every channel was nonzero and NROM/CNROM samples matched
+exactly. The fixture also checks both mappers with RackNES's 768,000 Hz Blip
+clock (matching PCM, fingerprint `d8915d435c9cf9a9`). Rendering is disabled and
+no listening or manual Rack session was run.
+This evidence does not guarantee identical game audio when a game responds to
+corrected PPU behavior. Reproduction commands are in `tests/README.md`.
+
+The audio fixture exposed a pre-existing ASan `memcpy-param-overlap` failure
+in `Blip_Buffer::remove_samples()` before any production port changes. The
+bundled audio code remains untouched, and instrumented audio characterization
+is still failing; only the separate `SANITIZERS=` comparison passes. Fixing
+that library defect is a separate follow-up. Wider PRG/CHR bank validation,
+state migration, cloning/rebinding, full four-screen support, all new mappers,
+and the complete audio/timing acceptance matrix remain open.
+
 [upstream]: https://github.com/Kautenja/nes-py/tree/301da52f7f75de380e6e195fd36621c3d5b03757
 [factory]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/mapper_factory.cpp
 [upstream-bus]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/main_bus.cpp

@@ -84,6 +84,11 @@
     changing saved JSON. Correct MMC1's initial CHR-ROM bank pair and 8 KiB bank
     alignment when selecting banks or changing CHR modes.
 
+-   Adapt nes-py's mirroring decoding so battery flags do not alter nametable
+    layout, and bound CNROM CHR-bank reads to available graphics banks. Preserve
+    PRG mapping, audio scheduling, and existing mapper JSON fields. Four-screen
+    rendering and CNROM bus conflicts remain unsupported.
+
 -   Restore controller button and serial-stream bytes from patch JSON correctly,
     ignoring malformed byte values. Decode high mapper bits only for NES 2.0
     headers, prevent unsupported high mapper IDs from aliasing IDs 0--3, and

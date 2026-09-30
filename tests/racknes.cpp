@@ -1,8 +1,10 @@
 // Focused snapshot, cartridge header, controller, and expander regressions.
 #include <cassert>
+#include <cstdint>
 #include <cstdio>
 #include <fstream>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "../src/RackNES.cpp"
@@ -132,10 +134,160 @@ static void check_mmc1_chr_banks() {
     assert(std::remove(path) == 0);
 }
 
-int main() {
+/// Exercise all five voices through CPU bus writes on NROM and CNROM.
+static void check_graphics_audio_preservation(uint64_t blip_clock) {
+    const char* path = ".build/mapper-audio.nes";
+    std::vector<unsigned char> bytes(16 + 0x8000 + 0x8000, 0);
+    bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1A;
+    bytes[4] = 2; bytes[5] = 4;
+    std::size_t pc = 16;
+    bytes[pc++] = 0x78;  // SEI
+    const auto write_register = [&](int address, int value) {
+        bytes[pc++] = 0xA9; bytes[pc++] = value;  // LDA immediate
+        bytes[pc++] = 0x8D;  // STA absolute
+        bytes[pc++] = address & 0xFF; bytes[pc++] = address >> 8;
+    };
+    write_register(0x4017, 0x40);
+    write_register(0x4015, 0x0F);
+    write_register(0x4000, 0xBF); write_register(0x4001, 0x08);
+    write_register(0x4002, 0x40); write_register(0x4003, 0x08);
+    write_register(0x4004, 0x7A); write_register(0x4005, 0x08);
+    write_register(0x4006, 0x80); write_register(0x4007, 0x08);
+    write_register(0x4008, 0xFF); write_register(0x400A, 0x60);
+    write_register(0x400B, 0x08); write_register(0x400C, 0x3F);
+    write_register(0x400E, 0x04); write_register(0x400F, 0x08);
+    write_register(0x4010, 0x4F); write_register(0x4011, 0x20);
+    write_register(0x4012, 0x00); write_register(0x4013, 0x01);
+    write_register(0x4015, 0x1F);
+    const int loop = 0x8000 + pc - 16;
+    write_register(0x8000, 3);  // CHR bank selection while DMC reads PRG.
+    bytes[pc++] = 0x4C; bytes[pc++] = loop & 0xFF; bytes[pc++] = loop >> 8;
+    for (int i = 0; i < 17; ++i) bytes[16 + 0x4000 + i] = 0x55;
+    bytes[16 + 0x7FFC] = 0; bytes[16 + 0x7FFD] = 0x80;
+    uint64_t fingerprint = 14695981039346656037ULL;
+    for (int rate : {44100, 48000, 96000, 192000}) {
+        std::unique_ptr<NES::Emulator> emulators[2];
+        for (int variant = 0; variant < 2; ++variant) {
+            bytes[6] = variant == 0 ? 0x00 : 0x33;
+            // NROM has one CHR bank; CNROM has four. PRG is identical.
+            bytes[5] = variant == 0 ? 1 : 4;
+            std::ofstream file(path, std::ios::binary);
+            file.write(reinterpret_cast<const char*>(bytes.data()),
+                       16 + 0x8000 + bytes[5] * 0x2000);
+            file.close();
+            assert(file.good());
+            emulators[variant].reset(new NES::Emulator);
+            assert(emulators[variant]->load_game(path));
+            emulators[variant]->set_sample_rate(rate);
+            emulators[variant]->set_clock_rate(blip_clock);
+        }
+        int nonzero[5] = {};
+        int frames[2] = {};
+        for (int sample = 0; sample < 2000; ++sample) {
+            for (int variant = 0; variant < 2; ++variant)
+                for (int cycle = 0; cycle < NES::CLOCK_RATE / double(rate); ++cycle)
+                    emulators[variant]->cycle([&]() { ++frames[variant]; });
+            for (int channel = 0; channel < 5; ++channel) {
+                const int16_t value = emulators[0]->get_audio_sample(channel);
+                assert(value == emulators[1]->get_audio_sample(channel));
+                if (value != 0) ++nonzero[channel];
+                fingerprint ^= static_cast<uint16_t>(value);
+                fingerprint *= 1099511628211ULL;
+            }
+        }
+        for (int count : nonzero) assert(count > 0);
+        assert(frames[0] == frames[1]);
+    }
+    assert(std::remove(path) == 0);
+    std::printf("NROM/CNROM PCM at Blip clock %llu: %llx\n",
+                static_cast<unsigned long long>(blip_clock),
+                static_cast<unsigned long long>(fingerprint));
+    std::fflush(stdout);
+}
+
+/// Adapted from nes-py's cartridge and CNROM tests at 301da52f7f75de38.
+/// See docs/licenses/THIRD-PARTY.txt for provenance and the MIT notice.
+static void check_upstream_graphics_fixes() {
+    const char* path = ".build/mapper-graphics.nes";
+    std::vector<char> bytes(16 + 0x8000 + 0x2000, 0);
+    bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1A;
+    bytes[4] = 2; bytes[5] = 1;
+    const auto write_rom = [&]() {
+        std::ofstream file(path, std::ios::binary);
+        file.write(bytes.data(), bytes.size());
+        file.close();
+        assert(file.good());
+    };
+    for (int mapper : {0, 2, 3}) {
+        for (int flags : {0, 1, 2, 3, 8, 9, 10, 11}) {
+            bytes[6] = (mapper << 4) | flags;
+            write_rom();
+            std::unique_ptr<NES::Cartridge> cartridge(NES::Cartridge::create(path, []() {}));
+            const auto expected = flags & 8 ? NES::FOUR_SCREEN :
+                (flags & 1 ? NES::VERTICAL : NES::HORIZONTAL);
+            assert(cartridge->get_mapper()->getNameTableMirroring() == expected);
+            // Four-screen metadata alone does not implement four-screen VRAM.
+            if (flags & 8) continue;
+            NES::PictureBus bus;
+            bus.set_mapper(cartridge->get_mapper());
+            bus.write(0x2000, 0x11);
+            bus.write(flags & 1 ? 0x2400 : 0x2800, 0x22);
+            assert(bus.read(0x2000) == 0x11);
+            assert(bus.read(0x2400) == (flags & 1 ? 0x22 : 0x11));
+            assert(bus.read(0x2800) == (flags & 1 ? 0x11 : 0x22));
+            assert(bus.read(0x2C00) == 0x22);
+        }
+    }
+    bytes[6] = 0x30;
+    for (int banks : {0, 1, 2, 4}) {
+        bytes[5] = banks;
+        bytes.resize(16 + 0x8000 + banks * 0x2000);
+        for (int i = 0; i < 0x8000; ++i) bytes[16 + i] = 0x10 + i / 0x4000;
+        for (int i = 0; i < banks * 0x2000; ++i)
+            bytes[16 + 0x8000 + i] = 0x40 + i / 0x2000;
+        write_rom();
+        std::unique_ptr<NES::Cartridge> cartridge(NES::Cartridge::create(path, []() {}));
+        auto* mapper = cartridge->get_mapper();
+        for (int value = 0; value < 256; ++value) {
+            mapper->writePRG(0x8000, value);
+            const int expected = banks ? 0x40 + (value & 3) % banks : 0;
+            assert(mapper->readCHR(0) == expected);
+            assert(mapper->readCHR(0x1FFF) == expected);
+            mapper->writeCHR(0, 0xFF);
+            assert(mapper->readCHR(0) == expected);
+            // CHR selection must not change CPU/DMC-visible PRG windows.
+            assert(mapper->readPRG(0x8000) == 0x10);
+            assert(mapper->readPRG(0xBFFF) == 0x10);
+            assert(mapper->readPRG(0xC000) == 0x11);
+            assert(mapper->readPRG(0xFFFF) == 0x11);
+            json_t* saved = mapper->dataToJson();
+            assert(json_integer_value(json_object_get(saved, "select_chr")) == (value & 3));
+            mapper->writePRG(0x8000, 0);
+            mapper->dataFromJson(saved);
+            assert(mapper->readCHR(0) == expected);
+            json_decref(saved);
+        }
+        json_t* legacy = json_pack("{s:i}", "select_chr", 65535);
+        mapper->dataFromJson(legacy);
+        assert(mapper->readCHR(0x1FFF) == (banks ? 0x40 + 65535 % banks : 0));
+        json_decref(legacy);
+    }
+    assert(std::remove(path) == 0);
+}
+
+int main(int argc, char** argv) {
+    // Separate audio characterization exposes a known Blip_Buffer sanitizer
+    // failure in the baseline; see the spec and tests/README.md.
+    if (argc == 2 && std::string(argv[1]) == "--audio-only") {
+        check_graphics_audio_preservation(NES::CLOCK_RATE);
+        check_graphics_audio_preservation(768000);
+        return 0;
+    }
+    assert(argc == 1);
     check_controller_state();
     check_mmc1_chr_banks();
     check_mapper_headers();
+    check_upstream_graphics_fixes();
     Context context;
     context.engine = new engine::Engine;
     contextSet(&context);

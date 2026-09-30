@@ -78,6 +78,10 @@ complete emulator or UI validation.
     fixtures round-trip empty CHR RAM through mapper JSON for IDs 0--2 and
     check MMC1's initial CHR banks, odd/even bank selections, and transitions
     between 4 KiB and 8 KiB modes using distinct patterns in each 4 KiB bank.
+    Adapted nes-py cases check mirroring independently of battery flags and
+    CNROM CHR-bank bounds, read-only CHR, legacy register restoration, and
+    unchanged PRG windows. Four-screen decoding is tested only as metadata;
+    four-screen VRAM support is still absent.
 
 The Genie fixture uses a real Rack `Module` neighbor with two explicit expander
 buffers. Tests connect input channels as Rack's engine would: `setChannels()`
@@ -87,3 +91,40 @@ Rack engine context for the module's sample-rate initialization.
 These checks do not test rendering, a live UI session, or every game's response
 to memory edits. They do not replace listening and gameplay checks when changing
 CPU/PPU/APU timing or audio conversion.
+
+## Focused Audio Characterization
+
+An optional CPU-program fixture compares NROM and CNROM integer PCM for all
+five voices, including looping DMC while the CPU writes CHR bank selections.
+It checks 2,000 host samples at each of 44.1, 48, 96, and 192 kHz, at nominal
+CPU speed with the existing integer cycle loop, using both the core's default
+Blip clock and RackNES's fixed 768,000 Hz Blip clock. Both mapper runs must
+match sample by sample, produce nonzero output on every channel, and generate
+the same number of frame callbacks. It also prints a reproducible PCM
+fingerprint for before/after comparisons on the same toolchain.
+
+The unchanged bundled `Blip_Buffer::remove_samples()` currently triggers
+AddressSanitizer's `memcpy-param-overlap` check during this workload. The
+optional audio run remains separate from the default sanitizer regressions;
+this is a known baseline failure, not a passing instrumented audio test.
+From the repository root, reproduce it on macOS with the prepared Rack tree:
+
+```shell
+make -C tests -j2
+(cd tests && DYLD_LIBRARY_PATH=../../.. .build/racknes --audio-only)
+```
+
+For an uninstrumented comparison, keep the default sanitizer build intact
+and build to a separate ignored directory:
+
+```shell
+make -C tests BUILD=.build/audio SANITIZERS= .build/audio/racknes
+(cd tests && DYLD_LIBRARY_PATH=../../.. .build/audio/racknes --audio-only)
+```
+
+Use `LD_LIBRARY_PATH` on Linux, the Rack runtime in `PATH` on Windows, and
+the same external `RACK_DIR` and runtime directory for both builds if needed.
+The generator is in `check_graphics_audio_preservation()` in `racknes.cpp`;
+it removes its temporary ROM on success. Rendering is disabled in this
+fixture. It does not cover clock modulation, channel/MIX routing, listening,
+or audio changes caused by a game's response to corrected graphics behavior.
