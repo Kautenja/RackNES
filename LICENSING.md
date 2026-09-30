@@ -7,8 +7,8 @@ text is in [LICENSE](LICENSE).
 
 ## Source Code
 
-RackNES source code in `src/` is licensed under the GNU General Public License,
-version 3 or (at your option) any later version (`GPL-3.0-or-later`). This is
+RackNES source code in `src/` and capture tooling in `tools/capture/` are
+licensed under the GNU General Public License, version 3 or (at your option) any later version (`GPL-3.0-or-later`). This is
 the software license declared in [plugin.json](plugin.json). RackNES code is
 copyright 2020-2024 Christian Kauten and contributors, with individual notices
 retained in the source files.
@@ -26,8 +26,10 @@ Attribution-NonCommercial-NoDerivatives 4.0 International
 (`CC-BY-NC-ND-4.0`). This covers the project graphics in `res/` and `manual/`.
 
 The Arhythmetic Units logo and icon are copyright 2025-2026 Arhythmetic Units
-under the same license. This includes the branding in `res/` and `manual/`,
-adapted from the
+under the same license. The original demo ROM pixel lettering and pulse
+artwork in `tools/capture/make_demo_rom.py` use these visual-asset terms too;
+the ROM program and generator use the source-code license above. The branding
+in `res/` and `manual/` is adapted from the
 [Fourier artwork](https://github.com/Kautenja/ArhythmeticUnits-Fourier).
 
 The license permits sharing the licensed artwork for noncommercial purposes

@@ -19,7 +19,7 @@ with each item. Move this document to `docs/specs/archive/` on completion.
     two obsolete `*-Manual.svg` / `*-Manual.pdf` pairs once unreferenced.
     Build both manuals, inspect the diagrams and page flow, and run
     `git diff --check` before committing and pushing.
-- [ ] **2. Production widget captures.** Add a small Rack-backed capture tool
+- [x] **2. Production widget captures.** Add a small Rack-backed capture tool
     using the real module/widget constructors and drawing code, following
     Fourier's inspector approach without depending on Fourier. Generate one
     reviewed light-theme PNG per module for covers and README reuse; also
@@ -79,3 +79,23 @@ Rendered and visually inspected both panel pages at 1500 px: all 12 RackNES
 references and both Genie groups fit beside their explanations. No overfull
 boxes; references resolved on the final LaTeX pass. Removed four obsolete
 annotated assets and updated the interim export instructions.
+
+Item 2 complete: `make -C tools/capture screenshots` compiled the production
+widgets and emulator against Rack v2.6.0 on macOS 26.6.2 arm64. Both themes
+were visually inspected. Light PNGs are 1140 x 760 (RackNES) and 360 x 760
+(Genie), native 2x crops. The original ROM produced 120 heartbeat frames and
+781 RGB colors after 96,000 samples at 48 kHz. Repeated ROM generation and
+captures were byte-identical on this machine. ROM SHA-256:
+`cfe4b89947e6526b7b028ecfd67710ccc82e3af8c3abfe9f4d3e978eefa6a1e2`.
+
+Missing-ROM capture returned error 3, and malformed crop geometry failed
+before replacing assets. The initial sandboxed GLFW run stalled; desktop
+access resolved it and the stalled process was stopped. Complete component
+cache validation caught the need for more render passes. The fixture enables
+both PPU planes with off-screen sprites to accommodate the current emulator's
+scroll reload conditions; no production source was changed.
+
+`make -j4` succeeded (existing plugin build current); `make -C tests -j4`
+passed both focused suites. No interactive Rack/audio-device session or
+Linux/Windows capture validation was performed. Tool instructions and fixture
+licensing are in `tools/capture/README.md` and `LICENSING.md`.
