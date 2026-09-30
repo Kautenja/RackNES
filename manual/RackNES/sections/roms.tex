@@ -11,6 +11,8 @@ file is used.
 \subsection{Supported cartridge mappers}
 A mapper arranges cartridge memory. RackNES supports these seven IDs;
 individual games and modified ROMs may still behave incorrectly.
+This list describes the current development checkout; installed VCV Library
+builds and published manuals may lag behind it.
 \begin{center}
 \begin{tabular}{@{}rl@{\hspace{3em}}rl@{}}
 \toprule
@@ -28,6 +30,8 @@ Mapper 4 supports standard MMC3B/C TxROM: power-of-two PRG ROM sizes of
 8 KiB PRG RAM. Horizontal, vertical and four-screen mirroring are supported.
 Accepted formats are clean NTSC iNES and NES 2.0 submapper 0; trainers,
 MMC6, alternate IRQ revisions and mixed CHR ROM/RAM boards are excluded.
+NES 2.0 must declare exactly 8 KiB of PRG RAM, with its volatile or
+nonvolatile type matching the battery flag.
 Scanline IRQs use timed PPU address observations with an approximate A12
 filter; cycle-exact raster effects and commercial-game compatibility have
 not been verified. Cartridge RAM survives patches and SAVE snapshots;
@@ -39,18 +43,34 @@ submappers 0/1 use no bus conflicts; submapper 2 combines writes with the
 visible PRG byte. Only NTSC layouts are accepted. CHR ROM, battery RAM,
 trainers, four-screen layouts, extra devices, and other variants are rejected.
 Legacy headers cannot reliably identify every board variant.
+NES 2.0 must declare 8 KiB of volatile CHR RAM and no PRG RAM.
 
 Mapper 9 accepts power-of-two PRG ROM sizes of 32--128 KiB, CHR ROM sizes
 of 8--128 KiB, and 8 KiB PRG RAM, with optional battery metadata. Supported
 formats are NTSC iNES and NES 2.0 submapper 0. Trainers, CHR RAM, four-screen
 layouts and other variants are rejected. RAM persists in Rack patches and
 SAVE snapshots; external battery-save files are not imported or exported.
+NES 2.0 must explicitly declare the 8 KiB PRG RAM allocation and its battery
+status. Latch-switched graphics are implemented, but hardware-exact PPU fetch
+timing and commercial-game compatibility have not been verified.
 
 Timing is fixed; there is no PAL/NTSC or mapper selector. Audio uses the five
 base NES voices without cartridge expansion sound. CV Genie's game list
 contains memory maps and does not define ROM compatibility.
 
 \newpage
+\subsection{Format and save limits}
+The new mapper layouts require exact file sizes and supported memory
+declarations. A NES 2.0 header alone does not establish compatibility:
+extended size encodings, other boards, and tracker-specific layouts may still
+be rejected. Pulsar and PR8 have not been validated by these mapper additions.
+MMC5 (5) and FME-7 / Sunsoft 5B (69) are not implemented.
+
+SAVE and patch restoration preserve the new mapper registers and cartridge
+RAM, but snapshots still omit queued audio and some timing state; see
+page~\pageref{sec:state}. The separate SRAM file commands below remain limited
+to reviewed mapper 0--3 layouts, even when another mapper has battery RAM.
+
 \subsection{When loading fails}
 \begin{description}
 \item[ASIC mapper not implemented for ROM!]
@@ -68,8 +88,7 @@ in place. Correct the file selection and try again.
 \textbf{Moving patches.} Keep the original ROM at its saved path: restoration
 reloads that file. Loading a ROM manually starts a new session; it does not
 recover a failed snapshot restore.
-
-
+\newpage
 \subsection{Importing and exporting SRAM}\label{sec:sram}
 For supported cartridges, use \textbf{Import SRAM...} or
 \textbf{Export SRAM...} in the right-click menu. These commands exchange a

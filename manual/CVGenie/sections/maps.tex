@@ -17,9 +17,13 @@ and Zelda maps do not identify a precise ROM revision. Genie neither detects
 nor verifies the ROM. These maps were checked against RAM documentation;
 that does not establish gameplay testing of every control or revision.
 
-RackNES currently supports cartridge mappers 0--4, 7 (AxROM), and 9 (MMC2).
+RackNES currently supports cartridge mappers 0--3, 4 (MMC3 / TxROM),
+7 (AxROM / AOROM), and 9 (MMC2 / PxROM). The RackNES manual describes the
+accepted board and NES 2.0 layouts. MMC5 (5) and FME-7 / Sunsoft 5B (69) are
+not implemented, and cartridge expansion sound is unavailable.
 Mapper support does not guarantee that every game or board variant works;
-adding a memory map cannot supply missing emulation behavior. The game list above is a
+adding a memory map cannot supply missing emulation behavior. An installed
+VCV Library build may also predate these mapper additions. The game list is a
 curated selection, not a percentage of all NES games or a guarantee that any
 ROM bearing one of these names works.
 

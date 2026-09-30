@@ -238,17 +238,48 @@ implemented cartridge and machine model before its musical behavior can be
 controlled through the patch.
 
 \paragraph{Mapper updates (September 2026).}
-Subsequent adaptations add validated AxROM/AOROM (7), MMC2/PxROM (9),
-and MMC3/TxROM (4) subsets with saved mapper state. MMC2 retains post-read
-CHR latches and fetched bytes. MMC3 adds bank inversion, protected RAM,
-four-screen mirroring and timed A12 IRQ observations; its conservative
-filter does not reproduce hardware M2 phase. Independent mapper/APU IRQ
-levels now reach CPU instruction boundaries with NMI priority, corrected
-stack status and restored IRQ flags. Synthesis and buffer clocks remain
-unchanged: five-channel PCM matches NROM at four host rates and two clocks.
-Synthetic checks do not establish gameplay or listening validation.
-\code{sources.md} and specification 001 record evidence and limits separately
-from the pinned historical account.
+The development implementation through \code{2cea414}, reviewed at
+\code{62cbf7a}, supports IDs 0--4, 7, and 9. The additions are
+AxROM/AOROM (7, \code{4e11320}), MMC2/PxROM (9, \code{8013d8f}), and
+MMC3B/C TxROM (4, \code{2cea414}). These changes follow the historical
+revision above and are not a claim of a published Library release.
+
+AxROM adds 32\,KiB PRG switching and one-screen nametable selection, with
+reviewed bus-conflict variants. MMC2 adds post-read CHR latches: the triggering
+read returns the old bank's byte before selecting the next bank. Its renderer
+retains fetched pattern bytes in snapshots to avoid repeating side effects,
+but sprite fetches still follow the coarse scanline model. MMC3 adds bank
+inversion, banked CHR RAM, RAM protection, four-screen storage, and timed
+A12 observations. Its ten-PPU-dot low filter approximates hardware M2
+filtering; MMC3A, MMC6, and sub-cycle phase accuracy are excluded.
+
+Independent mapper and APU IRQ levels now reach CPU instruction boundaries
+with latched NMI priority. Stack-status corrections and refreshed APU IRQ
+scheduling preserve pending-source behavior across restoration. These shared
+changes can alter IRQ-dependent software, including its sound. Cartridge
+clones for the three new mappers rebind ROM and mirroring callbacks, while
+validated mapper fields protect their state-loading paths. This does not
+establish complete validation or deterministic audio-buffer continuation for
+all legacy emulator state.
+
+The new loaders accept exact-size NTSC cartridge subsets. AxROM accepts
+32--256\,KiB PRG ROM with 8\,KiB CHR RAM; MMC2 accepts 32--128\,KiB PRG and
+8--128\,KiB CHR ROM; MMC3 accepts 32--512\,KiB PRG and 8--256\,KiB CHR ROM
+or 8\,KiB CHR RAM. ROM sizes are powers of two. MMC2 and MMC3 use 8\,KiB
+PRG RAM. NES 2.0 declarations must match the reviewed layouts; this is not
+general format support or evidence of Pulsar/PR8 compatibility. Raw SRAM
+file interchange remains restricted to reviewed mapper 0--3 layouts, whereas
+patches and SAVE snapshots retain the new mappers' cartridge RAM.
+
+Recorded macOS arm64 sanitizer checks cover banking, state, DMA/DMC reads,
+and synthetic IRQ servicing. Five-channel PCM and frame counts match the
+reference workload at 44.1, 48, 96, and 192\,kHz, for 2,000 host samples per
+rate at nominal speed and two Blip clocks (1,789,773 and 768,000\,Hz).
+Synthesis and buffer clocks remain unchanged; this bounded comparison is not
+gameplay, listening, clock-extreme, or cross-platform validation.
+MMC5 (5) and FME-7/5B (69) have implementation specifications only, and
+expansion synthesis remains absent. \code{sources.md} and specification 001
+record the evidence and remaining gates separately from the historical account.
 
 \subsection{Three intervention layers}
 At the \emph{gameplay layer}, sixteen gate inputs represent the eight buttons
@@ -534,7 +565,6 @@ separate artwork and dependency terms recorded in the repository's
 and \href{https://github.com/Kautenja/RackNES/blob/master/docs/licenses/THIRD-PARTY.txt}{bundled notices}. Cartridge
 images are not supplied with this report.
 
-\balance
 \begin{thebibliography}{99}
 \small\raggedright
 \interlinepenalty=10000
@@ -602,6 +632,8 @@ NESdev contributors, ``APU mixer,'' \emph{NESdev Wiki}.
 Accessed September 30, 2026.
 \url{https://www.nesdev.org/wiki/APU_Mixer}.
 
+% Keep the final bibliography columns together without balance's boxed overflow.
+\newpage
 \bibitem{simplenes}
 A. Naidu and contributors, ``SimpleNES,'' software and project documentation.
 Accessed September 30, 2026.

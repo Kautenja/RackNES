@@ -5,6 +5,10 @@ dated September 30, 2026. It describes RackNES's foundations, architecture, musi
 interaction, and implementation lessons for future engineers and researchers.
 A dated mapper addendum records the subsequent AxROM, MMC2, and MMC3 integrations
 separately from the pinned historical implementation account.
+It records the development implementation through `2cea414`, reviewed at
+`62cbf7a`, including cartridge limits, shared IRQ changes, and the scope of
+the synthetic audio/state checks. MMC5 and FME-7 remain planned, and cartridge
+expansion sound is not implemented.
 The report is a repository manuscript; it has no assigned DOI or conference
 publication status.
 

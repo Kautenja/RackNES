@@ -13,7 +13,7 @@ Created: September 30, 2026
 
 ## Current Progress
 
-Reviewed September 30, 2026 against committed revision `42947ae`:
+Reviewed September 30, 2026 against committed revision `62cbf7a`:
 
 -   Mapper IDs 0 through 4, 7, and 9 are committed. The AxROM, MMC2, and MMC3
     increments record plugin, regression, audio, state, and documentation
@@ -951,6 +951,32 @@ checks, other platforms and clock extremes, broader parser/JSON validation,
 complete emulator clone rebinding, omitted full-state fields and audio-buffer
 continuation, DMC DMA timing, and mappers 5/69. These remain open rather than
 being inferred from successful synthetic tests.
+
+### Mapper Documentation Review: September 30, 2026
+
+Reviewed the manuals and report against `62cbf7a`, whose latest runtime mapper
+increment is MMC3 at `2cea414`. Clarified explicit NES 2.0 RAM declarations,
+the difference between mapper snapshots and SRAM-file eligibility, and the
+limits of the new loaders and PPU timing. Both manuals distinguish implemented
+IDs 0--4, 7, and 9 from unimplemented MMC5/FME-7 and absent expansion sound.
+The report addendum now identifies implementation commits, shared IRQ/state
+changes, cartridge limits, and the exact scope of recorded audio checks.
+The historical source revision and citation metadata remain unchanged.
+
+Documentation validation:
+
+-   `make -C manual`: passed; reviewed all 15 RackNES and 10 CV Genie pages,
+    including the compatibility text and dedicated SRAM page.
+-   `make -C whitepaper` and `make -C whitepaper source`: passed; reviewed
+    all seven report pages and adjusted the final bibliography column break.
+    The built-in editor also compiled the canonical source successfully.
+-   Extracted the source archive into an empty temporary directory and ran
+    `latexmk -pdf -pdflatex='pdflatex -no-shell-escape %O %S' racknes.tex`:
+    passed independently. Final builds have no unresolved references or
+    overfull boxes. Relative source links and `git diff --check` passed.
+-   Documentation only: no new plugin build, emulator regression run, Rack
+    session, or listening validation. Earlier runtime evidence and remaining
+    gates still apply; this review does not complete spec 001, 008, or 009.
 
 [upstream]: https://github.com/Kautenja/nes-py/tree/301da52f7f75de380e6e195fd36621c3d5b03757
 [factory]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/mapper_factory.cpp

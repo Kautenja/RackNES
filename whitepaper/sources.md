@@ -67,9 +67,23 @@ from scholarly citations; see [LICENSING.md](../LICENSING.md) and the
 
 ## Mapper Updates: September 30, 2026
 
-The manuscript's dated mapper paragraph describes a subsequent change. The
-rest of the implementation account remains pinned to `e8c99bf86295`; this
-addendum does not retroactively attribute AxROM, MMC2, or MMC3 to that revision.
+The manuscript's dated mapper addendum describes implementation through
+[`2cea414`](https://github.com/Kautenja/RackNES/commit/2cea414), reviewed at
+[`62cbf7a`](https://github.com/Kautenja/RackNES/commit/62cbf7a). The rest of the
+implementation account remains pinned to `e8c99bf86295`; this addendum does
+not retroactively attribute AxROM, MMC2, or MMC3 to that revision. The
+development factory supports IDs 0--4, 7, and 9; this is not a release claim.
+
+| Increment | Committed Implementation | Evidence Boundary |
+| --- | --- | --- |
+| AxROM / AOROM (7) | [4e11320](https://github.com/Kautenja/RackNES/commit/4e11320) | Banking, one-screen mirroring, header variants, state, DMC, and base-audio fixtures. |
+| MMC2 / PxROM (9) | [8013d8f](https://github.com/Kautenja/RackNES/commit/8013d8f) | Post-read latches, saved fetches, bounded cartridge layouts, state, and base-audio fixtures. |
+| MMC3B/C / TxROM (4) | [2cea414](https://github.com/Kautenja/RackNES/commit/2cea414) | Banking, RAM, four-screen storage, approximate A12 timing, shared CPU/APU IRQs, state, and base-audio fixtures. |
+
+The `supports()` validators in the three mapper headers below establish the
+documented PRG/CHR limits, power-of-two sizes, NTSC-only policy, exact payloads,
+and explicit NES 2.0 RAM requirements. These checks do not implement the full
+NES 2.0 format or demonstrate Pulsar/PR8 operation.
 
 -   [AxROM implementation](../src/nes/mappers/mapper7_AxROM.hpp) and
     [cartridge factory](../src/nes/cartridge.hpp): 32 KiB banking, one-screen
@@ -111,8 +125,19 @@ addendum does not retroactively attribute AxROM, MMC2, or MMC3 to that revision.
     keeps its prior bitfield encoding. Synthesis and buffer timing remain fixed.
     MMC3 joins the same PCM comparison with CHR bank writes and fixed DMC data.
 -   [Spec 001](../specs/001-nes-py-integration.md) records exact validation
-    commands and limitations. No new performance measurements, commercial
-    game tests, or manual listening results are claimed.
+    commands and limitations. The cited mapper runs used macOS arm64 and
+    Apple Clang 21. No new performance measurements, commercial game tests,
+    manual listening, clock-extreme, or other-platform results are claimed.
+-   [SRAM policy](../specs/archive/004-sram-import-export.md) and
+    [ROM eligibility](../src/nes/rom.hpp): external save interchange remains
+    restricted to reviewed mapper 0--3 layouts. Mapper snapshots and raw
+    SRAM files have different coverage; new mapper RAM in a patch does not
+    imply file interchange or complete audio-buffer continuation.
+-   [MMC5/spec 008](../specs/008-mmc5-implementation.md) and
+    [FME-7/spec 009](../specs/009-fme7-implementation.md) are plans, not
+    implemented capabilities. The factory still rejects these mapper IDs.
+    Their expansion sound is absent; bundled sound-chip code alone does not
+    establish synthesis or routing support.
 
 ## Implementation evidence at the pinned revision
 
