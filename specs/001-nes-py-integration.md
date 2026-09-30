@@ -600,7 +600,7 @@ and the complete audio/timing acceptance matrix remain open.
 [module]: ../src/RackNES.cpp
 [nes-apu]: ../src/nes/apu/Nes_Apu.h
 [fme7-apu]: ../src/nes/apu/Nes_Fme7_Apu.cpp
-[license]: ../LICENSE.md
+[license]: ../LICENSING.md
 [manual-guide]: ../manual/README.md
 [racknes-manual]: ../manual/RackNES/manual.tex
 [manual-roms]: ../manual/RackNES/sections/roms.tex

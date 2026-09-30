@@ -7,7 +7,7 @@ into musical patterns. Add **CV Genie** to put game memory under voltage control
 
 [![Latest GitHub Release][ReleaseBadge]][LatestRelease]
 [![VCV Library: Rack 2][VCVBadge]][VCVLibrary]
-[![Source License: GPL-3.0-or-later][LicenseBadge]](LICENSE.md)
+[![Source License: GPL-3.0-or-later][LicenseBadge]](LICENSING.md)
 
 **[Get it on VCV Library][VCVLibrary]** |
 [RackNES manual (PDF)][RackNES] | [CV Genie manual (PDF)][CVGenie] |
@@ -211,12 +211,12 @@ expander module.
 
 ## License
 
-RackNES source code is licensed under [GPL-3.0-or-later](LICENSE-GPLv3.txt).
+RackNES source code is licensed under [GPL-3.0-or-later](LICENSE).
 The module graphics and branding in `res/` and `manual/` are separately licensed under
 [CC BY-NC-ND 4.0](docs/licenses/CC-BY-NC-ND-4.0.txt). Bundled dependencies retain
 their own license notices.
 
-See [LICENSE.md](LICENSE.md) for the scope of each license and
+See [LICENSING.md](LICENSING.md) for the scope of each license and
 [third-party notices](docs/licenses/THIRD-PARTY.txt) for bundled components.
 The software license does not grant the same permissions for the artwork.
 

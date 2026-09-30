@@ -102,7 +102,7 @@ scroll reload conditions; no production source was changed.
 `make -j4` succeeded (existing plugin build current); `make -C tests -j4`
 passed both focused suites. No interactive Rack/audio-device session or
 Linux/Windows capture validation was performed. Tool instructions and fixture
-licensing are in `tools/capture/README.md` and `LICENSE.md`.
+licensing are in `tools/capture/README.md` and `LICENSING.md`.
 
 Item 3 complete: covers and README share the two reviewed `Panel.png` files.
 Removed nine remaining panel illustration files (13 obsolete assets removed

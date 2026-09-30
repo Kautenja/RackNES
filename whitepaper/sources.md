@@ -62,7 +62,7 @@ is credited in the bundled Nes_Snd_Emu, Blip_Buffer, and nes_ntsc headers.
 The `green` and `ntsc` references cite his author-hosted documentation;
 current library descriptions do not change the versions identified in the
 bundled source. License notices and full texts are distributed separately
-from scholarly citations; see [LICENSE.md](../LICENSE.md) and the
+from scholarly citations; see [LICENSING.md](../LICENSING.md) and the
 [component notices](../docs/licenses/THIRD-PARTY.txt).
 
 ## Implementation evidence at the pinned revision

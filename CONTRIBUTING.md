@@ -25,7 +25,7 @@ Discuss substantial behavior or interface changes in an issue before starting.
 Read the [README](README.md), [changelog](CHANGELOG.md), and relevant
 [C++][cpp-style] or [Markdown][markdown-style] style guide before editing.
 Preserve attribution and the separate source, artwork, and dependency terms
-in [LICENSE.md](LICENSE.md). If you use a coding agent, have it follow
+in [LICENSING.md](LICENSING.md). If you use a coding agent, have it follow
 [AGENTS.md](AGENTS.md).
 
 ## Set Up Your Environment

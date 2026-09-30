@@ -2,7 +2,7 @@ RackNES bundled dependency notices
 ==================================
 
 These notices describe third-party code bundled in the RackNES source and
-plugin. See ../../LICENSE.md for the separate RackNES source and artwork terms.
+plugin. See ../../LICENSING.md for the separate RackNES source and artwork terms.
 Original notices in individual source files remain in effect.
 
 SimpleNES
@@ -11,7 +11,7 @@ Upstream: https://github.com/amhndu/SimpleNES
 Adaptation: https://github.com/Kautenja/nes-py
 Files: adapted emulator code in src/nes/, excluding the separately listed
        sound and NTSC libraries below.
-License: GNU General Public License version 3 (see ../../LICENSE-GPLv3.txt).
+License: GNU General Public License version 3 (see ../../LICENSE).
 Attribution: Amish Naidu and the SimpleNES contributors; Christian Kauten
 and the nes-py contributors. RackNES adaptations retain their individual
 file notices.
