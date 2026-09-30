@@ -1,0 +1,75 @@
+# Manual Panel Assets
+
+Replace duplicated panel illustrations with instructional LaTeX wireframes
+and screenshots rendered from the production Rack widgets. Preserve all
+module behavior, identifiers, saved patches, and existing artwork notices.
+
+## Delivery
+
+Work on the current `techreport` branch. Commit and push this specification
+first, then complete and commit/push each item in order. Record validation
+with each item. Move this document to `docs/specs/archive/` on completion.
+
+## Work Items
+
+- [ ] **1. Panel reference diagrams.** Replace both annotated panel images
+    with native TikZ wireframes, showing the spatial control groups and the
+    existing numbered explanations. Keep the NES display conceptual. Read
+    widget positions from `src/RackNES.cpp` and `src/CVGenie.cpp`; remove the
+    two obsolete `*-Manual.svg` / `*-Manual.pdf` pairs once unreferenced.
+    Build both manuals, inspect the diagrams and page flow, and run
+    `git diff --check` before committing and pushing.
+- [ ] **2. Production widget captures.** Add a small Rack-backed capture tool
+    using the real module/widget constructors and drawing code, following
+    Fourier's inspector approach without depending on Fourier. Generate one
+    reviewed light-theme PNG per module for covers and README reuse; also
+    inspect dark rendering. Run a deterministic original mapper-0 NES ROM
+    through RackNES processing at 48 kHz before capture. Include reproducible
+    source and explicit licensing for the ROM; use original Arhythmetic Units
+    text/pixel art without commercial game content. Keep processing and
+    drawing sequential in this tool, with no audio device or personal Rack
+    settings. Validate ROM loading, nonblank rendered video, capture geometry,
+    build failure handling, the plugin build and focused regression checks.
+    Commit and push the tool, fixture sources, screenshots, and evidence.
+- [ ] **3. Reference migration and cleanup.** Switch covers and README images
+    to the reviewed PNGs. Remove remaining obsolete `Plugin.*` and
+    `*-Module.*` panel illustrations after checking all tracked references.
+    Document exact capture prerequisites/commands, fixture settings, licenses,
+    and when to refresh diagrams versus screenshots. Align contributor and
+    CI instructions. Build both manuals from the checked-in assets without
+    running Rack, inspect every page, check links and `git diff --check`,
+    archive this completed spec, then commit and push.
+
+## Acceptance Criteria
+
+-   Each module has one maintained production screenshot, shared by its cover
+    and README; spatial reference diagrams remain editable LaTeX.
+-   Captures include actual controls, fonts, SVG panels, and live display
+    rendering. No composited substitute screen or manually drawn panel image.
+-   RackNES visibly runs the supplied original ROM. CV Genie shows its honest
+    unassigned state; the fixture does not imply a supported game map.
+-   Ordinary manual builds need TeX and the committed assets, not Rack or ROM
+    generation. Capture tooling is optional and fails clearly without its
+    graphical desktop/SDK prerequisites.
+-   No production emulation, routing, widget behavior, or patch format changes.
+    A capture harness is not a full interactive Rack/audio validation session.
+
+## Validation Commands
+
+Run from the repository root (capture commands will be recorded in item 2):
+
+```shell
+make -C manual
+make
+make -C tests
+git diff --check
+```
+
+Use `pdfinfo`, `pdftotext`, and `pdftoppm` to check PDF content and rendering.
+Record the actual Rack build, platform, fixture settings, and skipped checks.
+
+## Completion Evidence
+
+Specification created after inspecting the clean working tree, manual build,
+asset references, widget coordinates, and Fourier's production-widget capture
+and TikZ approach. Local Rack source and TeX tools are available.
