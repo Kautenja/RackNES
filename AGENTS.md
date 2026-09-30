@@ -13,13 +13,17 @@ Read the relevant sources before editing:
 -   [plugin.json](plugin.json): plugin identity, registered modules, and version.
 -   [CHANGELOG.md](CHANGELOG.md): historical behavior and compatibility fixes.
 -   [LICENSE.md](LICENSE.md): source, visual-asset, and dependency terms.
+-   [C++ Style Guide](docs/style-guides/cpp.md): required for C++ source,
+    headers, and regression checks.
+-   [Markdown Style Guide](docs/style-guides/markdown.md): required for
+    documentation changes.
 -   [Technical report guide](whitepaper/README.md): manuscript structure,
     evidence, citation metadata, and build commands.
 
 This guide takes its working principles from Fourier's agent instructions,
 adapted to the files and workflows in RackNES. It is self-contained; Fourier
 is not a build dependency. There is currently no separate contributor guide,
-style-guide directory, automated test suite, or CI workflow in this repository.
+automated test suite, or CI workflow in this repository.
 
 ## Working In This Repository
 
@@ -28,10 +32,9 @@ style-guide directory, automated test suite, or CI workflow in this repository.
 -   Implement one coherent requested change at a time. Read nearby code
     before choosing an implementation, and avoid unrelated formatting,
     dependency upgrades, or new development infrastructure.
--   Follow the surrounding C++ conventions. First-party code generally uses
-    four-space indentation, braces on the declaration line, and documentation
-    comments for interfaces. Preserve existing names and local conventions
-    in adapted third-party code rather than reformatting whole files.
+-   Follow the style guides above and surrounding conventions. Preserve
+    existing names and local conventions in adapted third-party code rather
+    than reformatting whole files.
 -   Keep emulator logic in `src/nes/` independent of Rack widgets. Put host
     processing and UI integration in the module and widget code.
 -   Preserve file-level attribution and dependency license notices. The
