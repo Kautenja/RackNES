@@ -11,6 +11,51 @@ Status: IN PROGRESS
 
 Created: September 30, 2026
 
+## GitHub Issue Tracking
+
+This specification owns [#1: NES Mappers][issue-1] and
+[#31: NES 2.0 Support][issue-31]. Planning and partial parser fixes do not
+resolve either issue. Track game-specific failures in
+[005: MMC1 And NTSC Regression Verification](005-mmc1-ntsc-regressions.md).
+
+The following issue gates can be completed before the entire integration:
+
+- [ ] For #1, implement and validate both remaining requested families,
+    AxROM/AOROM (7) and MMC3 (4), including banks, mirroring, IRQs where
+    applicable, audio, legacy patches, and snapshot restoration. IDs 5, 9,
+    and 69 remain goals of this spec but are not required to close #1.
+    Link the separate Metroid investigation instead of claiming that mapper
+    registration resolves #26.
+- [ ] For #31, implement checked NES 2.0 ROM/RAM size decoding, including
+    exponent/multiplier ROM sizes, submapper/console/timing policy, and exact
+    payload validation under the contracts below. Test zero RAM, volatile
+    and nonvolatile RAM, malformed/truncated files, and allocation limits.
+    Unsupported boards must fail explicitly rather than run with guessed RAM.
+- [ ] Inventory exact Pulsar and PR8 releases from #31: record source URLs,
+    hashes, headers, mapper/submapper, and required RAM banking before coding
+    board support. Do not assume parser changes alone make them work. If a
+    tracker requires a board outside the current matrix, record and implement
+    the additional contract here before claiming the issue is resolved.
+- [ ] Run Pulsar and PR8 in Rack: reach the editor, create and play a short
+    pattern, exercise song/pattern memory, and save/load and reopen a patch.
+    Record actual audio and display results at 44.1 and 48 kHz. Check NTRQ
+    and cajoNES as regression candidates; their 2020 success report is not
+    current validation. Keep ROM files outside tracked source unless their
+    redistribution terms explicitly permit inclusion.
+- [ ] Document the supported NES 2.0 subset and remaining restrictions in the
+    manual and README. Close #31 only when both the format gates and named
+    tracker checks pass; support for every NES 2.0 board is not implied.
+
+For example, loading a supported tracker must allocate its declared memory;
+a truncated payload or unsupported board must leave the current game and
+snapshot intact with a useful load error. Battery-file interchange is owned
+by [004: SRAM Import And Export](004-sram-import-export.md), not this parser
+increment. Apply the build, regression, and manual validation commands below
+and record results against each issue gate.
+
+[issue-1]: https://github.com/Kautenja/RackNES/issues/1
+[issue-31]: https://github.com/Kautenja/RackNES/issues/31
+
 ## Baseline And Evidence
 
 Prepared September 30, 2026 against these source revisions:
