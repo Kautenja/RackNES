@@ -51,7 +51,7 @@ rejects an output directory containing a copied `manual.tex`.
 Keep the annotated panel numbers aligned with their explanations. The supplied
 panel artwork is an illustration, not a new runtime screenshot. Preserve the
 Arhythmetic Units identity and the visual-asset license terms in the root
-`LICENSE.md`.
+`LICENSING.md`.
 The white paper is an independent publication and is not changed by these builds.
 
 The `ArhythmeticUnits.pdf` wordmarks are copied from Fourier's manual assets.

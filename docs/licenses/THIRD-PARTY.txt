@@ -1,0 +1,71 @@
+RackNES bundled dependency notices
+==================================
+
+These notices describe third-party code bundled in the RackNES source and
+plugin. See ../../LICENSING.md for the separate RackNES source and artwork terms.
+Original notices in individual source files remain in effect.
+
+SimpleNES
+---------
+Upstream: https://github.com/amhndu/SimpleNES
+Files: adapted emulator code in src/nes/, excluding the separately listed
+       sound and NTSC libraries below.
+License: GNU General Public License version 3 (see ../../LICENSE).
+Attribution: the SimpleNES authors and contributors; RackNES adaptations
+retain their individual file notices.
+
+Nes_Snd_Emu, Blip_Buffer, and related sound-emulation code
+------------------------------------------------------
+Upstream: https://www.slack.net/~ant/libs/audio.html
+Files: src/nes/apu/
+Copyright (C) 2003-2006 Shay Green (individual file years vary).
+License: GNU Lesser General Public License version 2.1 or, at your option,
+any later version (see LGPL-2.1.txt).
+The bundled files identify Nes_Snd_Emu 0.1.7, Blip_Buffer 0.3.3, and
+Game_Music_Emu 0.5.2. RackNES adaptations retain their file notices,
+including the additional GPL-3.0-or-later notice in apu_snapshot.h.
+
+nes_ntsc
+--------
+Upstream: https://www.slack.net/~ant/libs/ntsc.html
+Files: src/nes/ntsc/
+Version: 0.2.2
+Copyright (C) 2006-2007 Shay Green (individual file years vary).
+License: GNU Lesser General Public License version 2.1 or, at your option,
+any later version (see LGPL-2.1.txt).
+
+cpp-base64
+----------
+Upstream: https://github.com/ReneNyffenegger/cpp-base64
+Files: src/base64.cpp and src/base64.h
+License: zlib. The bundled notice is reproduced below verbatim.
+
+base64.cpp and base64.h
+
+   base64 encoding and decoding with C++.
+   More information at
+     https://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp
+
+   Version: 2.rc.04 (release candidate)
+
+   Copyright (C) 2004-2017, 2020 René Nyffenegger
+
+   This source code is provided 'as-is', without any express or implied
+   warranty. In no event will the author be held liable for any damages
+   arising from the use of this software.
+
+   Permission is granted to anyone to use this software for any purpose,
+   including commercial applications, and to alter it and redistribute it
+   freely, subject to the following restrictions:
+
+   1. The origin of this source code must not be misrepresented; you must not
+      claim that you wrote the original source code. If you use this source code
+      in a product, an acknowledgment in the product documentation would be
+      appreciated but is not required.
+
+   2. Altered source versions must be plainly marked as such, and must not be
+      misrepresented as being the original source code.
+
+   3. This notice may not be removed or altered from any source distribution.
+
+   René Nyffenegger rene.nyffenegger@adp-gmbh.ch

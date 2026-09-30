@@ -86,6 +86,17 @@ or commit used. The report documents RackNES 2.1.0 at source revision
 It is currently a repository manuscript without an assigned DOI or conference
 publication status.
 
+## License
+
+RackNES source code is licensed under [GPL-3.0-or-later](LICENSE). The module
+graphics and branding in `res/` and `manual/` are separately licensed under
+[CC BY-NC-ND 4.0](docs/licenses/CC-BY-NC-ND-4.0.txt). Bundled dependencies retain
+their own license notices.
+
+See [LICENSING.md](LICENSING.md) for the scope of each license and
+[third-party notices](docs/licenses/THIRD-PARTY.txt) for bundled components.
+The software license does not grant the same permissions for the artwork.
+
 ## Acknowledgments
 
 The code for the module derives from:
