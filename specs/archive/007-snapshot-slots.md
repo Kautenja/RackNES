@@ -1,12 +1,26 @@
 # Multiple Snapshot Slots
 
-Implement [#12: Additional Save States][issue] so a patch can capture and
-recall several game moments using the existing SAVE/LOAD controls and a
-voltage-controlled slot selector.
+This archived proposal for [#12: Additional Save States][issue] described
+capturing and recalling several game moments using the existing SAVE/LOAD
+controls and a voltage-controlled slot selector.
 
-Status: PLANNED
+Status: ABANDONED
 
 Created: September 30, 2026
+
+Abandoned: September 30, 2026
+
+## Disposition
+
+Multiple snapshot slots are not planned. The maintainer chose to abandon
+this proposal and close #12 as not planned. The original design and unchecked
+acceptance criteria remain below for historical context; archival does not
+claim implementation or validation of the feature.
+
+Archival checks on September 30, 2026: relative link targets, the archive
+path, and abandoned status passed scripted checks; `git diff --check` passed.
+Builds, regression tests, and manual Rack checks were not run for this
+documentation-only disposition.
 
 ## Goal And Behavior
 
@@ -23,17 +37,17 @@ Selecting a slot alone neither saves nor loads it.
 
 ## Current Code And Dependencies
 
-[RackNES.cpp](../src/RackNES.cpp) owns one reference-counted `backup` JSON
+[RackNES.cpp](../../src/RackNES.cpp) owns one reference-counted `backup` JSON
 object. It acquires snapshot controls every 16 samples, in save/reset/restore
 order. Successful ROM replacement and Rack module reset clear the backup;
 NES reset does not. Patch JSON stores `emulator` and optional `backup`.
 
-[Spec 001](001-nes-py-integration.md) owns core snapshot validation, migration,
+[Spec 001](../001-nes-py-integration.md) owns core snapshot validation, migration,
 and transactional restoration. Reuse that work rather than adding a second
 emulator-state parser. Slot selection and storage can be implemented first;
 safe restore and malformed-state acceptance gates must pass before shipping.
 This is larger than a small menu change and is not required for the SRAM file
-feature in [spec 004](004-sram-import-export.md).
+feature in [spec 004](../004-sram-import-export.md).
 
 ## Requirements
 
@@ -111,7 +125,7 @@ criteria or close #12.
 
 ## Validation And Completion Evidence
 
-Extend [the existing harness](../tests/README.md). From the repository root
+Extend [the existing harness](../../tests/README.md). From the repository root
 with the prepared Rack tree at `../..`, the [build prerequisites][build],
 and [production capture prerequisites][capture]:
 
@@ -131,5 +145,5 @@ measurements, manual results, and limitations here before archival. Planning
 does not establish implementation, real-time safety, or game compatibility.
 
 [issue]: https://github.com/Kautenja/RackNES/issues/12
-[build]: ../CONTRIBUTING.md#development-and-testing
-[capture]: ../tools/capture/README.md
+[build]: ../../CONTRIBUTING.md#development-and-testing
+[capture]: ../../tools/capture/README.md

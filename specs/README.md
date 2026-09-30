@@ -12,16 +12,19 @@ evidence in the owning spec, then archive it using [the agent workflow][flow].
 | [004](004-sram-import-export.md) | Raw battery-save import/export | [#52][i52] | Start with unambiguous supported 8 KiB layouts; coordinate RAM ownership with 001. |
 | [005](005-mmc1-ntsc-regressions.md) | Metroid and Bubble Bobble reproduction and fixes | [#26][i26], [#45][i45] | Reproduce first; potentially the smallest closures. |
 | [006](006-cv-genie-readback.md) | RAM and 2A03 register CV output | [#51][i51], remaining scope from [#6][i6] | Larger phased feature after observation/protocol contracts. |
-| [007](007-snapshot-slots.md) | Eight snapshots with slot CV | [#12][i12] | Larger phased feature dependent on safe state restoration. |
 
 Specs 002 and 003 are complete and retained in [the archive](archive/).
+[Spec 007](archive/007-snapshot-slots.md) is abandoned and archived.
 Do not create another parser or mapper spec that duplicates 001.
 
 ## Issue Dispositions
 
-The September 30, 2026 triage keeps the seven implementation issues above
+The September 30, 2026 triage keeps the six implementation issues above
 open until their acceptance gates pass. It makes these scope decisions:
 
+-   **[#12: Additional Save States][i12]: not planned.** Multiple snapshot
+    slots are outside the current plan. Spec 007 is abandoned and archived
+    for historical context; this disposition does not claim implementation.
 -   **#6: consolidate into #51.** Input Genie implements the write portion;
     spec 006 and #51 own the remaining read portion, including arbitrary
     internal-RAM selection. Closing the umbrella issue does not claim that
