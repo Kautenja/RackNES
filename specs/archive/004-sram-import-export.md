@@ -3,9 +3,11 @@
 Implement [#52: Serialization of SRAM][issue] so a user can compose in another
 emulator and bring cartridge save data into RackNES for processing.
 
-Status: IN PROGRESS
+Status: COMPLETE
 
 Created: September 30, 2026
+
+Completed: September 30, 2026
 
 ## Goal And Behavior
 
@@ -21,11 +23,11 @@ An incorrect file length leaves the running game and all snapshots unchanged.
 
 ## Current Code And Dependencies
 
-Before this increment, [MainBus](../src/nes/main_bus.hpp) owned fixed 8 KiB
+Before this increment, [MainBus](../../src/nes/main_bus.hpp) owned fixed 8 KiB
 extended RAM;
-[ROM](../src/nes/rom.hpp) gates it on the battery flag. That array is already
+[ROM](../../src/nes/rom.hpp) gates it on the battery flag. That array is already
 stored in patch JSON, but the module has no external save-file service.
-[Spec 001](001-nes-py-integration.md) moves RAM ownership to cartridge mappers
+[Spec 001](../001-nes-py-integration.md) moves RAM ownership to cartridge mappers
 and defines NES 2.0 volatile/nonvolatile sizes. Reuse that metadata and memory
 access boundary; do not make raw MainBus storage the public file interface.
 
@@ -85,14 +87,16 @@ are outside this increment.
 - [x] An identified external emulator's raw save imports into RackNES and a
     RackNES export loads there, with tool versions, ROM hash, size, and
     observed game/tracker data recorded. A self-round-trip is insufficient.
-- [ ] Menus work with empty cartridges and browser previews. Documentation
-    states supported layouts and the distinction from SAVE/LOAD snapshots.
+- [x] Headless menu checks pass for empty cartridges and browser previews;
+    documentation states supported layouts and the distinction from SAVE/LOAD
+    snapshots. Native dialog verification is retained as issue #52 follow-up,
+    per the completion decision below.
 
 ## Validation And Completion Evidence
 
-Implement checks in the [existing assertion harness](../tests/README.md).
+Implement checks in the [existing assertion harness](../../tests/README.md).
 From the repository root with the prepared Rack tree at `../..` and the
-[documented prerequisites](../CONTRIBUTING.md#development-and-testing):
+[documented prerequisites](../../CONTRIBUTING.md#development-and-testing):
 
 ```shell
 make -j4
@@ -104,8 +108,9 @@ git diff --check
 Use the same absolute `RACK_DIR` for both C++ builds when using an external
 SDK. Inspect the rendered manual and perform the interoperability and Rack
 checks above. Record date, commits, fixtures, platforms, commands, results,
-and limitations here before marking complete and archiving. Planning has not
-implemented or validated SRAM interchange; keep #52 open until its gates pass.
+and limitations here before marking complete and archiving. The implementation
+and validation results are recorded below; issue #52 remains open for native
+dialog checks and requester feedback.
 
 [issue]: https://github.com/Kautenja/RackNES/issues/52
 
@@ -166,8 +171,9 @@ This does not expand the loader's general NES 2.0 compatibility.
 Validation used macOS arm64, Apple Clang 21, and the prepared Rack Free 2.6.0
 tree at `../..`. Work was uncommitted; the shared checkout advanced to
 `8013d8f` for the independent MMC2 work during this task and also contained
-ongoing spec 001 edits. Those changes were preserved. No commit or push was
-requested or performed by this task.
+ongoing spec 001 edits. Those changes were preserved. No commit or push had
+been requested at this initial implementation stage; commit preparation and
+completion are recorded below.
 
 -   `make -j4`: passed. Existing Rack SDK deprecation warnings remain.
 -   `make -C tests -j2`: passed with AddressSanitizer and
@@ -195,15 +201,16 @@ requested or performed by this task.
     read the window but repeated click attempts returned `noWindowsAvailable`.
     The temporary test process was closed. An earlier isolated Rack Pro 2.6.3
     attempt required activation; the ordinary user profile was not changed.
--   `git diff --check`: passed. No issue was closed and the spec remains
-    IN PROGRESS until the native dialog/overwrite/cancel checks are verified.
+-   `git diff --check`: passed. At this stage, no issue was closed and the spec
+    remained IN PROGRESS pending native dialog/overwrite/cancel checks. The
+    later completion decision below transfers those checks to issue #52.
 
 ### Independent Save Interchange
 
 Built [FCEUmm][fceumm] at
 `7a542dab1e87679921962a9f056186eca425c0c2`, reporting `(SVN) 7a542da`, with
 `make -f Makefile.libretro -j4 platform=osx arch=arm64`. The optional
-[interchange driver](../tests/sram_interop.py) uses its actual libretro
+[interchange driver](../../tests/sram_interop.py) uses its actual libretro
 `RETRO_MEMORY_SAVE_RAM` domain, which reports 8,192 bytes. It is independent
 of RackNES's cartridge storage and serialization implementation.
 
@@ -257,5 +264,26 @@ Both passed, including ASan/UBSan and the existing audio fingerprints. The
 FCEUmm interchange script also passed against this isolated version with the
 same ROM/save hashes and observed notes recorded above. Reviewed the complete
 SRAM-only diff and ran `git diff --cached --check` before committing. Native
-file-dialog verification remains open; this commit does not mark the spec
-complete or include unrelated MMC3 work.
+file-dialog verification remained open at that commit, which did not mark the
+spec complete or include unrelated MMC3 work.
+
+## Completion Decision: September 30, 2026
+
+The implementation was committed as `82bab6a` and pushed to `origin/techreport`.
+At the user's explicit request, mark this implementation spec COMPLETE and
+archive it. [Issue #52][issue] remains the place to track requester feedback,
+tracker-specific compatibility, and native dialog/overwrite/cancel checks.
+The remaining interactive check is no longer a prerequisite for archiving this
+spec; no additional manual test or release publication is claimed.
+
+The delivered scope is raw, exact-size 8 KiB SRAM interchange for the reviewed
+mapper 0--3 layouts, with the regression and independent FCEUmm evidence above.
+Larger/banked layouts and additional tracker support still require their own
+memory contracts and validation. The issue update invites the requester to
+try their workflow and report the tracker, emulator, save size, and observed
+behavior. Keep the issue open while collecting that feedback.
+
+Archival validation is documentation-only: update inbound and relative links,
+check that local targets exist, and review the complete diff with
+`git diff --check`. The successful implementation builds and tests above
+remain the source validation evidence; no C++ rebuild is needed for this move.

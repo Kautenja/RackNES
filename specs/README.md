@@ -9,18 +9,24 @@ evidence in the owning spec, then archive it using [the agent workflow][flow].
 | Spec | Scope | GitHub Issues | Order |
 | --- | --- | --- | --- |
 | [001](001-nes-py-integration.md) | Cartridge parsing, mapper integration, audio/state compatibility | [#1][i1], [#31][i31] | Deliver parser/tracker and mapper gates as separate increments. |
-| [004](004-sram-import-export.md) | Raw battery-save import/export | [#52][i52] | Start with unambiguous supported 8 KiB layouts; coordinate RAM ownership with 001. |
 | [005](005-mmc1-ntsc-regressions.md) | Metroid and Bubble Bobble reproduction and fixes | [#26][i26], [#45][i45] | Reproduce first; potentially the smallest closures. |
 
 Specs 002 and 003 are complete and retained in [the archive](archive/).
+[Spec 004](archive/004-sram-import-export.md) is complete and archived;
+[#52][i52] remains open for SRAM workflow feedback and native dialog checks.
 [Spec 006](archive/006-cv-genie-readback.md) and
 [spec 007](archive/007-snapshot-slots.md) are abandoned and archived.
 Do not create another parser or mapper spec that duplicates 001.
 
 ## Issue Dispositions
 
-The September 30, 2026 triage keeps the five implementation issues above
-open until their acceptance gates pass. It makes these scope decisions:
+The active implementation issues above remain open until their acceptance
+gates pass. The September 30, 2026 decisions also establish:
+
+-   **[#52: Serialization of SRAM][i52]: implementation complete.** Raw 8 KiB
+    SRAM import/export is committed on `techreport`. Spec 004 is archived;
+    keep the issue open for requester feedback, tracker compatibility, and
+    native dialog verification. This is not a release-availability claim.
 
 -   **[#12: Additional Save States][i12]: not planned.** Multiple snapshot
     slots are outside the current plan. Spec 007 is abandoned and archived

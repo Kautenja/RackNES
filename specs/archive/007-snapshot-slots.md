@@ -47,7 +47,7 @@ and transactional restoration. Reuse that work rather than adding a second
 emulator-state parser. Slot selection and storage can be implemented first;
 safe restore and malformed-state acceptance gates must pass before shipping.
 This is larger than a small menu change and is not required for the SRAM file
-feature in [spec 004](../004-sram-import-export.md).
+feature in [spec 004](004-sram-import-export.md).
 
 ## Requirements
 

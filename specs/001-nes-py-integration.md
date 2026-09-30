@@ -63,7 +63,7 @@ The following issue gates can be completed before the entire integration:
 For example, loading a supported tracker must allocate its declared memory;
 a truncated payload or unsupported board must leave the current game and
 snapshot intact with a useful load error. Battery-file interchange is owned
-by [004: SRAM Import And Export](004-sram-import-export.md), not this parser
+by [004: SRAM Import And Export](archive/004-sram-import-export.md), not this parser
 increment. Apply the build, regression, and manual validation commands below
 and record results against each issue gate.
 

@@ -176,4 +176,4 @@ the ROM and must load its sixteen-note record into CPU RAM. All 8,192 save
 bytes must match. Artifacts stay in `.build/sram-interop/`; hashes, core
 revision, and observed notes are printed. This establishes interchange for
 the synthetic fixture, not compatibility with a particular commercial game
-or tracker. See [spec 004](../specs/004-sram-import-export.md) for evidence.
+or tracker. See [spec 004](../specs/archive/004-sram-import-export.md) for evidence.
