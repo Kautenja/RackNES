@@ -1,0 +1,53 @@
+\manualchapter{ROMs and compatibility}{sec:roms}
+\subsection{Loading a game}
+Choose \textbf{Load ROM} from the module's right-click menu, or drag a ROM
+file onto the panel. The file chooser accepts \texttt{.nes} and
+\texttt{.NES}. Extract compressed archives before loading; renaming an
+archive does not turn it into an iNES ROM.
+
+Loading a supported ROM resets the emulator and clears the SAVE slot.
+Choosing the same ROM again also starts it afresh. A canceled file dialog
+leaves the current selection alone. If you drop several files, only the
+first path is used.
+
+\subsection{Supported cartridge mappers}
+A mapper is the cartridge hardware that arranges game memory. RackNES
+implements the following four mapper IDs. Support for a mapper does not
+guarantee that every game or modified ROM using it will behave correctly.
+\begin{center}
+\begin{tabular}{@{}rl@{}}
+\toprule
+\textbf{ID} & \textbf{Name} \\
+\midrule
+0 & NROM \\
+1 & MMC1 \\
+2 & UNROM \\
+3 & CNROM \\
+\bottomrule
+\end{tabular}
+\end{center}
+The module uses one fixed NES timing model. It has no PAL/NTSC selector,
+cartridge mapper selector, or cartridge expansion-audio controls. The five
+audio outputs are the base NES voices. The CV Genie game list is a separate
+list of memory maps; it does not define RackNES's full ROM compatibility.
+
+\subsection{When loading fails}
+\begin{description}
+\item[ASIC mapper not implemented for ROM!]
+The file requests a mapper outside the implemented set.
+\item[ROM file failed to load!]
+The selected path failed ROM validation. Check the file and its format.
+\item[ROM file was not found!]
+A patch's stored ROM path could not be validated on restore. Check that the
+same ROM is still present at that path.
+\end{description}
+A failed new-ROM attempt clears the screen buffer but does not necessarily
+remove the previously loaded cartridge. Do not assume that a blank screen
+means the old game has stopped. Load a known supported ROM to establish the
+intended state.
+
+\subsection{Moving a patch between computers}
+Keep the original ROM available at its saved path. A Rack patch stores the
+emulator state and a ROM path, but restoring it still validates and reloads
+the file. Loading a ROM manually afterward starts a new session; it does
+not recover a failed snapshot restore automatically.

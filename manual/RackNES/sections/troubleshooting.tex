@@ -1,0 +1,42 @@
+\manualchapter{Troubleshooting and further reading}{sec:troubleshooting}
+\begin{description}
+\item[No picture or no game response.]
+Load a supported ROM and release HANG and its gate. Check for a load-error
+dialog. A title screen may need Start or Select before the game responds.
+\item[The screen moves but there is no sound.]
+Reach a part of the game that makes sound. Check the voice levels and Mix
+Volume. Voices with patched individual outputs are removed from MIX.
+If all five are patched, MIX is silent. Check your downstream audio routing.
+\item[A gate does nothing or works only once.]
+Reach about 2 V to activate, then return below about 0.1 V to re-arm.
+Lengthen very short pulses. Controller actions also depend on game polling;
+a held gate is a held button.
+\item[Clock CV has no effect.]
+The attenuverter starts at zero. Turn it up and keep the base knob away
+from its limits. MOD takes a speed voltage, not a synchronization clock.
+\item[LOAD does nothing or the loop is inconsistent.]
+Make a snapshot first. Loading a new ROM or initializing the module clears
+it. Gate patterns and game logic can change what happens after LOAD, and
+snapshots do not contain the audio queue or frame-clock phase.
+\item[HANG leaves a voltage on the audio or clock jack.]
+This is the implemented behavior. Use an external VCA or mute if you need
+silence while the machine is held.
+\item[The saved patch cannot find its game.]
+Restore the same ROM to the stored path and reopen the patch. Loading a
+ROM manually starts a fresh session and clears the snapshot slot.
+\item[High-speed operation is expensive or sounds rough.]
+Reduce Clock Speed and its modulation depth. The implementation does more
+CPU emulation work per Rack sample at high rates; its audio conversion does
+not guarantee smooth resampling across speed changes.
+\end{description}
+
+\subsection{Sources and acknowledgments}
+This manual follows the module controls, emulator, audio wrapper, and theme
+handling in the repository's \texttt{src/} directory. The maintainer's
+\href{https://github.com/Kautenja/RackNES/tree/master/manual}{manual guide}
+maps each topic to its implementation.
+RackNES builds on SimpleNES, Nes\_Snd\_Emu, nes\_ntsc, and cpp-base64;
+see the project README and license files for credits. CV Genie was developed
+by \textbf{@anlexmatos}. The companion
+\href{https://github.com/Kautenja/RackNES/releases/latest/download/CVGenie.pdf}{CV Genie manual}
+covers its eight input rows and memory maps.

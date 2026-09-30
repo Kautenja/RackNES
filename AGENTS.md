@@ -22,8 +22,9 @@ Read the relevant sources before editing:
 
 This guide takes its working principles from Fourier's agent instructions,
 adapted to the files and workflows in RackNES. It is self-contained; Fourier
-is not a build dependency. There is currently no separate contributor guide,
-automated test suite, or CI workflow in this repository.
+is not a build dependency. There is currently no separate contributor guide or
+automated plugin test suite. The user-manual CI workflow is described in
+[manual/README.md](manual/README.md).
 
 ## Working In This Repository
 
@@ -182,8 +183,9 @@ make -C manual/RackNES
 make -C manual/CVGenie
 ```
 
-Each manual is written to its own `build/manual.pdf`. Check the active recipe's
-compiler requirements and error handling before relying on its exit status.
+Each manual is written to its own `.build/manual.pdf`. The shared build uses
+`latexmk`, disables shell escape, and fails on compilation errors. See
+[manual/README.md](manual/README.md) for prerequisites and the combined build.
 Review compiler output and inspect the generated PDF for missing content,
 unresolved references, and layout errors. Compile directly with errors visible
 when diagnosing a failure. Keep intermediate files and compiled manuals in
@@ -214,9 +216,11 @@ actually checked. Verify that the release tag resolves to the intended commit
 and manifest version; do not move an already published tag to incorporate a fix.
 
 The manifest and README expect GitHub release assets named `RackNES.pdf` and
-`CVGenie.pdf`. Build and check these assets when preparing a release; there is
-no repository workflow that uploads them automatically. GitHub publication and
-VCV Library submission are separate actions. Verify current VCV requirements
+`CVGenie.pdf`. Build and check these assets when preparing a release. The
+[user-manual workflow](.github/workflows/manuals.yml) builds PDFs and attaches
+them on published-release events or explicit dispatch for an existing release.
+See [manual/README.md](manual/README.md) for tag requirements. GitHub publication
+and VCV Library submission are separate actions. Verify current VCV requirements
 when a submission is requested, and do not claim availability in Rack merely
 because a tag, release, or update request exists.
 

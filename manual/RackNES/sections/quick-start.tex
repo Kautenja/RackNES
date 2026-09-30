@@ -1,0 +1,43 @@
+\manualchapter{Overview and first sound}{sec:quick-start}
+RackNES runs an NES game inside VCV Rack 2. The game supplies the music,
+sound effects, and visuals; your patch controls the players, changes the
+emulation speed, and returns to saved moments. Five separate sound outputs
+and a mix output connect the game to the rest of your rack.
+
+The module starts without a game. Supply an iNES ROM file and use the panel
+buttons or gates as the two NES controllers. A game's response to those
+buttons depends on its menus and current play state.
+
+\subsection{Start here}
+\begin{enumerate}
+\item Add RackNES and connect \textbf{MIX} to your audio output through a
+mixer or attenuator. Begin with a low listening level.
+\item Leave all five channel levels and Mix Volume at their default
+\textbf{100\%}. Leave the large clock knob at its default
+\textbf{1.789773 MHz} and the red clock attenuverter at \textbf{0\%}.
+\item Right-click RackNES, choose \textbf{Load ROM}, and select a
+\texttt{.nes} or \texttt{.NES} file. You can also drop one ROM file onto the
+module. The supported cartridge mappers are listed on page~\pageref{sec:roms}.
+\item Use Player 1 \textbf{Start}, \textbf{Select}, the directions, and
+\textbf{A/B} to reach a part of the game that makes sound. Hold a panel
+button for as long as the game requires.
+\item Press \textbf{SAVE} at an interesting moment. Let the game continue,
+then press \textbf{LOAD} to revisit it. There is one snapshot slot.
+\end{enumerate}
+
+\subsection{Three useful first experiments}
+\begin{description}
+\item[Separate the percussion.] Patch \textbf{NOI} to a second mixer input.
+Noise disappears from MIX and can now have its own effects chain.
+\item[Automate a controller.] Send a repeating gate to Player 1 A.
+A high gate holds the button; a low gate releases it.
+\item[Repeat a game moment.] Send a slow trigger to LOAD after making a
+snapshot. Each trigger restores the stored emulation state.
+\end{description}
+
+\subsection{What to expect}
+RackNES is an emulator under voltage control. Its clock input changes the
+speed of execution; it does not receive tempo pulses for synchronization.
+SAVE and LOAD store machine state, not an audio clip. Hang freezes execution
+and holds the outputs. The following sections explain these distinctions
+and the limitations of the current implementation.

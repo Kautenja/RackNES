@@ -1,0 +1,47 @@
+\manualchapter{Save, load, hang, and reset}{sec:state}
+\subsection{SAVE: keep one moment}
+Press SAVE or send a rising trigger to replace the one stored emulator
+snapshot. It includes game and machine state, not a recorded audio waveform.
+The slot belongs to this instance of RackNES. A later SAVE overwrites it.
+
+\subsection{LOAD: return to the stored moment}
+Press LOAD or send a rising trigger to restore the slot. Without a saved
+snapshot, LOAD does nothing. Repeat LOAD to revisit a sound effect, phrase,
+or gameplay event. Panel knob positions and patch cables are not part of
+this slot, so you can change the mix or speed while reusing a game moment.
+
+Snapshots are not sample-accurate audio loops. The frame-counter phase and
+queued audio samples are not serialized with the machine state. Controller
+inputs also continue to update, so different gates after a restore can lead
+the game in a different direction. Discontinuities at a load can click;
+shape an external VCA if you need smoother transitions.
+
+\subsection{HANG: hold execution}
+Hold HANG or its input gate high to suspend CPU, video, and audio advancement.
+The module returns before refreshing its output jacks, so audio and CLK
+\textbf{hold their last voltages}; Hang does not mute them to zero and does
+not sustain a synthesized note normally. The screen stops advancing too.
+
+Control acquisition and CV Genie messages still run while hung. You can
+SAVE, LOAD, or RESET, and an attached Genie can still write memory. Release
+both the panel button and the CV gate to resume execution and output updates.
+
+\subsection{RESET: restart the inserted game}
+The panel RESET button and its input reset the CPU, video, and audio systems
+with the current ROM inserted. They leave the SAVE slot available. This is
+a console reset, not a promise that all game RAM becomes a fresh power-on
+image.
+
+Rack's module \textbf{Initialize} action is different: its reset handler
+removes the ROM, clears the snapshot, and blanks the screen. Loading a ROM
+from the context menu also clears the snapshot when successful.
+
+\subsection{Simultaneous actions and patch saving}
+If SAVE, RESET, and LOAD rise in the same control update, RackNES processes
+them in that order. SAVE captures the pre-reset state and LOAD restores it.
+This avoids replacing the saved moment with the just-reset one.
+
+Saving the Rack patch includes the current emulator state and the SAVE slot
+if one exists. Keep the ROM at its original path for both to restore.
+A saved patch is the way to retain your session; there is no separate
+snapshot-file import/export menu.

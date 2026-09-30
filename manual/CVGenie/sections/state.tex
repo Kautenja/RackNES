@@ -1,0 +1,45 @@
+\manualchapter{Changing games and saving patches}{sec:state}
+\subsection{Change maps deliberately}
+\begin{enumerate}
+\item Disconnect all eight CV inputs.
+\item While the old game is still selected, set all rows to
+\textbf{Unassigned}.
+\item Select the new game in the top display, and load the matching ROM
+in RackNES.
+\item Choose valid entries from the new map, then reconnect the desired
+inputs one at a time.
+\end{enumerate}
+The selector preserves row indices when you change games. An old index can
+refer to an unrelated element in the new map, or fall outside its range.
+The reset-and-reselect procedure prevents those stale assignments.
+Do not use a mismatched map just because the ROM itself runs in RackNES.
+
+\subsection{Initialize and Randomize}
+Rack's \textbf{Initialize} action clears the selected game and all eight
+row assignments. Disconnect inputs before doing this, then select a game
+before interacting with rows again. The current reset handler does not
+clear the stored per-row toggle states or trigger history.
+
+\textbf{Randomize} assigns a random valid element index to each row of the
+currently selected game. Select a game first, and disconnect inputs before
+randomizing so that you can inspect the choices. It randomizes selections,
+not voltages or game values. It can choose duplicate entries.
+
+\subsection{What a Rack patch preserves}
+The Genie stores its game selection and all eight element indices. Rack
+stores the cables and the settings of your external CV sources. Genie does
+not store its internal toggle states or trigger history in the patch.
+A newly instantiated Genie therefore starts its toggles at zero, regardless
+of the game-memory values saved by RackNES.
+
+RackNES's SAVE slot captures the emulator, not Genie selections or toggle
+states. LOAD can restore a memory value while a connected continuous row
+immediately writes over it. Disconnect rows before restoring a snapshot
+when you want to inspect the saved state without further modification.
+
+\subsection{Keep a stable starting point}
+For repeatable experiments, save a Rack patch with the correct ROM path,
+the intended Genie map, and valid row assignments. Begin toggle experiments
+with a fresh Genie instance if you need its first trigger to write 1.
+Selecting another element in an existing row does not itself reset that
+row's remembered toggle state.

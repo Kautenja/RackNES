@@ -1,0 +1,109 @@
+name: User manuals
+
+on:
+  pull_request:
+    paths: ['manual/**', 'src/**', 'plugin.json', '.github/workflows/manuals.yml']
+  push:
+    branches: [master]
+    tags: ['v*']
+    paths: ['manual/**', 'src/**', 'plugin.json', '.github/workflows/manuals.yml']
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag containing the shared manual build
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: manuals-${{ github.event_name }}-${{ inputs.tag || github.event.release.tag_name || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master') }}
+
+jobs:
+  build:
+    name: Build and validate manuals
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out manual sources
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
+          persist-credentials: false
+
+      - name: Install publication tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            texlive-latex-extra texlive-fonts-recommended cm-super latexmk poppler-utils python3-pypdf
+
+      - name: Check manual versions
+        run: |
+          test -f manual/latex/manual.mk
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          version = json.loads(Path('plugin.json').read_text())['version']
+          for module in ('RackNES', 'CVGenie'):
+              source = Path('manual', module, 'manual.tex').read_text()
+              assert '\\newcommand{\\manualversion}{' + version + '}' in source, module
+          PY
+
+      - name: Build PDFs
+        run: make -C manual
+
+      - name: Validate PDFs and stage release names
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from pypdf import PdfReader
+          version = json.loads(Path('plugin.json').read_text())['version']
+          for module in ('RackNES', 'CVGenie'):
+              pdf = PdfReader(Path('manual', module, '.build', 'manual.pdf'))
+              assert len(pdf.pages) > 5, module
+              assert version in pdf.metadata.title, module
+              assert pdf.outline, module
+              assert pdf.trailer['/Root']['/Lang'] == 'en-US', module
+              assert pdf.xmp_metadata, module
+              text = '\n'.join(page.extract_text() or '' for page in pdf.pages)
+              assert 'KautenjaDSP' in text and '??' not in text, module
+          PY
+          mkdir -p manual-pdfs
+          cp manual/RackNES/.build/manual.pdf manual-pdfs/RackNES.pdf
+          cp manual/CVGenie/.build/manual.pdf manual-pdfs/CVGenie.pdf
+          pdfinfo manual-pdfs/RackNES.pdf
+          pdfinfo manual-pdfs/CVGenie.pdf
+
+      - name: Save validated PDFs
+        uses: actions/upload-artifact@v7
+        with:
+          name: user-manuals
+          path: manual-pdfs/*.pdf
+          retention-days: 14
+          if-no-files-found: error
+
+  publish:
+    name: Attach manuals to release
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Download validated PDFs
+        uses: actions/download-artifact@v8
+        with:
+          name: user-manuals
+          path: pdfs
+      - name: Upload release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
+        run: gh release upload "$RELEASE_TAG" pdfs/*.pdf --clobber

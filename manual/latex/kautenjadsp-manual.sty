@@ -1,0 +1,85 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{kautenjadsp-manual}[2026/09/30 KautenjaDSP user manuals]
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[scaled=.95]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\RequirePackage{amsmath,microtype}
+\input{glyphtounicode}
+\pdfgentounicode=1
+\RequirePackage[table]{xcolor}
+\definecolor{manualAccent}{HTML}{BC1826}
+\definecolor{manualInk}{HTML}{242424}
+\definecolor{manualMuted}{HTML}{555555}
+\definecolor{manualCover}{HTML}{DDDDDD}
+\RequirePackage{graphicx,booktabs,tabularx,longtable,array}
+\RequirePackage[margin=1in,headheight=18pt,headsep=18pt,footskip=28pt]{geometry}
+\RequirePackage{enumitem,fancyhdr,titlesec,needspace}
+\RequirePackage[font=small,labelfont=bf,labelsep=period]{caption}
+\RequirePackage[unicode,pdfpagelabels,colorlinks=true,linktoc=all,
+  linkcolor=manualAccent,urlcolor=manualAccent,bookmarksopen=true,
+  bookmarksdepth=2,pdfdisplaydoctitle=true]{hyperref}
+\RequirePackage{bookmark,hyperxmp}
+\hypersetup{pdftitle={\manualname\space User Manual | v\manualversion},
+  pdfauthor={Christian Kauten and contributors},
+  pdfsubject={Operating \manualname\space in VCV Rack 2},
+  pdfkeywords={KautenjaDSP, RackNES, CV Genie, NES, VCV Rack, user manual},
+  pdfpublisher={KautenjaDSP},pdflang={en-US},keeppdfinfo=true,
+  pdflicenseurl={https://github.com/Kautenja/RackNES/blob/master/LICENSE.md}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 1pt minus 1pt}
+\setlist{leftmargin=1.5em,itemsep=4pt,topsep=5pt,parsep=0pt}
+\renewcommand{\arraystretch}{1.22}
+\raggedbottom
+\widowpenalty=10000
+\clubpenalty=10000
+\emergencystretch=1em
+\setcounter{secnumdepth}{0}
+\setcounter{tocdepth}{1}
+\titleformat{\section}{\fontsize{18}{22}\selectfont\bfseries\color{manualInk}}{}{0pt}{}
+\titleformat{\subsection}{\fontsize{13}{16}\selectfont\bfseries\color{manualInk}}{}{0pt}{}
+\titlespacing*{\section}{0pt}{16pt}{12pt}
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\AddToHook{cmd/subsection/before}{\Needspace{5\baselineskip}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\footnotesize KautenjaDSP}
+\fancyhead[R]{\footnotesize\manualname\ / v\manualversion}
+\fancyfoot[L]{\footnotesize\textcolor{manualMuted}{\nouppercase{\leftmark}}}
+\fancyfoot[R]{\small\bfseries\thepage}
+\renewcommand{\headrulewidth}{.3pt}
+\renewcommand{\sectionmark}[1]{\markboth{#1}{}}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[R]{\thepage}\renewcommand{\headrulewidth}{0pt}}
+\newcommand{\manualchapter}[2]{\clearpage\section{#1}\label{#2}}
+\newcommand{\manualcover}[2]{%
+  \hypersetup{pageanchor=false}\thispagestyle{empty}\thispdfpagelabel{Cover}
+  \pdfbookmark[1]{Cover}{cover}\pagecolor{manualCover}
+  \begin{center}
+  \vspace*{12pt}
+  \includegraphics[width=.8\textwidth,height=.1\textheight,keepaspectratio]{img/#1-Logo}\par
+  \vfill
+  \includegraphics[width=\textwidth,height=.48\textheight,keepaspectratio]{img/#1-Module}\par
+  \vfill
+  \includegraphics[width=.72\textwidth]{img/KautenjaDSP}\par
+  \vspace{20pt}{\large User manual\quad /\quad Version \manualversion}\par
+  \vspace{8pt}{\small #2}\par
+  \end{center}
+  \clearpage\nopagecolor\hypersetup{pageanchor=true}
+  \pagenumbering{roman}\pdfbookmark[1]{Contents}{contents}\tableofcontents
+  \vfill{\small Select a contents entry or use the PDF outline to navigate.}\par
+  \clearpage\pagenumbering{arabic}}
+\newcommand{\manualcolophon}{%
+  \clearpage\thispagestyle{empty}\thispdfpagelabel{Publication details}
+  \pdfbookmark[1]{Publication details}{colophon}\pagecolor{manualCover}
+  \begin{center}\vspace*{.28\textheight}
+  \includegraphics[width=.72\textwidth]{img/KautenjaDSP}\par
+  \vspace{24pt}{\large\manualname\space User Manual}\par
+  Version \manualversion\quad /\quad September 2026\par
+  \vfill
+  {\small Documentation of the implementation shipped in this repository.\par
+  Original KautenjaDSP logos and panel illustrations retained.\par
+  \href{https://github.com/Kautenja/RackNES}{Project source}\quad /\quad
+  \href{https://github.com/Kautenja/RackNES/releases}{Releases and manuals}\par
+  Source and visual assets have separate
+  \href{https://github.com/Kautenja/RackNES/blob/master/LICENSE.md}{license terms}.}\par
+  \end{center}}

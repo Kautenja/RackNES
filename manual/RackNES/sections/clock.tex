@@ -1,0 +1,53 @@
+\manualchapter{Clock speed and clock output}{sec:clock}
+\subsection{Change the rate of the game}
+The large knob sets a requested CPU rate around \textbf{1.789773 MHz}.
+Its range is one sixteenth to sixteen times that rate, approximately
+\textbf{0.111861--28.636368 MHz}. It changes how quickly the game runs and
+issues sound commands. It is not a calibrated musical pitch control.
+
+The red attenuverter starts at \textbf{0\%}, so MOD has no effect until you
+turn it. Positive settings let positive voltage speed up execution;
+negative settings reverse the effect. At +100\%, adding 5 V doubles the
+requested rate and subtracting 5 V halves it, until the limits are reached.
+
+\begin{center}
+\begin{tabular}{@{}rrl@{}}
+\toprule
+\textbf{MOD voltage} & \textbf{Attenuverter} & \textbf{Rate relative to knob} \\
+\midrule
++5 V & +100\% & $2\times$ \\
++10 V & +100\% & $4\times$ \\
++5 V & $-100\%$ & $1/2\times$ \\
+Any & 0\% & Unchanged \\
+\bottomrule
+\end{tabular}
+\end{center}
+These are requested ratios before clamping and sample-step rounding. The
+knob's MHz readout describes its base setting; it does not include MOD.
+Use a slow CV first. High speed settings increase the amount of emulation
+work per Rack sample.
+
+\subsection{Use CLK as a clock source}
+CLK is a \textbf{0 V / 10 V} square wave with approximately 50\% duty cycle.
+It follows a counter of \textbf{29,781 emulated CPU cycles}, approximately
+one frame. It is not the raw MHz CPU clock and is not synchronized to a
+specific musical beat in a game. With no running game the counter does not
+advance; the output may stay high instead of producing pulses.
+
+A divider after CLK can supply slower events to sequencers or percussion.
+Changing Clock Speed changes this output too. MOD accepts a speed voltage,
+so sending a clock pulse into MOD alternates between two speeds; it does
+not lock RackNES to that pulse train.
+
+\subsection{Timing and sound limits}
+The implementation executes a whole number of CPU cycles on each Rack
+sample, rounding the requested cycle count upward. At 48 kHz and the default
+knob setting, it executes 38 cycles per sample and CLK is about
+\textbf{61.25 Hz}. The ideal requested ratio alone would suggest about
+60.10 Hz. Rack sample rate therefore affects the realized clock.
+
+Audio buffering uses a separate fixed conversion clock in this version.
+Clock Speed should be treated as an experimental game-speed control;
+neither clean tape-style transposition nor exact pitch tracking is promised.
+Hang holds CLK at its current voltage, and LOAD does not reset its counter
+phase. See page~\pageref{sec:reference} for the exact control equation.

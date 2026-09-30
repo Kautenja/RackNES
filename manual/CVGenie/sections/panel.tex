@@ -1,0 +1,38 @@
+\manualchapter{Panel and placement}{sec:panel}
+\begin{minipage}[t]{.37\textwidth}
+\vspace{0pt}\includegraphics[width=\textwidth]{img/CVGenie-Manual}
+\end{minipage}\hfill
+\begin{minipage}[t]{.58\textwidth}
+\setlength{\parskip}{6pt}
+\vspace{0pt}
+\subsection{1. Game selection}
+Click the top display to open \textbf{Games}. Choose Super Mario Bros. or
+The Legend of Zelda. It initially reads \textbf{No Game Selected}.
+Choose a game here before using the row menus or Randomize.
+
+Selecting a game does not change the loaded ROM and does not clear existing
+row selections. Use the switching procedure on page~\pageref{sec:state}.
+
+\subsection{2. Eight input rows}
+Each jack controls the selection shown directly to its right. Click the
+row display to open \textbf{Game Element}; the menu lists the current map's
+entries plus \textbf{Unassigned}. Rows have no built-in attenuator, offset,
+voltage meter, or readback of the game's current value.
+
+Use external CV utilities to scale and offset a source. Leave unused rows
+unplugged. The eight rows are equivalent; the top is row 1, the bottom row 8.
+\end{minipage}
+
+\subsection{One adjacent expander}
+Only the Genie touching RackNES's right edge communicates with it. A Genie
+to the left, on another rack row, or behind a second Genie has no direct
+connection. There is no cable for the expander link and no link-status light.
+The module has eight monophonic inputs; each reads only the first channel
+of a polyphonic cable.
+
+\subsection{Panel themes}
+The right-click menu offers \textbf{Light} and \textbf{Dark} under
+\textbf{Plugin Theme}. The selected panel changes immediately and becomes
+the default for newly created RackNES and Genie widgets. Other existing
+widgets do not all update at once. The preference is stored in Rack's user
+folder, separately from the patch.

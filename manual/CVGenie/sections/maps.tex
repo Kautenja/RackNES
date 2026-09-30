@@ -1,0 +1,168 @@
+\manualchapter{Built-in game maps}{sec:maps}
+These tables list every selectable entry in menu order. Addresses are
+hexadecimal; the two endpoint columns are decimal byte values at 0 V and
+10 V for continuous entries. \textbf{C} means a continuous write;
+\textbf{T} means a trigger toggles 0/1 and ignores the endpoints.
+
+The maps contain 53 Mario entries and 55 Zelda entries. They identify no
+specific ROM region or revision, and Genie does not check the ROM's identity.
+A supported mapper in RackNES does not establish that a memory map matches
+that ROM. The names and addresses below are the ones shipped in the code.
+
+\subsection{Super Mario Bros.}
+All five Enemy Heading entries use \texttt{0x001A}, the same address as
+Enemy 5 Type. They are not independent enemy-direction controls in this
+version. Spawn Powerup is marked as a toggle even though its stored
+endpoints are 0 and 46; the actual writes are 0 and 1.
+
+\begingroup\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}p{.49\textwidth}lrrc@{}}
+\toprule
+\textbf{Game Element} & \textbf{Address} & \textbf{0 V} & \textbf{10 V} & \textbf{Mode} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{@{}l}{\textit{Super Mario Bros. (continued)}}\\[4pt]
+\toprule
+\textbf{Game Element} & \textbf{Address} & \textbf{0 V} & \textbf{10 V} & \textbf{Mode} \\
+\midrule
+\endhead
+\midrule\multicolumn{5}{r@{}}{\textit{Continued on next page}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Player State & \texttt{0x000E} & 0 & 12 & C \\
+Player Float State & \texttt{0x001D} & 0 & 3 & C \\
+Player Facing Direction & \texttt{0x0033} & 0 & 2 & C \\
+Player Moving Direction & \texttt{0x0045} & 0 & 2 & C \\
+Player Horizontal Speed & \texttt{0x0700} & 0 & 40 & C \\
+Player Horizontal Level Position & \texttt{0x006D} & 0 & 255 & C \\
+Player Horizontal Screen Position & \texttt{0x0086} & 0 & 255 & C \\
+Player Vertical Screen Position & \texttt{0x00CE} & 0 & 255 & C \\
+Player Palette & \texttt{0x03C4} & 0 & 255 & C \\
+Player Sprite State & \texttt{0x06D5} & 0 & 255 & C \\
+Player Swimming & \texttt{0x0704} & 0 & 1 & T \\
+Player Powerup State & \texttt{0x0756} & 0 & 2 & C \\
+Player Lives & \texttt{0x075A} & 0 & 98 & C \\
+Player Coins & \texttt{0x075E} & 0 & 98 & C \\
+Spawn Powerup & \texttt{0x001B} & 0 & 46 & T \\
+Spawned Powerup Type & \texttt{0x0039} & 0 & 3 & C \\
+Mushroom Heading & \texttt{0x004B} & 0 & 2 & C \\
+Powerup Horizontal Screen Position & \texttt{0x008C} & 0 & 255 & C \\
+Powerup Vertical Screen Position & \texttt{0x00D4} & 0 & 255 & C \\
+Fireball Horizontal Screen Position & \texttt{0x008D} & 0 & 255 & C \\
+Fireball Vertical Screen Position & \texttt{0x00D5} & 0 & 255 & C \\
+Fireball Vertical Speed & \texttt{0x00A6} & 0 & 255 & C \\
+Enemy 1 Type & \texttt{0x0016} & 0 & 60 & C \\
+Enemy 2 Type & \texttt{0x0017} & 0 & 60 & C \\
+Enemy 3 Type & \texttt{0x0018} & 0 & 60 & C \\
+Enemy 4 Type & \texttt{0x0019} & 0 & 60 & C \\
+Enemy 5 Type & \texttt{0x001A} & 0 & 60 & C \\
+Enemy 1 Heading & \texttt{0x001A} & 0 & 2 & C \\
+Enemy 2 Heading & \texttt{0x001A} & 0 & 2 & C \\
+Enemy 3 Heading & \texttt{0x001A} & 0 & 2 & C \\
+Enemy 4 Heading & \texttt{0x001A} & 0 & 2 & C \\
+Enemy 5 Heading & \texttt{0x001A} & 0 & 2 & C \\
+Enemy 1 Horizontal Level Position & \texttt{0x006E} & 0 & 255 & C \\
+Enemy 2 Horizontal Level Position & \texttt{0x006F} & 0 & 255 & C \\
+Enemy 3 Horizontal Level Position & \texttt{0x0070} & 0 & 255 & C \\
+Enemy 4 Horizontal Level Position & \texttt{0x0071} & 0 & 255 & C \\
+Enemy 5 Horizontal Level Position & \texttt{0x0072} & 0 & 255 & C \\
+Enemy 1 Horizontal Screen Position & \texttt{0x0087} & 0 & 255 & C \\
+Enemy 2 Horizontal Screen Position & \texttt{0x0088} & 0 & 255 & C \\
+Enemy 3 Horizontal Screen Position & \texttt{0x0089} & 0 & 255 & C \\
+Enemy 4 Horizontal Screen Position & \texttt{0x008A} & 0 & 255 & C \\
+Enemy 5 Horizontal Screen Position & \texttt{0x008B} & 0 & 255 & C \\
+Enemy 1 Vertical Screen Position & \texttt{0x00CF} & 0 & 255 & C \\
+Enemy 2 Vertical Screen Position & \texttt{0x00D0} & 0 & 255 & C \\
+Enemy 3 Vertical Screen Position & \texttt{0x00D1} & 0 & 255 & C \\
+Enemy 4 Vertical Screen Position & \texttt{0x00D2} & 0 & 255 & C \\
+Enemy 5 Vertical Screen Position & \texttt{0x00D3} & 0 & 255 & C \\
+Level Layout Address & \texttt{0x00E7} & 0 & 255 & C \\
+Enemy Layout Address & \texttt{0x00E9} & 0 & 255 & C \\
+World Number & \texttt{0x075F} & 0 & 10 & C \\
+Level Number & \texttt{0x0760} & 0 & 4 & C \\
+Level State & \texttt{0x0772} & 0 & 3 & C \\
+Level Palette & \texttt{0x0773} & 0 & 4 & C \\
+\end{longtable}
+\endgroup
+\clearpage
+\subsection{The Legend of Zelda}
+Reverb (Pulse) has descending stored endpoints 128 and 1 but uses the toggle
+path, so it writes only 0/1. Potion Type likewise writes only 0/1 despite
+its 0--2 endpoints. Note Delay and Triangle Freeze are continuous 0--1
+entries, not toggles: in the intended range, 1 is reached at 10 V.
+
+\begingroup\small
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}p{.49\textwidth}lrrc@{}}
+\toprule
+\textbf{Game Element} & \textbf{Address} & \textbf{0 V} & \textbf{10 V} & \textbf{Mode} \\
+\midrule
+\endfirsthead
+\multicolumn{5}{@{}l}{\textit{The Legend of Zelda (continued)}}\\[4pt]
+\toprule
+\textbf{Game Element} & \textbf{Address} & \textbf{0 V} & \textbf{10 V} & \textbf{Mode} \\
+\midrule
+\endhead
+\midrule\multicolumn{5}{r@{}}{\textit{Continued on next page}}\\
+\endfoot
+\bottomrule
+\endlastfoot
+Candle On/Off & \texttt{0x0513} & 0 & 1 & T \\
+Randomizer & \texttt{0x0523} & 0 & 255 & C \\
+Cave Return Screen & \texttt{0x0526} & 0 & 255 & C \\
+Sword Disable & \texttt{0x052E} & 0 & 1 & T \\
+Frequency (Triangle) & \texttt{0x05F0} & 0 & 255 & C \\
+Reverb (Triangle) & \texttt{0x05F1} & 0 & 1 & T \\
+Rhythm & \texttt{0x05F4} & 0 & 255 & C \\
+Song & \texttt{0x0600} & 0 & 255 & C \\
+Jingle (Pulse 2) & \texttt{0x0607} & 0 & 128 & C \\
+Jingle (Pulse 1) & \texttt{0x0604} & 0 & 128 & C \\
+Sound Effect & \texttt{0x0606} & 0 & 255 & C \\
+Song Position (Pulse 2) & \texttt{0x060A} & 0 & 255 & C \\
+Song Position (Pulse 1) & \texttt{0x060B} & 0 & 255 & C \\
+Song Position (Triangle) & \texttt{0x060C} & 0 & 255 & C \\
+Song Position (Noise) & \texttt{0x060D} & 0 & 255 & C \\
+Note Duration (Pulse 1) & \texttt{0x060F} & 0 & 255 & C \\
+Note Duration (Pulse 2) & \texttt{0x0610} & 0 & 255 & C \\
+Rhythm (Pulse 2) & \texttt{0x0611} & 0 & 255 & C \\
+Volume (Pulse 2) & \texttt{0x0612} & 0 & 255 & C \\
+Rhythm (Pulse 1) & \texttt{0x0613} & 0 & 255 & C \\
+Volume (Pulse 1) & \texttt{0x0614} & 0 & 255 & C \\
+Note Duration (Triangle) & \texttt{0x0615} & 0 & 255 & C \\
+Note Delay & \texttt{0x0616} & 0 & 1 & C \\
+Reverb (Pulse) & \texttt{0x0619} & 128 & 1 & T \\
+Triangle Freeze & \texttt{0x061E} & 0 & 1 & C \\
+B Item & \texttt{0x0656} & 0 & 255 & C \\
+Sword Type & \texttt{0x0657} & 0 & 3 & C \\
+Bomb Count & \texttt{0x0658} & 0 & 255 & C \\
+Arrow Type & \texttt{0x0659} & 0 & 2 & C \\
+Bow Obtained & \texttt{0x065A} & 0 & 1 & T \\
+Candle Type & \texttt{0x065B} & 0 & 2 & C \\
+Whistle Obtained & \texttt{0x065C} & 0 & 1 & T \\
+Food Obtained & \texttt{0x065D} & 0 & 1 & T \\
+Potion Type & \texttt{0x065E} & 0 & 2 & T \\
+Magical Rod Obtained & \texttt{0x065F} & 0 & 1 & T \\
+Raft Obtained & \texttt{0x0660} & 0 & 1 & T \\
+Magic Book Obtained & \texttt{0x0661} & 0 & 1 & T \\
+Ring Type & \texttt{0x0662} & 0 & 2 & C \\
+Step Ladder Obtained & \texttt{0x0663} & 0 & 1 & T \\
+Magical Key Obtained & \texttt{0x0664} & 0 & 1 & T \\
+Power Bracelet Unlocked & \texttt{0x0665} & 0 & 1 & T \\
+Letter Obtained & \texttt{0x0666} & 0 & 1 & T \\
+Compasses Obtained & \texttt{0x0667} & 0 & 255 & C \\
+Maps Obtained & \texttt{0x0668} & 0 & 255 & C \\
+Lvl 9 Compass Obtained & \texttt{0x0669} & 0 & 1 & T \\
+Lvl 9 Map Obtained & \texttt{0x066A} & 0 & 1 & T \\
+Clock Obtained & \texttt{0x066C} & 0 & 1 & T \\
+Rupee Count & \texttt{0x066D} & 0 & 255 & C \\
+Key Count & \texttt{0x066E} & 0 & 255 & C \\
+Health & \texttt{0x066F} & 0 & 255 & C \\
+Triforce Pieces & \texttt{0x0671} & 0 & 255 & C \\
+Boomerang Obtained & \texttt{0x0674} & 0 & 1 & T \\
+Magic Boomerang Obtained & \texttt{0x0675} & 0 & 1 & T \\
+Magic Shield Obtained & \texttt{0x0676} & 0 & 1 & T \\
+Max Bomb Count & \texttt{0x067C} & 8 & 255 & C \\
+\end{longtable}
+\endgroup

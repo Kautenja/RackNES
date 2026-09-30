@@ -1,0 +1,47 @@
+\manualchapter{Voices and mixing}{sec:audio}
+The five voice outputs follow the NES audio channels. What each contains
+changes as the game plays music and sound effects.
+\begin{center}
+\begin{tabularx}{\textwidth}{@{}l X@{}}
+\toprule
+\textbf{Jack} & \textbf{Voice} \\
+\midrule
+SQ1 / SQ2 & Two pulse (square) voices, often used for melody and harmony. \\
+TRI & Triangle voice, often used for bass. \\
+NOI & Noise voice, often used for percussion and sound effects. \\
+DMC & Delta-modulated sample voice. It can be silent in games or passages that do not use it. \\
+MIX & Sum of the voices whose individual outputs are unpatched. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Separate outputs remove voices from MIX}
+Patch a voice's jack to take it out of MIX. Its level knob still controls
+its individual output. Unplug the jack to return it to MIX. This routing
+change depends on the cable connection, even if the receiving module is
+muted. Connecting all five voice outputs leaves MIX with no voices.
+
+Each voice level runs from \textbf{0\% to 200\%}, starting at 100\%.
+It affects that voice before either the separate jack or MIX. Mix Volume
+also runs from 0\% to 200\% and only scales MIX; it has no effect on the
+separate outputs.
+
+\subsection{Levels are content-dependent}
+The audio conversion maps a full-scale signed sample to approximately
+$\pm10$ V before the voice gain. This does \textbf{not} guarantee a 10 V
+peak-to-peak waveform at each jack. Actual amplitude depends on the NES
+voice and the game. At 200\%, the voice gain doubles its voltage.
+
+MIX adds the unpatched voices and applies its own gain; it is not normalized
+to their number and has no output limiter. Lower levels in RackNES or use
+an external mixer when combining voices. A downstream device can clip even
+when RackNES's own controls remain in range.
+
+\subsection{Try it: process just the noise}
+Keep MIX connected to one mixer channel. Connect NOI to a filter or delay,
+then to another mixer channel. Noise now takes the effects path while the
+other voices stay in MIX. Use the NOI knob to set the effects send level,
+and the external mixer to balance the two paths.
+
+Audio outputs are monophonic. Separate voices are separate jacks, not
+polyphonic channels in the MIX cable.

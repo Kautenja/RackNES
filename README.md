@@ -39,6 +39,20 @@ module.
 
 [CVGenie]: https://github.com/Kautenja/RackNES/releases/latest/download/CVGenie.pdf
 
+## Building The Manuals
+
+The [manual guide](manual/README.md) covers the shared LaTeX build, content
+verification, PDF review, and release workflow. Build both manuals without
+the Rack SDK using:
+
+```shell
+make -C manual
+```
+
+The PDFs are written to `manual/RackNES/.build/manual.pdf` and
+`manual/CVGenie/.build/manual.pdf`. The guides cover the controls and limitations
+of the current implementation, including all built-in CV Genie memory mappings.
+
 ## Citation
 
 The technical report, [**RackNES: A Voltage-Controlled NES Emulator as a Musical
