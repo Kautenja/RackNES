@@ -150,3 +150,30 @@ it removes its temporary ROM on success. The fixture leaves reset-default
 rendering enabled with zero-filled CHR; it does not configure graphics through
 PPU registers. It does not cover clock modulation, channel/MIX routing, listening,
 or audio changes caused by a game's response to corrected graphics behavior.
+
+## SRAM Interchange
+
+The default suite checks strict 8 KiB SRAM eligibility, full-byte transfers,
+unchanged non-SRAM JSON and backups, legacy patch restoration, malformed RAM
+lengths, one-slot overflow/acknowledgement, 1,000 concurrent round trips,
+Hang, reset/replacement/restore/destruction, and empty/preview menus. File
+checks include short/long/empty/missing inputs, atomic overwrite, cancellation,
+failed replacement, and (on POSIX) an injected partial write using RLIMIT_FSIZE.
+These are assertions against production code, not an interactive Rack session.
+
+An optional independent-emulator check needs Python 3 and a built FCEUmm
+libretro core. From `tests/`, with the same Rack runtime used by `make`:
+
+```shell
+DYLD_LIBRARY_PATH=../../.. python3 sram_interop.py /absolute/path/to/fceumm_libretro.dylib
+```
+
+Use `LD_LIBRARY_PATH` and `.so` on Linux, or the Rack DLL in `PATH` and the
+FCEUmm `.dll` on Windows. The script generates an original MMC1 song-loader
+ROM, exports FCEUmm's raw save domain, imports/exports it through the RackNES
+assertion executable, then reloads the result into FCEUmm. Both cores execute
+the ROM and must load its sixteen-note record into CPU RAM. All 8,192 save
+bytes must match. Artifacts stay in `.build/sram-interop/`; hashes, core
+revision, and observed notes are printed. This establishes interchange for
+the synthetic fixture, not compatibility with a particular commercial game
+or tracker. See [spec 004](../specs/004-sram-import-export.md) for evidence.

@@ -38,7 +38,7 @@ class MapperNROM : public ROM::Mapper {
     }
 
     /// Create a mapper as a copy of another mapper.
-    MapperNROM(const MapperNROM& other) : ROM::Mapper(*this),
+    MapperNROM(const MapperNROM& other) : ROM::Mapper(other),
         is_one_bank(other.is_one_bank),
         has_character_ram(other.has_character_ram),
         character_ram(other.character_ram) { }

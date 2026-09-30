@@ -42,7 +42,7 @@ class MapperUNROM : public ROM::Mapper {
     }
 
     /// Create a mapper as a copy of another mapper.
-    MapperUNROM(const MapperUNROM& other) : ROM::Mapper(*this),
+    MapperUNROM(const MapperUNROM& other) : ROM::Mapper(other),
         has_character_ram(other.has_character_ram),
         last_bank_pointer(other.last_bank_pointer),
         select_prg(other.select_prg),

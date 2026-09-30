@@ -80,6 +80,13 @@
 
 ### 2.2.0 (Unreleased)
 
+-   Add Import SRAM and Export SRAM for explicit, reviewed 8 KiB battery-RAM
+    layouts on mappers 0--3. Use bounded generation-checked engine/UI transfers,
+    exact-size validation, and temporary-file replacement. Preserve SAVE/LOAD
+    snapshots and legacy patch RAM; decline ambiguous or banked save layouts.
+    Initialize the APU snapshot wrapper so omitted fields do not serialize
+    uninitialized stack bytes.
+
 -   Add mapper 9 (MMC2 / PxROM): bounded PRG/CHR banks, post-read CHR latches,
     mirroring, 8 KiB PRG RAM, validated mapper state, and cartridge clones.
     Reuse fetched pattern bytes for MMC2 rendering and preserve them in

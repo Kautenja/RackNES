@@ -16,6 +16,7 @@ Model* modelInputGenie = &inputGenieModel;
 
 #include "axrom.hpp"
 #include "mmc2.hpp"
+#include "sram.hpp"
 
 /// Preserve held buttons and the unread portion of a controller stream.
 static void check_controller_state() {
@@ -374,6 +375,10 @@ int main(int argc, char** argv) {
         check_graphics_audio_preservation(768000);
         return 0;
     }
+    if (argc == 5 && std::string(argv[1]) == "--sram-interop") {
+        check_sram_interop(argv[2], argv[3], argv[4]);
+        return 0;
+    }
     assert(argc == 1);
     check_controller_state();
     check_blip_sample_reads();
@@ -388,7 +393,12 @@ int main(int argc, char** argv) {
     check_mmc2_cpu();
     Context context;
     context.engine = new engine::Engine;
+    context.event = new widget::EventState;
     contextSet(&context);
+    check_sram_domains();
+    check_sram_mailbox();
+    check_sram_files_and_module();
+    check_sram_menus();
     check_axrom_module();
     check_mmc2_state();
     {

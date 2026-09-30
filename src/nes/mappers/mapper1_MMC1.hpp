@@ -98,7 +98,7 @@ class MapperMMC1 : public ROM::Mapper {
     }
 
     /// Create a mapper as a copy of another mapper.
-    MapperMMC1(const MapperMMC1& other) : ROM::Mapper(*this),
+    MapperMMC1(const MapperMMC1& other) : ROM::Mapper(other),
         mirroring_callback(other.mirroring_callback),
         mirroring(other.mirroring),
         has_character_ram(other.has_character_ram),

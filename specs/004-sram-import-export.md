@@ -3,7 +3,7 @@
 Implement [#52: Serialization of SRAM][issue] so a user can compose in another
 emulator and bring cartridge save data into RackNES for processing.
 
-Status: PLANNED
+Status: IN PROGRESS
 
 Created: September 30, 2026
 
@@ -21,7 +21,8 @@ An incorrect file length leaves the running game and all snapshots unchanged.
 
 ## Current Code And Dependencies
 
-[MainBus](../src/nes/main_bus.hpp) currently owns fixed 8 KiB extended RAM;
+Before this increment, [MainBus](../src/nes/main_bus.hpp) owned fixed 8 KiB
+extended RAM;
 [ROM](../src/nes/rom.hpp) gates it on the battery flag. That array is already
 stored in patch JSON, but the module has no external save-file service.
 [Spec 001](001-nes-py-integration.md) moves RAM ownership to cartridge mappers
@@ -74,14 +75,14 @@ are outside this increment.
 
 ## Acceptance Criteria
 
-- [ ] Exact-size import/export round-trips all bytes with a synthetic fixture;
+- [x] Exact-size import/export round-trips all bytes with a synthetic fixture;
     CPU, PPU, APU, controllers, mapper registers, and backups stay unchanged.
-- [ ] Empty, short, long, unreadable, and unsupported files fail safely;
+- [x] Empty, short, long, unreadable, and unsupported files fail safely;
     failed exports preserve an existing destination.
-- [ ] Concurrent request, hang, replacement, reset, restore, and destruction
+- [x] Concurrent request, hang, replacement, reset, restore, and destruction
     cases obey the bounded handoff and never apply to a stale cartridge.
-- [ ] Legacy patches retain their RAM and load normally after the feature.
-- [ ] An identified external emulator's raw save imports into RackNES and a
+- [x] Legacy patches retain their RAM and load normally after the feature.
+- [x] An identified external emulator's raw save imports into RackNES and a
     RackNES export loads there, with tool versions, ROM hash, size, and
     observed game/tracker data recorded. A self-round-trip is insufficient.
 - [ ] Menus work with empty cartridges and browser previews. Documentation
@@ -107,3 +108,154 @@ and limitations here before marking complete and archiving. Planning has not
 implemented or validated SRAM interchange; keep #52 open until its gates pass.
 
 [issue]: https://github.com/Kautenja/RackNES/issues/52
+
+## Transfer Contract
+
+The UI and engine share one preallocated 8,192-byte mailbox per module.
+Capacity is one operation, including its dialog and file handling; additional
+requests fail as busy. States are Idle, Preparing (UI owns bytes), Pending
+(engine owns bytes), and Done (UI owns the acknowledged result). Release/acquire
+publication transfers ownership; only the UI returns Done to Idle. The engine
+never waits, allocates, opens a file, or presents errors for this service.
+
+The engine services the mailbox after divided CV controls and expander writes,
+before Hang returns. An emulator generation changes on ROM load, reset,
+restoration, or removal. Each request captures the published generation before
+opening its dialog; the engine rejects mismatches before touching RAM. The UI
+also checks generation before committing an exported file. Module destruction
+closes a shared service object; menu callbacks retain only that object, never
+a module pointer. File operations run synchronously on the UI thread; there is
+no worker and no worker join on the engine thread. Export completion linearizes
+at the final generation check before atomic replacement.
+
+Cartridge mappers own the fixed legacy RAM window, while `bus.extended_ram`
+remains the serialized compatibility field. The initial file boundary requires
+clean NTSC headers, a declared single 8 KiB battery PRG-RAM domain, supported
+ROM sizes, no trainer/four-screen layout, no CHR NVRAM or extra devices, and
+mapper 0--3. Ambiguous legacy headers without an explicit RAM size are declined.
+This is a narrow prerequisite slice of spec 001, not its general memory/parser
+migration or support for banked SRAM.
+
+## Implementation And Validation: September 30, 2026
+
+Implemented the mapper-owned fixed RAM window and exact-size transfer API,
+SRAM context menu, shared single-slot service, generation invalidation, UI-only
+file operations, and atomic sibling-file replacement. The existing
+`emulator`, `backup`, and `bus.extended_ram` JSON fields retain their meanings.
+Legacy RAM restoration now checks the decoded length before copying; malformed
+lengths cannot resize the CPU-visible memory window. Mapper copy constructors
+copy the new RAM array from the source rather than from an uninitialized self.
+The legacy general clone/callback ownership limitations of spec 001 are not
+claimed fixed by this increment.
+
+The new exact-state regression exposed an existing uninitialized serialized
+APU byte: the bundled snapshot writer omits triangle phase. Value-initialize
+the first-party snapshot wrapper before filling it. This gives that omitted
+field a deterministic zero; it does not add triangle-phase restoration or
+resolve the other historical snapshot omissions. No bundled audio library
+implementation was changed for SRAM support.
+
+Header eligibility follows [iNES RAM metadata][ines] and the distinction
+between fixed and banked RAM on [MMC1 boards][mmc1]. Legacy RAM-size byte zero
+is deliberately declined because it does not explicitly establish the save
+size. NES 2.0 requires byte 10 equal to `0x70`, byte 11 equal to zero with CHR
+ROM or `0x07` without it, submapper zero, and no extended ROM-size fields or
+extra devices. CHR NVRAM and mixed volatile/persistent PRG RAM are declined.
+This does not expand the loader's general NES 2.0 compatibility.
+
+Validation used macOS arm64, Apple Clang 21, and the prepared Rack Free 2.6.0
+tree at `../..`. Work was uncommitted; the shared checkout advanced to
+`8013d8f` for the independent MMC2 work during this task and also contained
+ongoing spec 001 edits. Those changes were preserved. No commit or push was
+requested or performed by this task.
+
+-   `make -j4`: passed. Existing Rack SDK deprecation warnings remain.
+-   `make -C tests -j2`: passed with AddressSanitizer and
+    UndefinedBehaviorSanitizer. The new assertions cover IDs 0--3 with iNES
+    and NES 2.0 headers, every save byte, unchanged other serialized state,
+    unchanged backups, LOAD undo, legacy JSON, invalid lengths, rejected
+    layouts, one-slot overflow and acknowledgement, 1,000 concurrent
+    import/export pairs, Hang, reset/replacement/restore/removal, and retained
+    UI service objects after destruction in Preparing, Pending, and Done.
+-   File assertions cover empty/short/long/missing input, overwrite, stale
+    export, nonexistent parent, replacement failure, and a forced partial
+    write using POSIX `RLIMIT_FSIZE`. The existing regular-file destination
+    survived the forced failure byte for byte. No Windows or Linux run was
+    performed; the Windows UTF-16 path and replacement branch remains untested.
+-   Audio assertions pass with unchanged fingerprints `f5146c03e0a6ceb2`
+    (1,789,773 Hz Blip clock) and `d8915d435c9cf9a9` (768,000 Hz), covering
+    the existing 44.1/48/96/192 kHz workloads. No performance claim is made.
+-   `make -C manual`: passed. Reviewed the 14-page RackNES PDF, including the
+    full SRAM page, contents, page flow and references. No panel geometry or
+    runtime SVG changed, so panel captures were not regenerated.
+-   Headless menu enumeration passed for a supported cartridge, an empty
+    module, and a null preview service. An isolated Rack Free 2.6.0 session
+    at 48 kHz loaded the original test ROM and displayed the production panel
+    with Hang set. Native dialog actions could not be exercised: computer-use
+    read the window but repeated click attempts returned `noWindowsAvailable`.
+    The temporary test process was closed. An earlier isolated Rack Pro 2.6.3
+    attempt required activation; the ordinary user profile was not changed.
+-   `git diff --check`: passed. No issue was closed and the spec remains
+    IN PROGRESS until the native dialog/overwrite/cancel checks are verified.
+
+### Independent Save Interchange
+
+Built [FCEUmm][fceumm] at
+`7a542dab1e87679921962a9f056186eca425c0c2`, reporting `(SVN) 7a542da`, with
+`make -f Makefile.libretro -j4 platform=osx arch=arm64`. The optional
+[interchange driver](../tests/sram_interop.py) uses its actual libretro
+`RETRO_MEMORY_SAVE_RAM` domain, which reports 8,192 bytes. It is independent
+of RackNES's cartridge storage and serialization implementation.
+
+From `tests/`, after the assertion build:
+
+```shell
+DYLD_LIBRARY_PATH=../../.. python3 sram_interop.py /tmp/racknes-004-fceumm/fceumm_libretro.dylib
+```
+
+The script generates an original mapper-1 homebrew song-loader ROM. FCEUmm
+executes it with a synthetic song record in SRAM, exports the raw memory
+through the frontend, and RackNES imports the file and executes the ROM.
+RackNES's export is then loaded into a newly loaded FCEUmm cartridge. Both
+cores must load these sixteen note numbers into CPU RAM at `$0010--$001F`:
+
+```text
+48 52 55 60 55 52 48 43 45 48 52 57 52 48 45 40
+```
+
+All 8,192 bytes match in both directions, including the nonuniform remainder
+of the save. Hashes printed by the passing run:
+
+-   ROM SHA-256:
+    `6b1390548acf4b13662837f8ac5efc3c0a26de1c70d478cbebd3202cc6d22b18`
+-   Save SHA-256:
+    `37e9236597251c2cb7b63bf0d60ef0b7b4245dc776ee6c4d655ff357283af685`
+
+Fixtures remain in ignored `tests/.build/sram-interop/`. This establishes raw
+format and CPU-visible byte order for the synthetic song loader, not tested
+compatibility with any commercial game or third-party tracker. Tracker support
+still depends on its actual mapper and memory layout.
+
+[ines]: https://www.nesdev.org/wiki/INES
+[mmc1]: https://www.nesdev.org/wiki/INES_Mapper_001
+[fceumm]: https://github.com/libretro/libretro-fceumm/tree/7a542dab1e87679921962a9f056186eca425c0c2
+
+### Commit Preparation: September 30, 2026
+
+At the user's request, isolated the SRAM changes from the concurrent MMC3
+work, including overlapping edits in shared source files. Exported the exact
+prospective commit based on `8013d8f` to a temporary source directory and
+validated it independently with the same absolute Rack SDK path for both
+builds:
+
+```shell
+make -j4 RACK_DIR=/absolute/path/to/Rack
+make -C tests -j2 RACK_DIR=/absolute/path/to/Rack
+```
+
+Both passed, including ASan/UBSan and the existing audio fingerprints. The
+FCEUmm interchange script also passed against this isolated version with the
+same ROM/save hashes and observed notes recorded above. Reviewed the complete
+SRAM-only diff and ran `git diff --cached --check` before committing. Native
+file-dialog verification remains open; this commit does not mark the spec
+complete or include unrelated MMC3 work.

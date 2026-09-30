@@ -36,6 +36,10 @@ through its own effects chain.
 -   **Revisit a moment.** SAVE captures one emulator snapshot; LOAD returns
     to it. Repeated triggers can retrace a phrase or sound effect while you
     change the controls around it.
+-   **Exchange cartridge saves.** Import or export raw 8 KiB SRAM for reviewed
+    battery-RAM layouts on mappers 0--3. Match the game and ROM revision;
+    SRAM files are separate from SAVE/LOAD snapshots. See the manual for
+    header and layout restrictions.
 -   **Split the soundtrack.** Mix the two pulse voices, triangle, noise,
     and DMC sample channel, or patch their five individual outputs for
     separate processing. Audio follows Rack's host sample rate.

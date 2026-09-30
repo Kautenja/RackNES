@@ -27,6 +27,9 @@ class Emulator {
  private:
     /// the number of elapsed cycles
     uint32_t cycles = 0;
+    /// Engine-owned lifecycle identity; never serialized into patches.
+    uint64_t cartridge_generation = 1;
+
     /// the virtual cartridge with ROM and mapper data
     Cartridge* cartridge = nullptr;
     /// the 2 controllers on the emulator
@@ -126,6 +129,19 @@ class Emulator {
     ///
     inline bool has_game() const { return cartridge != nullptr; }
 
+    /// Engine-side SRAM interface; UI code must use the bounded mailbox.
+    void invalidate_sram_requests() { ++cartridge_generation; }
+    uint64_t get_cartridge_generation() const { return cartridge_generation; }
+    std::size_t persistent_size() const {
+        return cartridge ? cartridge->get_mapper()->persistent_size() : 0;
+    }
+    bool import_sram(const NES_Byte* data, std::size_t size) {
+        return cartridge && cartridge->get_mapper()->import_sram(data, size);
+    }
+    bool export_sram(NES_Byte* data, std::size_t size) const {
+        return cartridge && cartridge->get_mapper()->export_sram(data, size);
+    }
+
     /// @brief Load a new game into the emulator.
     ///
     /// @param path a path to the ROM to load into the emulator
@@ -158,6 +174,8 @@ class Emulator {
 
     /// @brief Remove the inserted game from the emulator.
     inline void remove_game() {
+        ++cartridge_generation;
+        bus.set_mapper(nullptr);
         if (cartridge != nullptr) {
             delete cartridge;
             cartridge = nullptr;
@@ -257,6 +275,7 @@ class Emulator {
 
     /// @brief Emulate pressing the reset button on the NES.
     inline void reset() {
+        ++cartridge_generation;
         // ignore the call if there is no game
         if (!has_game()) return;
         // reset the CPU, PPU, and APU
@@ -293,6 +312,7 @@ class Emulator {
     /// @param other the other instance to copy the data from into this
     ///
     void copy_from(const Emulator &other) {
+        ++cartridge_generation;
         if (other.cartridge != nullptr) {  // other has cartridge to clone
             cartridge = other.cartridge->clone();
         } else if (cartridge != nullptr) {  // other has no cartridge, this does
@@ -303,6 +323,7 @@ class Emulator {
         controllers[0] = other.controllers[0];
         controllers[1] = other.controllers[1];
         bus = other.bus;
+        bus.set_mapper(cartridge ? cartridge->get_mapper() : nullptr);
         picture_bus = other.picture_bus;
         cpu = other.cpu;
         ppu = other.ppu;
@@ -336,6 +357,7 @@ class Emulator {
     /// points to an invalid or unsupported ROM file
     ///
     bool dataFromJson(json_t* rootJ) {
+        ++cartridge_generation;
         json_t* fetch = json_object_get(json_object_get(rootJ, "ppu"), "chr_latch_fetches");
         if (fetch && !PPU::is_valid_latch_fetch_state(fetch)) return false;
         // load cartridge

@@ -78,8 +78,6 @@ class MainBus {
  private:
     /// The RAM on the main bus
     std::vector<NES_Byte> ram = std::vector<NES_Byte>(0x800, 0);
-    /// The extended RAM (if the mapper has extended RAM)
-    std::vector<NES_Byte> extended_ram = std::vector<NES_Byte>(0);
     /// a pointer to the mapper on the cartridge
     ROM::Mapper* mapper = nullptr;
     /// a map of IO registers to callback methods for writes
@@ -94,9 +92,7 @@ class MainBus {
     ///
     void set_mapper(ROM::Mapper* mapper_) {
         mapper = mapper_;
-        // Cartridge replacement starts fresh RAM; JSON restoration follows
-        // attachment and restores the existing bus-owned RAM field.
-        extended_ram.assign(mapper->hasExtendedRAM() ? 0x2000 : 0, 0);
+        // New cartridges own fresh RAM; legacy bus JSON restores it below.
     }
 
     /// Set a callback for when writes occur.
@@ -119,7 +115,7 @@ class MainBus {
         } else if (address < 0x6000) {
             NES_DEBUG("Expansion ROM access attempted, which is unsupported");
         } else if (address < 0x8000 && mapper->hasExtendedRAM()) {
-            return &extended_ram[address - 0x6000];
+            return &mapper->get_extended_ram()[address - 0x6000];
         }
         return nullptr;
     }
@@ -161,7 +157,7 @@ class MainBus {
         } else if (address < 0x6000) {
             NES_DEBUG("Expansion ROM read attempted. This is currently unsupported");
         } else if (address < 0x8000) {
-            if (mapper->hasExtendedRAM()) return extended_ram[address - 0x6000];
+            if (mapper->hasExtendedRAM()) return mapper->get_extended_ram()[address - 0x6000];
         } else {
             return mapper->readPRG(address);
         }
@@ -197,7 +193,7 @@ class MainBus {
         } else if (address < 0x6000) {
             NES_DEBUG("Expansion ROM write access attempted. This is currently unsupported");
         } else if (address < 0x8000) {
-            if (mapper->hasExtendedRAM()) extended_ram[address - 0x6000] = value;
+            if (mapper->hasExtendedRAM()) mapper->get_extended_ram()[address - 0x6000] = value;
         } else {
             mapper->writePRG(address, value);
         }
@@ -213,7 +209,8 @@ class MainBus {
         }
         // encode extended_ram
         {
-            auto data_string = base64_encode(extended_ram.data(), extended_ram.size());
+            auto data_string = base64_encode(mapper ? mapper->get_extended_ram() : nullptr,
+                mapper ? mapper->extended_ram_size() : 0);
             json_object_set_new(rootJ, "extended_ram", json_string(data_string.c_str()));
         }
         return rootJ;
@@ -233,10 +230,10 @@ class MainBus {
         // load extended_ram
         {
             json_t* json_data = json_object_get(rootJ, "extended_ram");
-            if (json_data) {
-                std::string data_string = json_string_value(json_data);
-                data_string = base64_decode(data_string);
-                extended_ram = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+            if (mapper && json_is_string(json_data)) {
+                const auto data = base64_decode(json_string_value(json_data));
+                if (data.size() == mapper->extended_ram_size())
+                    std::copy(data.begin(), data.end(), mapper->get_extended_ram());
             }
         }
     }

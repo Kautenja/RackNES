@@ -34,7 +34,7 @@ class MapperCNROM : public ROM::Mapper {
         select_chr(0) { }
 
     /// Create a mapper as a copy of another mapper.
-    MapperCNROM(const MapperCNROM& other) : ROM::Mapper(*this),
+    MapperCNROM(const MapperCNROM& other) : ROM::Mapper(other),
         is_one_bank(other.is_one_bank),
         select_chr(other.select_chr) { }
 

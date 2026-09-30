@@ -11,6 +11,8 @@
 #ifndef NES_CARTRIDGE_HPP
 #define NES_CARTRIDGE_HPP
 
+#include <algorithm>
+#include <cstring>
 #include <fstream>
 #include <string>
 #include <array>
@@ -33,6 +35,9 @@ enum NameTableMirroring {
 /// A cartridge holding game ROM and a special hardware mapper emulation
 class ROM {
  protected:
+    /// Exact-size SRAM eligibility, decoded independently of legacy bitfields.
+    bool raw_sram_supported = false;
+
     /// the path to the ROM file on disk
     std::string rom_path;
     /// the PRG ROM
@@ -179,6 +184,30 @@ class ROM {
         // create a byte vector for the iNES header
         std::vector<NES_Byte> header(HEADER_SIZE);
         romFile.read(reinterpret_cast<char*>(&header[0]), HEADER_SIZE);
+        // Decline ambiguous layouts rather than guessing the save-file domain.
+        romFile.seekg(0, std::ios::end);
+        const auto image_size = romFile.tellg();
+        romFile.seekg(HEADER_SIZE);
+        const unsigned mapper_id = (header[6] >> 4) | (header[7] & 0xF0);
+        const bool nes2 = header[7] == 0x08;
+        const bool power_of_two = header[4] && !(header[4] & (header[4] - 1));
+        const bool prg_ok = power_of_two &&
+            (mapper_id == 0 || mapper_id == 3 ? header[4] <= 2 : header[4] <= 16);
+        const bool chr_ok = mapper_id == 2 ? header[5] == 0 :
+            mapper_id == 0 ? header[5] <= 1 :
+            mapper_id == 3 ? (header[5] == 1 || header[5] == 2 || header[5] == 4) :
+            header[5] <= 16 && (!header[5] || !(header[5] & (header[5] - 1)));
+        const bool legacy_memory = header[7] == 0 && header[8] == 1 &&
+            std::all_of(header.begin() + 9, header.end(), [](NES_Byte b) { return b == 0; });
+        const bool nes2_memory = nes2 && header[8] == 0 && header[9] == 0 &&
+            header[10] == 0x70 && header[11] == (header[5] ? 0 : 7) &&
+            std::all_of(header.begin() + 12, header.end(), [](NES_Byte b) { return b == 0; });
+        raw_sram_supported = header[0] == 'N' && header[1] == 'E' &&
+            header[2] == 'S' && header[3] == 0x1A && mapper_id <= 3 &&
+            (header[6] & 0x0E) == 2 && prg_ok && chr_ok &&
+            (legacy_memory || nes2_memory) &&
+            image_size == static_cast<std::streamoff>(HEADER_SIZE +
+                header[4] * 0x4000 + header[5] * 0x2000);
         // read the flag registers
         auto prg_banks = header[PRG_ROM_SIZE];
         auto chr_banks = header[CHR_ROM_SIZE];
@@ -364,8 +393,11 @@ class ROM {
         /// The ROM file this mapper interacts with
         ROM& rom;
 
-        /// Create a mapper as a copy of another mapper (disabled).
-        Mapper(const Mapper& other) : rom(other.rom) { }
+        /// Fixed legacy $6000--$7FFF window, now owned by the cartridge mapper.
+        std::array<NES_Byte, 0x2000> extended_ram = {};
+
+        /// Copy the RAM window independently, retaining the legacy ROM reference.
+        Mapper(const Mapper& other) : rom(other.rom), extended_ram(other.extended_ram) { }
 
      public:
         /// @brief Create a new mapper with a rom and given type.
@@ -386,6 +418,28 @@ class ROM {
         /// @returns true if the ROM requires extended RAM, false otherwise
         ///
         inline virtual bool hasExtendedRAM() const { return rom.hasExtendedRAM(); }
+
+        /// Legacy bus serialization and CPU mapping; not a raw file interface.
+        NES_Byte* get_extended_ram() { return extended_ram.data(); }
+        const NES_Byte* get_extended_ram() const { return extended_ram.data(); }
+        std::size_t extended_ram_size() const { return hasExtendedRAM() ? extended_ram.size() : 0; }
+
+        /// Size of the reviewed persistent memory domain, or zero if unsupported.
+        std::size_t persistent_size() const {
+            return rom.raw_sram_supported ? extended_ram.size() : 0;
+        }
+
+        /// Exact-size transfers only; callers own the engine/control boundary.
+        bool import_sram(const NES_Byte* data, std::size_t size) {
+            if (!data || !size || size != persistent_size()) return false;
+            std::memcpy(extended_ram.data(), data, size);
+            return true;
+        }
+        bool export_sram(NES_Byte* data, std::size_t size) const {
+            if (!data || !size || size != persistent_size()) return false;
+            std::memcpy(data, extended_ram.data(), size);
+            return true;
+        }
 
         /// Whether rendering must reuse fetched patterns to avoid extra latches.
         inline virtual bool hasCHRReadLatches() const { return false; }

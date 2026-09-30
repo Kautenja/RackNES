@@ -16,6 +16,7 @@
 #include <cstring>
 #include <filesystem>
 #include <string>
+#include <memory>
 #include <jansson.h>
 #include "plugin.hpp"
 #include "osdialog.h"
@@ -23,6 +24,7 @@
 #include "widget/display.hpp"
 #include "nes/emulator.hpp"
 #include "theme.hpp"
+#include "sram_transfer.hpp"
 
 /// a trigger for a button with a CV input.
 struct CVButtonTrigger {
@@ -84,6 +86,9 @@ struct RackNES : Module {
     enum LightIds {
         NUM_LIGHTS
     };
+
+    /// Shared service retained by UI actions, never a shared emulator pointer.
+    std::shared_ptr<SRAMTransfer> sram = std::make_shared<SRAMTransfer>();
 
     /// the NES emulator
     NES::Emulator emulator;
@@ -205,14 +210,22 @@ struct RackNES : Module {
     }
 
     /// Release the optional snapshot through its owning JSON library.
-    ~RackNES() override { json_decref(backup); }
+    ~RackNES() override { sram->close(); json_decref(backup); }
+
+    /// Publish cancellation before lifecycle work can overlap a UI file commit.
+    void invalidateSRAM() {
+        emulator.invalidate_sram_requests();
+        sram->publish(emulator);
+    }
 
     /// Handle a new ROM being loaded into the emulator.
     void handleNewROM() {
+        invalidateSRAM();
         // create a new emulator with the specified ROM and reset it
         if (NES::Cartridge::is_valid_rom(rom_path_signal)) {  // ROM file valid
             // if load game returns true, the load succeeded
             if (emulator.load_game(rom_path_signal)) {
+                sram->publish(emulator);
                 // remove the existing backup if there is one
                 json_decref(backup);
                 backup = nullptr;
@@ -277,12 +290,20 @@ struct RackNES : Module {
         if (resetButton.process(
             params[PARAM_RESET].getValue(),
             inputs[INPUT_RESET].getVoltage()
-        )) emulator.reset();
+        )) {
+            invalidateSRAM();
+            emulator.reset();
+        }
         // handle inputs to the load button and CV
         if (loadButton.process(
             params[PARAM_LOAD].getValue(),
             inputs[INPUT_LOAD].getVoltage()
-        ) && backup != nullptr) emulator.dataFromJson(backup);
+        ) && backup != nullptr) {
+            invalidateSRAM();
+            emulator.dataFromJson(backup);
+        }
+
+        sram->publish(emulator);
 
         // get the controller for both players as a byte where each bit
         // represents the gate signal for whether one of the 8 buttons are
@@ -361,6 +382,8 @@ struct RackNES : Module {
         // process expanders at every sample step
         processExpanders();
 
+        sram->process(emulator);
+
         // stop processing if the hang button is high
         if (hangButton.isHigh()) return;
 
@@ -395,7 +418,9 @@ struct RackNES : Module {
 
     /// @brief Respond to the module being reset by the host environment.
     void onReset() override {
+        invalidateSRAM();
         emulator.remove_game();
+        sram->publish(emulator);
         json_decref(backup);
         backup = nullptr;
         initalizeScreen();
@@ -421,11 +446,13 @@ struct RackNES : Module {
     ///
     void dataFromJson(json_t* rootJ) override {
         json_t* emulator_data = json_object_get(rootJ, "emulator");
+        invalidateSRAM();
         // load emulator
         if (emulator_data) {
             // set the reload signal based on whether the reload from JSON
             // succeeded. dataFromJson returns true for success, false for fail
             rom_reload_failed_signal = !emulator.dataFromJson(emulator_data);
+            sram->publish(emulator);
             // if the reload failed, get out of here
             if (rom_reload_failed_signal) return;
         }
@@ -452,6 +479,7 @@ struct ROMMenuItem : MenuItem {
 
     /// Respond to an action on the menu item.
     void onAction(const event::Action &e) override {
+        if (!module) return;
         // check for a ROM path to use as an existing directory
         auto rom_path = module->emulator.get_rom_path();
         // if the ROM path is empty, fall back on the user's home directory
@@ -467,6 +495,50 @@ struct ROMMenuItem : MenuItem {
         }
     }
 };
+
+/// Dialog and file work stay on the UI thread; only the service is retained.
+struct SRAMMenuItem : MenuItem {
+    std::shared_ptr<SRAMTransfer> transfer;
+    bool importing = false;
+
+    void onAction(const event::Action& e) override {
+        if (!transfer || !transfer->begin(importing)) {
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK,
+                "SRAM transfer busy or cartridge layout unsupported (requires 8192 bytes).");
+            return;
+        }
+        auto filter = osdialog_filters_parse("Raw SRAM:sav,SAV");
+        char* path = osdialog_file(importing ? OSDIALOG_OPEN : OSDIALOG_SAVE,
+            nullptr, importing ? nullptr : "cartridge.sav", filter);
+        osdialog_filters_free(filter);
+        if (!path) { transfer->release(); return; }
+        const std::string selected(path);
+        free(path);
+        if (importing && !SRAMFiles::read(selected, *transfer)) {
+            transfer->release();
+            osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK,
+                "Cannot import SRAM: expected exactly 8192 readable bytes. Live RAM and SAVE are unchanged.");
+            return;
+        }
+        transfer->destination = selected;
+        transfer->submit();
+    }
+};
+
+/// Also used by headless checks for empty modules and browser previews.
+static void appendSRAMMenu(ui::Menu* menu, std::shared_ptr<SRAMTransfer> transfer) {
+    for (bool importing : {true, false}) {
+        auto* item = new SRAMMenuItem;
+        item->text = importing ? "Import SRAM..." : "Export SRAM...";
+        item->importing = importing;
+        item->transfer = transfer;
+        item->disabled = !item->transfer || !item->transfer->supported() ||
+            item->transfer->busy();
+        menu->addChild(item);
+    }
+    menu->addChild(createMenuLabel("SRAM: supported 8 KiB battery RAM only; match ROM revision."));
+    menu->addChild(createMenuLabel("Import keeps SAVE; LOAD can undo it. Use game load or NES reset."));
+}
 
 /// The basename for the RackNES panel files.
 const char BASENAME[] = "res/RackNES";
@@ -560,6 +632,21 @@ struct RackNESWidget : ThemedWidget<BASENAME> {
         addParam(createParam<CKD6_NES_Red>(Vec(515, 336), module, RackNES::PARAM_PLAYER2_A));
     }
 
+    /// Complete acknowledged transfers on the UI, including disk errors.
+    void step() override {
+        ThemedWidget<BASENAME>::step();
+        if (!module) return;
+        auto transfer = static_cast<RackNES*>(module)->sram;
+        if (!transfer->ready()) return;
+        const char* error = nullptr;
+        if (transfer->outcome() != SRAMTransfer::Result::Success || !transfer->current())
+            error = "SRAM transfer canceled: cartridge was reset, replaced, or restored.";
+        else if (!transfer->is_import() && !SRAMFiles::write(transfer->destination, *transfer))
+            error = "Cannot export SRAM. The previous destination has been preserved.";
+        transfer->release();
+        if (error) osdialog_message(OSDIALOG_ERROR, OSDIALOG_OK, error);
+    }
+
     /// Draw the widget in the rack window.
     ///
     /// @param args the draw arguments for this render call
@@ -607,6 +694,8 @@ struct RackNESWidget : ThemedWidget<BASENAME> {
             &ROMMenuItem::module,
             static_cast<RackNES*>(this->module)
         ));
+        auto* instance = static_cast<RackNES*>(module);
+        appendSRAMMenu(menu, instance ? instance->sram : nullptr);
     }
 
     /// Respond to a path being dropped onto the module.
@@ -614,7 +703,8 @@ struct RackNESWidget : ThemedWidget<BASENAME> {
     /// @param event the event data for the path drop event
     ///
     inline void onPathDrop(const event::PathDrop& event) override {
-        static_cast<RackNES*>(module)->rom_path_signal = std::string(event.paths[0]);
+        if (module && !event.paths.empty())
+            static_cast<RackNES*>(module)->rom_path_signal = std::string(event.paths[0]);
     }
 };
 

@@ -110,6 +110,9 @@ class Cartridge : public ROM {
                     *static_cast<const MapperMMC2*>(other.mapper), callback);
             else
                 mapper = other.mapper->clone();
+            std::copy(other.mapper->get_extended_ram(),
+                other.mapper->get_extended_ram() + other.mapper->extended_ram_size(),
+                mapper->get_extended_ram());
         }
     }
 

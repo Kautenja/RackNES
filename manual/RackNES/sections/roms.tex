@@ -56,3 +56,39 @@ in place. Correct the file selection and try again.
 \textbf{Moving patches.} Keep the original ROM at its saved path: restoration
 reloads that file. Loading a ROM manually starts a new session; it does not
 recover a failed snapshot restore.
+
+
+\subsection{Importing and exporting SRAM}\label{sec:sram}
+For supported cartridges, use \textbf{Import SRAM...} or
+\textbf{Export SRAM...} in the right-click menu. These commands exchange a
+raw \texttt{.sav} file of exactly 8,192 bytes, ordered from cartridge address
+\texttt{\$6000} through \texttt{\$7FFF}. Match the game and ROM revision:
+raw saves contain no ROM identity. Extract archives first; emulator-specific
+save states and RackNES SAVE snapshots are different formats.
+
+The initial support is limited to mapper IDs 0--3 with one declared 8 KiB
+battery-backed PRG RAM window. Clean NTSC iNES headers must explicitly declare
+one RAM bank (byte 8 equals 1). NES 2.0 submapper 0 must declare 8 KiB PRG
+NVRAM, no volatile PRG RAM, and no CHR NVRAM. Supported PRG ROM sizes are
+16--32 KiB for NROM/CNROM and 16--256 KiB for MMC1/UNROM, in powers of two.
+CHR ROM is limited to 8 KiB for NROM, 8/16/32 KiB for CNROM, and powers of two
+up to 128 KiB for MMC1; UNROM uses CHR RAM. When CHR ROM is absent, the layout
+must use 8 KiB volatile CHR RAM. Trainers, four-screen layouts, extra devices,
+ambiguous headers, and banked or larger saves are excluded. Unsupported or
+empty cartridges and an outstanding transfer disable the menu commands.
+Mapper 7 and mapper 9 do not support these file commands.
+
+Import checks the complete file before applying it. A wrong size or a file
+error leaves live RAM and SAVE unchanged. Import changes only persistent
+cartridge memory: it does not replace the ROM or automatically reset the NES.
+Use the game's normal load command, or press RESET if needed. Existing SAVE
+snapshots keep their old RAM; LOAD can undo an import. Patches still include
+both current emulator state and the SAVE slot.
+
+Export takes one coherent RAM copy, then writes a temporary file beside the
+chosen destination and replaces it only after a successful write. The save
+dialog asks before overwriting. A failed write preserves the previous file.
+Transfers work while Hang is active, but need Rack's engine to be processing.
+Reset, ROM replacement, patch restoration, or removing the module cancels
+stale work. Dialogs and file operations run on the UI thread; existing ROM
+loading and snapshot operations still have separate engine-thread limitations.
