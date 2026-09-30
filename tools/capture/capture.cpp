@@ -220,6 +220,16 @@ static void capture_genie_help(ModuleWidget* widget, const std::string& director
     delete overlay;
 }
 
+/// Verify the production panel selected the SVG for Rack's global preference.
+static void check_panel_theme(ModuleWidget* widget, const std::string& name) {
+    auto panel = dynamic_cast<app::ThemedSvgPanel*>(widget->getPanel());
+    const std::string theme = settings::preferDarkPanels ? "Dark" : "Light";
+    auto expected = window::Svg::load(asset::plugin(plugin_instance,
+        "res/" + name + "-" + theme + ".svg"));
+    if (!panel || !expected || panel->svg != expected)
+        throw std::runtime_error("Panel did not follow Rack's " + theme + " preference");
+}
+
 /// @brief Optional desktop tool; never loads personal patches or starts an engine thread.
 int main(int argc, char** argv) {
     if (argc != 4) {
@@ -257,26 +267,33 @@ int main(int argc, char** argv) {
             module->id = 1;
             context.engine->addModule(module);
             // ModuleWidget owns its module and removes it from the engine.
+            settings::preferDarkPanels = false;
             std::unique_ptr<ModuleWidget> widget(model->createModuleWidget(module));
             const bool is_nes = model == modelRackNES;
             const std::string name = is_nes ? "RackNES" : "CVGenie";
+            check_panel_theme(widget.get(), name);
             if (widget->box.size != Vec(is_nes ? 570.f : 180.f, 380.f))
                 throw std::runtime_error("Module geometry changed; update crop and wireframe");
             if (is_nes) prepare_rom(static_cast<RackNES*>(module),
                 std::string(argv[3]) + "/arhythmetic-units.nes");
-            for (const std::string theme : {"Light", "Dark"}) {
-                widget->setPanel(context.window->loadSvg(asset::plugin(&plugin,
-                    "res/" + name + "-" + theme + ".svg")));
+            for (const std::string theme : {"Light", "Dark", "Light"}) {
+                settings::preferDarkPanels = theme == "Dark";
                 capture(widget.get(), std::string(argv[3]) + "/" + name + "-" + theme + ".ppm");
+                check_panel_theme(widget.get(), name);
             }
             if (!is_nes) capture_genie_help(widget.get(), argv[3]);
+            settings::preferDarkPanels = true;
             std::unique_ptr<ModuleWidget> preview(model->createModuleWidget(nullptr));
-            for (const std::string theme : {"Light", "Dark"}) {
-                preview->setPanel(context.window->loadSvg(asset::plugin(&plugin,
-                    "res/" + name + "-" + theme + ".svg")));
+            check_panel_theme(preview.get(), name);
+            for (const std::string theme : {"Light", "Dark", "Light"}) {
+                settings::preferDarkPanels = theme == "Dark";
                 capture(preview.get(), std::string(argv[3]) + "/" + name
                     + "-Preview-" + theme + ".ppm");
+                check_panel_theme(preview.get(), name);
+                widget->step();
+                check_panel_theme(widget.get(), name);
             }
+            std::cout << name << " live and preview panel theme checks passed\n";
         }
     } catch (const std::exception& error) {
         std::cerr << error.what() << '\n';

@@ -31,12 +31,12 @@ boundary cases. These equations describe execution and CLK, not a promised
 pitch ratio for the audio outputs. CLK stops cycling when execution stops.
 
 \subsection{Light and dark panels}
-Right-click either module and choose \textbf{Light} or \textbf{Dark} under
-the \textbf{Plugin Theme} heading. Selecting a theme
-changes that instance's panel immediately and stores the plugin-wide default
-in \texttt{RackNES.json} in Rack's user folder. Newly created widgets use
-that default. Other already-open instances do not all switch immediately.
-The choice is a user preference, not a per-patch theme setting.
+Both modules follow Rack's \textbf{View > Use dark panels if available}
+setting (Rack 2.4 or newer). Existing panels and module-browser previews
+update when the setting changes. Turn it off for light panels.
+The former \textbf{Plugin Theme} menu has been removed, and the legacy
+\texttt{RackNES.json} preference is no longer read. Rack stores the global
+preference separately from patches.
 
 \subsection{Persistence at a glance}
 Rack saves panel parameters and cabling with the patch. RackNES adds current

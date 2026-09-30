@@ -80,6 +80,11 @@
 
 ### 2.2.0 (Unreleased)
 
+-   Follow Rack's global light/dark panel preference for RackNES, CV Genie,
+    and browser previews, including live theme changes. Replace the Plugin
+    Theme menu and stop reading the legacy `RackNES.json` preference. Require
+    Rack 2.4 or newer; saved patches remain compatible.
+
 -   Safely serialize empty CHR RAM on NROM, MMC1, and UxROM cartridges without
     changing saved JSON. Correct MMC1's initial CHR-ROM bank pair and 8 KiB bank
     alignment when selecting banks or changing CHR modes.

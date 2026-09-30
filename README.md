@@ -40,7 +40,8 @@ through its own effects chain.
     and DMC sample channel, or patch their five individual outputs for
     separate processing. Audio follows Rack's host sample rate.
 -   **Watch the game.** The built-in display uses an NES NTSC filter;
-    light and dark panel themes fit the rest of your rack.
+    light and dark panels follow Rack's **View > Use dark panels if available**
+    setting.
 
 [Explore the RackNES manual][RackNES]
 
@@ -74,7 +75,7 @@ no game-memory CV outputs.
 
 ## Get Started
 
-1.  With VCV Rack 2 installed, sign in to your VCV account and add the
+1.  With VCV Rack 2.4 or newer installed, sign in to your VCV account and add the
     modules from the [VCV Library][VCVLibrary]. In Rack's **Library** menu,
     sign in, choose **Update all**, and restart after the download.
 2.  Add **RackNES** from the module browser. Connect **MIX** to your audio

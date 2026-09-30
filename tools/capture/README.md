@@ -38,14 +38,16 @@ preserved (2x on the reviewed desktop). The exporter rejects unexpected
 geometry rather than resizing. Review the crop and TikZ diagram whenever
 module dimensions change. No UI content is painted into the captured image.
 
-The harness uses a private `.build/user` asset path, explicit panel themes,
+The harness uses a private `.build/user` asset path, Rack's global panel preference,
 and newly created modules with default parameters and disconnected ports.
 It processes RackNES for 96,000 samples at 48 kHz, sequentially before drawing,
 then validates ROM initialization, a frame heartbeat, nonblank video, every
 component framebuffer, and GL success. It waits up to 160 draw passes for
 Rack's component caches; incomplete rendering fails the command. Genie shows
 No Game Selected and eight Unassigned rows. The ROM has no Genie game map.
-The harness also captures null-module browser previews in both themes and
+The harness checks light and dark defaults at widget construction, toggles
+Rack's global preference light/dark/light on existing modules and null-module
+browser previews, and verifies their selected production SVGs. It also
 checks display image reuse, retry after allocation failure, cleanup on context
 events, recreation, and deletion. Context events are simulated against the
 live renderer; this is not a full OS graphics-context replacement test.

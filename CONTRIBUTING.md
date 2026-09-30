@@ -58,10 +58,10 @@ remaining commands from the repository root unless stated otherwise.
 
 ### Configure The Rack SDK
 
-Use a Rack 2 SDK for your operating system and CPU architecture, or a prepared
-Rack source tree. The [build CI](.github/workflows/rack-tests.yml) records the
-platform toolchains and pinned SDK downloads used by this repository. An
-installed Rack application alone does not provide the complete SDK.
+Use a Rack 2.4 or newer SDK for your operating system and CPU architecture,
+or a prepared Rack source tree. The [build CI](.github/workflows/rack-tests.yml)
+records the platform toolchains and pinned SDK downloads used by this
+repository. An installed Rack application alone does not provide the complete SDK.
 
 Set an absolute SDK path so commands in subdirectories resolve the same tree.
 Replace this placeholder with your extracted SDK location:

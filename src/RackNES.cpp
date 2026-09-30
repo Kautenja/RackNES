@@ -607,7 +607,6 @@ struct RackNESWidget : ThemedWidget<BASENAME> {
             &ROMMenuItem::module,
             static_cast<RackNES*>(this->module)
         ));
-        ThemedWidget<BASENAME>::appendContextMenu(menu);
     }
 
     /// Respond to a path being dropped onto the module.
