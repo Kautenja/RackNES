@@ -114,6 +114,11 @@ The code for the module derives from:
 [nes_ntsc]: http://slack.net/~ant/libs/ntsc.html#nes_ntsc
 [cpp-base64]: https://github.com/ReneNyffenegger/cpp-base64
 
+## Support
+
+See [SUPPORT.md](SUPPORT.md) for manuals, troubleshooting resources, questions,
+bug reports, and feature requests.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for environment setup, architecture,
