@@ -1,197 +1,86 @@
-# MARK: Project Files
-
-# MARK: VCV Rack files
-/build
-/dist
+# Rack plugin build outputs
+/build/
+/dist/
 /plugin.dylib
 /plugin.dll
 /plugin.so
-.DS_Store
 
-# MARK: Python gitignore
-# https://github.com/github/gitignore/blob/master/Python.gitignore
-
-# Byte-compiled / optimized / DLL files
+# Python bytecode from capture scripts
 __pycache__/
-*.py[cod]
-*$py.class
+*.pyc
+*.pyo
 
-# C extensions
-# TODO: this might not need ignored for this package
-*.so
+# Adapted from https://github.com/github/gitignore:
+# Global/macOS.gitignore, Global/Windows.gitignore, Global/Linux.gitignore,
+# and C++.gitignore. Keep Makefiles, research data, and source assets visible;
+# build directories above are scoped to RackNES's actual output locations.
 
-# Distribution / packaging
-MANIFEST
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-
-
-
-
-# MARK: CPP Project Files
-# https://github.com/github/gitignore/blob/master/C%2B%2B.gitignore
-
-## Prerequisites
+# C++ dependency, object, and precompiled header files
 *.d
-
-## Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
-
-## Precompiled Headers
 *.gch
 *.pch
 
-## Compiled Dynamic libraries
+# C++ libraries and executables
 *.so
+*.so.*
 *.dylib
 *.dll
-
-## Fortran module files
-*.mod
-*.smod
-
-## Compiled Static libraries
 *.lai
 *.la
 *.a
 *.lib
-
-## Executables
 *.exe
-*.out
-*.app
+*.app/
 
-## VS Code configuration
-.vscode
+# Linker and debugging artifacts
+*.ilk
+*.pdb
+*.dwo
+*.dSYM/
+*.stackdump
 
-
-
-# MARK: scons Files
-# https://github.com/github/gitignore/blob/master/SCons.gitignore
-
-.sconsign.dblite
-.scon*
-config.log
-
-
-
-# MacOS gitignore
-# https://raw.githubusercontent.com/github/gitignore/master/Global/macOS.gitignore
-
-## General
+# macOS Finder metadata and resource forks
 .DS_Store
+.localized
+__MACOSX/
 .AppleDouble
 .LSOverride
-
-## Icon must end with two \r
-Icon
-
-## Thumbnails
 ._*
 
-## Files that might appear in the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
+# macOS volume and network-share metadata
+.DocumentRevisions-V100/
+.fseventsd/
+.Spotlight-V100/
+.TemporaryItems/
+.Trashes/
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
-
-## Directories potentially created on remote AFP share
 .AppleDB
 .AppleDesktop
-Network Trash Folder
-Temporary Items
+Network Trash Folder/
+Temporary Items/
 .apdisk
+
+# Windows thumbnail caches and folder metadata
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux filesystem and desktop metadata
+.fuse_hidden*
+.directory
+.Trash-*/
+.nfs*
+nohup.out
+
+# Editor backup and swap files
+*~
+*.swp
+*.swo
