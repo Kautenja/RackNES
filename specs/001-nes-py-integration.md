@@ -978,6 +978,50 @@ Documentation validation:
     session, or listening validation. Earlier runtime evidence and remaining
     gates still apply; this review does not complete spec 001, 008, or 009.
 
+### Release Validation Review: September 30, 2026
+
+Reviewed the 2.2.0 candidate at `aaa411b`. The manifest, both manual versions,
+and software citation agree; the report retains its separately versioned
+historical account and dated mapper addendum. Plugin and module slugs match
+`master`. Corrected stale release guidance that excluded the implemented
+nes-py adaptations and a changelog statement that overlooked MMC3 four-screen
+rendering. MMC5 and FME-7 remain planned.
+
+The first PR checks exposed three test/setup portability problems: GCC rejected
+the standalone harness's internal Rack engine construction, Linux Clang needed
+`libatomic` for runtime lock-free assertions, and Windows package installation
+could not resolve the selected MinGW `jq`. The harness now includes the engine
+declaration before the plugin API restriction, Linux tests link `libatomic`,
+and CI installs MSYS `jq`. Production code and test assertions are unchanged.
+
+Validation:
+
+-   `make -B -j4` and `make dist`: passed on macOS arm64, Apple Clang 21,
+    prepared Rack 2.6.0. Inspected the compressed 2.2.0 package: matching
+    manifest, plugin binary, all runtime resources, and license files present.
+-   `make -C tests -B -j2`, then `make -C tests -j2` after the harness fix:
+    passed with ASan/UBSan. Five-mapper PCM fingerprints remain
+    `f5146c03e0a6ceb2` and `d8915d435c9cf9a9`.
+-   [Rack SDK 2.6.3 platform CI](https://github.com/Kautenja/RackNES/actions/runs/36691554236):
+    plugin builds and executable regressions passed on Linux x64, macOS arm64,
+    and Windows x64. [Linux instrumentation](https://github.com/Kautenja/RackNES/actions/runs/36691557511)
+    passed both ASan/UBSan and coverage runs.
+-   `make -C manual`, `make -C whitepaper`, and `make -C whitepaper source`:
+    passed. The unchanged, previously visually reviewed PDFs remain 15, 10,
+    and seven pages, with outlines and no unresolved references. Verified
+    version metadata, relative documentation links, generated game-list
+    freshness, and `git diff --check`.
+
+Release gates remain: manual Rack/gameplay/listening checks, clock extremes,
+host sample-rate changes, and native SRAM dialogs; macOS x64 is not in the CI
+matrix. No new interactive validation is claimed. Integrate the reviewed PR
+into `master`, date the changelog, tag the final tested commit, and publish the
+three PDF assets before submission. The public GitHub release is still 2.0.0
+and lacks the new report PDF. Current VCV instructions still require the new
+version and full commit hash in the existing
+[Library thread](https://github.com/VCVRack/library/issues/650). This audit
+does not publish a release, notify VCV, or complete the remaining spec work.
+
 [upstream]: https://github.com/Kautenja/nes-py/tree/301da52f7f75de380e6e195fd36621c3d5b03757
 [factory]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/mapper_factory.cpp
 [upstream-bus]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/main_bus.cpp
