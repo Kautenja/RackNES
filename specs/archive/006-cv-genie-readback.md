@@ -1,12 +1,40 @@
 # CV Genie Readback
 
-Implement [#51: Read functionality for CV Genie][issue] with an Output Genie
-that observes internal RAM and the base 2A03 APU's last written register values.
-This also owns the remaining output work from [#6: CV RAM Manipulation][origin].
+This archived proposal for [#51: Read functionality for CV Genie][issue]
+described an Output Genie that observes internal RAM and the base 2A03 APU's
+last written register values. It also covered the remaining output work from
+[#6: CV RAM Manipulation][origin].
 
-Status: PLANNED
+Status: ABANDONED
 
 Created: September 30, 2026
+
+Abandoned: September 30, 2026
+
+## Disposition
+
+RAM and 2A03 register CV readback are not planned. The maintainer chose to
+abandon this proposal and close #51 as not planned. Delivering it would require
+a new output module, side-effect-free observation APIs, an expander protocol,
+register-mirror snapshot compatibility, and UI/manual validation. That ongoing
+implementation and maintenance scope is outside the current plan, which keeps
+compatibility and SRAM interchange work active.
+
+Input Genie retains its existing memory-write functionality. Output Genie
+remains unfinished and unregistered; neither RAM nor 2A03 register CV output
+is available. The remaining read scope previously consolidated from #6 is
+also dropped. This is a scope decision, not a claim of technical impossibility
+or feature completion.
+
+The original design and unchecked acceptance criteria remain below for
+historical context. Their implementation gates, including keeping #51 open
+until validation, are superseded by this abandonment decision.
+
+Archival checks on September 30, 2026: relative links and anchors, the archive
+path, abandoned status, and active index passed scripted checks;
+`git diff --check` passed. Historical build commands were reviewed against the
+contributor guide. Builds, regression tests, and manual Rack checks were not
+run for this documentation-only disposition.
 
 ## Goal And Behavior
 
@@ -21,8 +49,8 @@ stream, changes audio, or triggers another emulated bus side effect.
 
 ## Current Code And Dependencies
 
-[CVGenie.cpp](../src/CVGenie.cpp) contains unfinished Output Genie code, but
-[plugin.cpp](../src/plugin.cpp) does not register it. Processing currently
+[CVGenie.cpp](../../src/CVGenie.cpp) contains unfinished Output Genie code, but
+[plugin.cpp](../../src/plugin.cpp) does not register it. Processing currently
 supports only the Input Genie write path. Existing scaffolding is not proof
 of a working output module or safe read protocol.
 
@@ -32,7 +60,7 @@ directly to RackNES's left, permitting both expanders simultaneously. Reserve
 the existing unregistered `OutputGenie` slug for the completed module, and
 verify the widget, metadata, and resource names before registration.
 
-Coordinate emulator interfaces with [spec 001](001-nes-py-integration.md).
+Coordinate emulator interfaces with [spec 001](../001-nes-py-integration.md).
 Readback of 2A03 registers is not Sunsoft/MMC5 expansion-audio synthesis or
 support for any particular game's mapper.
 
@@ -107,10 +135,10 @@ outside this spec. New mapper support remains in spec 001.
 
 ## Validation And Completion Evidence
 
-Extend the [existing tests](../tests/README.md), including protocol fixtures
+Extend the [existing tests](../../tests/README.md), including protocol fixtures
 and CPU-program audio comparisons. From the repository root with the prepared
-Rack tree at `../..` and the [build](../CONTRIBUTING.md#development-and-testing)
-and [capture prerequisites](../tools/capture/README.md):
+Rack tree at `../..` and the [build](../../CONTRIBUTING.md#development-and-testing)
+and [capture prerequisites](../../tools/capture/README.md):
 
 ```shell
 make -j4

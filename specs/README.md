@@ -11,24 +11,28 @@ evidence in the owning spec, then archive it using [the agent workflow][flow].
 | [001](001-nes-py-integration.md) | Cartridge parsing, mapper integration, audio/state compatibility | [#1][i1], [#31][i31] | Deliver parser/tracker and mapper gates as separate increments. |
 | [004](004-sram-import-export.md) | Raw battery-save import/export | [#52][i52] | Start with unambiguous supported 8 KiB layouts; coordinate RAM ownership with 001. |
 | [005](005-mmc1-ntsc-regressions.md) | Metroid and Bubble Bobble reproduction and fixes | [#26][i26], [#45][i45] | Reproduce first; potentially the smallest closures. |
-| [006](006-cv-genie-readback.md) | RAM and 2A03 register CV output | [#51][i51], remaining scope from [#6][i6] | Larger phased feature after observation/protocol contracts. |
 
 Specs 002 and 003 are complete and retained in [the archive](archive/).
-[Spec 007](archive/007-snapshot-slots.md) is abandoned and archived.
+[Spec 006](archive/006-cv-genie-readback.md) and
+[spec 007](archive/007-snapshot-slots.md) are abandoned and archived.
 Do not create another parser or mapper spec that duplicates 001.
 
 ## Issue Dispositions
 
-The September 30, 2026 triage keeps the six implementation issues above
+The September 30, 2026 triage keeps the five implementation issues above
 open until their acceptance gates pass. It makes these scope decisions:
 
 -   **[#12: Additional Save States][i12]: not planned.** Multiple snapshot
     slots are outside the current plan. Spec 007 is abandoned and archived
     for historical context; this disposition does not claim implementation.
--   **#6: consolidate into #51.** Input Genie implements the write portion;
-    spec 006 and #51 own the remaining read portion, including arbitrary
-    internal-RAM selection. Closing the umbrella issue does not claim that
-    memory outputs are already available.
+-   **[#51: CV Genie Readback][i51]: not planned.** Spec 006 is abandoned and
+    archived. A new output module, safe RAM/APU observation, expander protocol,
+    snapshot compatibility, and UI/manual validation add implementation and
+    maintenance scope outside the current plan. This does not claim readback
+    is implemented or technically impossible.
+-   **[#6: CV RAM Manipulation][i6]: read scope not planned.** Input Genie
+    implements the write portion. The remaining read portion was consolidated
+    into #51 and is now dropped with spec 006; memory CV outputs are unavailable.
 -   **[#24: NES Advantage][i24]: not planned.** A/B gates can already receive
     external clocks or LFOs. Repeated Start pulses can approximate the
     controller's pause-based slow behavior where a game supports it. Keep
