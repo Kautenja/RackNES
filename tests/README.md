@@ -60,6 +60,9 @@ complete emulator or UI validation.
     `patches/debugCVGenie.vcv`, preserving its game and location indices. The
     fixture's audio settings and ROM path are not used. Generated legacy JSON
     also exercises absent toggle fields and invalid selections.
+-   Catalog: all ten maps pass selection, address bounds, endpoint writes,
+    toggle lifetime, disconnect, randomization, and JSON round trips. New maps
+    also reject duplicate names/addresses and have independently reviewed anchors.
 -   Mapping: the five Mario Enemy Heading indices resolve to `0x0046`--`0x004A`
     and no longer overwrite Enemy 5 Type. The address source is
     [the SMB disassembly](https://6502disassembly.com/nes-smb/SuperMarioBros.html#SymEnemy_MovingDir).

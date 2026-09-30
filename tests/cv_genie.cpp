@@ -53,7 +53,7 @@ void check_unassigned_and_invalid_selections() {
     assert(f.genie.gameMap.getGameName(999) == "No Game Selected");
     f.genie.onRandomize();
     for (int row = 0; row < 8; row++) assert(f.genie.memLoc[row] == -1);
-    for (int game : {-1, 2, 999}) {
+    for (int game : {-1, static_cast<int>(NUM_GAMES), 999}) {
         f.genie.gameMap.setGame(game);
         for (int element : {-1, 53, 999}) {
             assert(f.genie.gameMap.getAddress(element) == 0);
@@ -238,6 +238,95 @@ void check_enemy_headings() {
     }
 }
 
+/// Exercise every catalog entry through real selection, CV, and JSON seams.
+void check_catalog() {
+    static_assert(PLUMBER == 0 && TUNIC == 1, "Legacy game IDs must not change");
+    const char* expected_names[] = {
+        "Super Mario Bros.", "The Legend of Zelda", "Mega Man", "Mega Man 2",
+        "Castlevania", "Castlevania II: Simon's Quest", "Contra", "Metroid",
+        "Ninja Gaiden", "Tetris (Nintendo)"
+    };
+    assert(NUM_GAMES == 10);
+    assert(PARAMETER_COUNTS[PLUMBER] == 53 && PARAMETER_COUNTS[TUNIC] == 55);
+    for (int game = 0; game < NUM_GAMES; game++) {
+        Fixture f;
+        GameItem<Genie> item;
+        item.setModule(&f.genie);
+        item.gameId = static_cast<GameIds>(game);
+        item.onAction(event::Action());
+        f.process();
+        assert(f.genie.gameMap.gameId == game);
+        assert(f.genie.gameMap.getGameName(game) == expected_names[game]);
+        const unsigned count = f.genie.gameMap.getNumCheats();
+        assert(count > 0);
+        assert(!f.genie.gameMap.getParameter(count));
+        for (unsigned index = 0; index < count; index++) {
+            const auto* parameter = f.genie.gameMap.getParameter(index);
+            assert(parameter && !parameter->name.empty());
+            assert(parameter->address > 0 && parameter->address < 0x0800);
+            if (game > TUNIC) {
+                assert(parameter->minimum < parameter->maximum);
+                for (unsigned other = 0; other < index; other++) {
+                    const auto* prior = f.genie.gameMap.getParameter(other);
+                    assert(prior->address != parameter->address);
+                    assert(prior->name != parameter->name);
+                }
+            }
+            f.genie.selectElement(0, index);
+            f.connect(0, 0.f);
+            auto* message = f.process();
+            if (parameter->toggle) {
+                assert(message[0] == 0);
+                f.connect(0, 5.f);
+                message = f.process();
+                assert(message[0] == parameter->address);
+                assert(message[1] == parameter->maximum);
+                assert(f.process()[0] == 0);
+                f.connect(0, 0.f);
+                f.process();
+                f.connect(0, 5.f);
+                message = f.process();
+                assert(message[0] == parameter->address);
+                assert(message[1] == parameter->minimum);
+            } else {
+                assert(message[0] == parameter->address);
+                assert(message[1] == parameter->minimum);
+                f.connect(0, 10.f);
+                message = f.process();
+                assert(message[0] == parameter->address);
+                assert(message[1] == parameter->maximum);
+            }
+            json_t* saved = f.genie.dataToJson();
+            Fixture restored;
+            restored.genie.dataFromJson(saved);
+            json_decref(saved);
+            assert(restored.genie.gameMap.gameId == game);
+            assert(restored.genie.memLoc[0] == static_cast<int>(index));
+            assert(restored.genie.gameMap.getAddress(restored.genie.memLoc[0]) ==
+                   parameter->address);
+            f.genie.inputs[0].channels = 0;
+            assert(f.process()[0] == 0);
+        }
+        f.genie.onRandomize();
+        for (int row = 0; row < 8; row++)
+            assert(f.genie.gameMap.getParameter(f.genie.memLoc[row]));
+    }
+    // Independently reviewed anchors catch map/count/pointer mismatches.
+    assert(games[MEGA_MAN][0].address == 0x006A);
+    assert(games[MEGA_MAN][0].maximum == 28);
+    assert(games[MEGA_MAN_2][3].address == 0x00A7);
+    assert(games[MEGA_MAN_2][3].maximum == 4);
+    assert(games[CASTLEVANIA][2].minimum == 1);
+    assert(games[CASTLEVANIA_2][3].address == 0x0420);
+    assert(games[CONTRA][8].address == 0x00AB);
+    assert(games[CONTRA][8].maximum == 4);
+    assert(games[METROID][2].address == 0x010E);
+    assert(games[METROID][2].toggle);
+    assert(games[NINJA_GAIDEN][2].maximum == 16);
+    assert(games[TETRIS][1].address == 0x0041);
+    assert(games[TETRIS][1].maximum == 19);
+}
+
 int main() {
     check_unassigned_and_invalid_selections();
     check_continuous_voltage();
@@ -245,5 +334,6 @@ int main() {
     check_selection_handoff();
     check_patch_compatibility();
     check_enemy_headings();
+    check_catalog();
     std::puts("CV Genie: selection, voltage, toggle, expander, and patch checks passed");
 }

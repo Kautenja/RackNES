@@ -2,11 +2,11 @@ name: Manuals and white paper
 
 on:
   pull_request:
-    paths: ['manual/**', 'whitepaper/**', 'src/**', 'res/**', 'tools/capture/**', 'plugin.json', '.github/workflows/manuals.yml']
+    paths: ['manual/**', 'whitepaper/**', 'src/**', 'res/**', 'tools/capture/**', 'tools/update_game_list.py', 'plugin.json', '.github/workflows/manuals.yml']
   push:
     branches: [master]
     tags: ['v*', '[0-9]*']
-    paths: ['manual/**', 'whitepaper/**', 'src/**', 'res/**', 'tools/capture/**', 'plugin.json', '.github/workflows/manuals.yml']
+    paths: ['manual/**', 'whitepaper/**', 'src/**', 'res/**', 'tools/capture/**', 'tools/update_game_list.py', 'plugin.json', '.github/workflows/manuals.yml']
   release:
     types: [published]
   workflow_dispatch:
@@ -40,6 +40,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends \
             texlive-latex-extra texlive-pictures texlive-fonts-recommended cm-super lmodern latexmk poppler-utils python3-pypdf
+
+      - name: Check CV Genie game list
+        run: python3 tools/update_game_list.py --check
 
       - name: Check release and manual versions
         env:

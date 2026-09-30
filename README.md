@@ -48,8 +48,10 @@ through its own effects chain.
 
 Go beyond the controllers. CV Genie is a Game Genie-inspired input expander,
 developed by [@anlexmatos][anlexmatos], that writes CV into game memory.
-Its eight rows expose named game elements from built-in maps for
-**Super Mario Bros.** and **The Legend of Zelda**.
+Its eight rows expose named game elements from ten built-in maps, including
+**Super Mario Bros.**, **The Legend of Zelda**, **Mega Man**, **Castlevania**,
+**Contra**, **Metroid**, **Ninja Gaiden**, and **Tetris**. See the CV Genie
+manual for the full game list and cartridge limitations.
 
 <p align="center">
   <img alt="CV Genie input expander with a game selector and eight assignment rows"
@@ -97,7 +99,7 @@ RackNES supports iNES ROMs using cartridge mapper IDs **0 (NROM)**,
 **1 (MMC1)**, **2 (UNROM)**, and **3 (CNROM)**. Mapper support does not
 ensure every game or modified ROM works. Extract archives before loading,
 and keep the original ROM at its saved path when reopening a Rack patch.
-CV Genie's two game maps are separate from RackNES's broader ROM support.
+CV Genie's curated game maps are separate from RackNES's broader ROM support.
 
 ### Try A First Patch
 
@@ -142,7 +144,8 @@ make -C manual
 The PDFs are written to `manual/RackNES/.build/manual.pdf` and
 `manual/CVGenie/.build/manual.pdf`. Ordinary builds use committed screenshots
 and need no Rack SDK or graphical session. The manuals cover the current
-controls and limitations, including all built-in CV Genie memory mappings.
+controls and limitations, including the supported CV Genie games. Assignment
+details live in the module menus and hover help.
 
 <details>
 <summary><strong>Panel Figures And Production Captures</strong></summary>

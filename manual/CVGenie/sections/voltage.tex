@@ -35,15 +35,16 @@ second. Offset and attenuate a bipolar LFO to use its full sweep across the
 range. Non-finite signals are ignored.
 
 \subsection{Toggle entries}
-Entries marked \textbf{T} alternate between the table's \textbf{First} and
-\textbf{Second} values on each rising trigger. The gate activates around
+Entries marked \textbf{Trigger toggle} in the menu alternate between the
+first and second displayed endpoint values on each rising trigger. The gate
+activates around
 \textbf{2 V} and must fall to about \textbf{0.1 V} or below before another
 trigger. The falling edge does not write a value, and a held high gate does
 not continuously enforce it.
 
-A newly assigned row starts with First selected internally; its first detected
-rising edge writes Second, and the next writes First. Most entries use 0 and
-1. Spawn Powerup instead alternates 0/46, Reverb (Pulse) alternates 128/1,
+A newly assigned row starts with the first endpoint selected internally. Its
+first detected rising edge writes the second endpoint, and the next writes
+the first. Most entries use 0 and 1. Spawn Powerup instead alternates 0/46, Reverb (Pulse) alternates 128/1,
 and Potion Type alternates 0/2.
 
 The toggle tracks your trigger sequence, not the game's current byte. Game

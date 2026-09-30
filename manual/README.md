@@ -113,14 +113,19 @@ several places where comments or the former manuals overstated the behavior.
 | Available modules; no Output Genie | `src/plugin.cpp`, `plugin.json` |
 | Theme scope and persistence | `src/theme.hpp` |
 
-The Genie tables preserve source order and contain all 53 Mario and 55 Zelda
-entries. Compare names, hexadecimal addresses, decimal endpoints, and toggle
-flags when editing them. CV Genie validates selections, clamps continuous
-voltage to 0--10 V, and toggles between the mapped endpoints. Its saved JSON
-retains the existing game and location indices, with an optional per-row
-`Toggle State` field. The Mario Enemy Heading entries use `0x0046` through
-`0x004A`, following `Enemy_MovingDir` plus the slot index in the
-[SMB disassembly](https://6502disassembly.com/nes-smb/SuperMarioBros.html#SymEnemy_MovingDir).
+The CV Genie supported-game list is generated from `src/GameMaps.hpp`.
+After changing the catalog, run from the repository root:
+
+```shell
+python3 tools/update_game_list.py
+python3 tools/update_game_list.py --check
+```
+
+The generated list is committed, so ordinary manual builds still require no
+Python or Rack SDK. Assignment names, ranges, and modes are documented by the
+live menus and hover help. See [mapping sources](../docs/game-maps.md) for
+selection criteria and range evidence. Preserve serialized game and location
+indices; the original 53 Mario and 55 Zelda assignments remain unchanged.
 
 Some operating distinctions still matter: Hang holds outputs while controls
 and Genie writes continue; snapshots omit the frame counter and queued audio;

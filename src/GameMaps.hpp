@@ -56,22 +56,37 @@ struct GameParameter {
         toggle(toggle_) { }
 };
 
-/// IDs for the presently supported games
+/// Serialized IDs: append new games; never reorder existing games.
 enum GameIds {
-    PLUMBER,
-    TUNIC,
+    PLUMBER = 0,
+    TUNIC = 1,
+    MEGA_MAN = 2,
+    MEGA_MAN_2 = 3,
+    CASTLEVANIA = 4,
+    CASTLEVANIA_2 = 5,
+    CONTRA = 6,
+    METROID = 7,
+    NINJA_GAIDEN = 8,
+    TETRIS = 9,
     NUM_GAMES
 };
 
 /// the number of parameters for each supported game
 static constexpr unsigned PARAMETER_COUNTS[NUM_GAMES] = {
-    53,
-    55
+    53, 55, 10, 7, 5, 5, 10, 7, 5, 5
 };
 
 static const char* NAMES[NUM_GAMES] = {
     "Super Mario Bros.",
-    "The Legend of Zelda"
+    "The Legend of Zelda",
+    "Mega Man",
+    "Mega Man 2",
+    "Castlevania",
+    "Castlevania II: Simon's Quest",
+    "Contra",
+    "Metroid",
+    "Ninja Gaiden",
+    "Tetris (Nintendo)"
 };
 
 /// Parameters for the game "Super Mario Bros."
@@ -192,9 +207,107 @@ static const GameParameter TUNIC_PARAMETERS[PARAMETER_COUNTS[TUNIC]] = {
     GameParameter(0x67C, 0x08, 0xFF, "Max Bomb Count")
 };
 
-static const GameParameter* games[2] = {
+// New maps contain curated single-byte controls. See docs/game-maps.md for
+// evidence, cartridge scope, range decisions, and gameplay-test limitations.
+// Location indices are serialized: append entries within each map too.
+
+/// Mega Man (NES): Data Crystal Mega_Man/RAM_map, Life & Weapon Energy.
+static const GameParameter MEGA_MAN_PARAMETERS[PARAMETER_COUNTS[MEGA_MAN]] = {
+    GameParameter(0x006A, 0x00, 0x1C, "Player Health"),
+    GameParameter(0x00A6, 0x00, 0x63, "Player Lives"),
+    GameParameter(0x0055, 0x00, 0x6F, "Invincibility Timer"),
+    GameParameter(0x006B, 0x00, 0x1C, "Rolling Cutter Energy"),
+    GameParameter(0x006C, 0x00, 0x1C, "Ice Slasher Energy"),
+    GameParameter(0x006D, 0x00, 0x1C, "Hyper Bomb Energy"),
+    GameParameter(0x006E, 0x00, 0x1C, "Fire Storm Energy"),
+    GameParameter(0x006F, 0x00, 0x1C, "Thunder Beam Energy"),
+    GameParameter(0x0070, 0x00, 0x1C, "Super Arm Energy"),
+    GameParameter(0x0071, 0x00, 0x1C, "Magnet Beam Energy")
+};
+
+/// Mega Man 2: Data Crystal Mega_Man_2/RAM_map.
+static const GameParameter MEGA_MAN_2_PARAMETERS[PARAMETER_COUNTS[MEGA_MAN_2]] = {
+    GameParameter(0x0460, 0x00, 0xFF, "Player Horizontal Screen Position"),
+    GameParameter(0x04A0, 0x00, 0xFF, "Player Vertical Screen Position"),
+    GameParameter(0x06C0, 0x00, 0x1C, "Player Health"),
+    GameParameter(0x00A7, 0x00, 0x04, "Energy Tanks"),
+    GameParameter(0x00A8, 0x00, 0x63, "Player Lives"),
+    GameParameter(0x004B, 0x00, 0xFF, "Invincibility Timer"),
+    GameParameter(0x0355, 0x00, 0xFF, "Palette Cycle Delay")
+};
+
+/// Castlevania: Data Crystal Castlevania_(NES,_Famicom_Disk_System)/RAM_map.
+static const GameParameter CASTLEVANIA_PARAMETERS[PARAMETER_COUNTS[CASTLEVANIA]] = {
+    GameParameter(0x038C, 0x00, 0xFF, "Player Horizontal Screen Position"),
+    GameParameter(0x0354, 0x00, 0xFF, "Player Vertical Screen Position"),
+    GameParameter(0x002A, 0x01, 0x63, "Player Lives"),
+    GameParameter(0x005B, 0x00, 0xFF, "Invincibility Timer"),
+    GameParameter(0x0047, 0x00, 0xFF, "Stun Timer")
+};
+
+/// Simon's Quest: Data Crystal RAM map, object 0 at $0300 + property * 18.
+static const GameParameter CASTLEVANIA_2_PARAMETERS[PARAMETER_COUNTS[CASTLEVANIA_2]] = {
+    GameParameter(0x0348, 0x00, 0xFF, "Player Horizontal Screen Position"),
+    GameParameter(0x0324, 0x00, 0xFF, "Player Vertical Screen Position"),
+    GameParameter(0x0434, 0x00, 0x04, "Whip Type"),
+    GameParameter(0x0420, 0x00, 0x01, "Player Facing Direction", true),
+    GameParameter(0x04F8, 0x00, 0xFF, "Invincibility Timer")
+};
+
+/// Contra (US cartridge): Data Crystal Contra_(NES)/RAM_map and US disassembly.
+static const GameParameter CONTRA_PARAMETERS[PARAMETER_COUNTS[CONTRA]] = {
+    GameParameter(0x0334, 0x00, 0xFF, "Player 1 Horizontal Screen Position"),
+    GameParameter(0x031A, 0x00, 0xFF, "Player 1 Vertical Screen Position"),
+    GameParameter(0x0032, 0x00, 0x09, "Player 1 Spare Lives"),
+    GameParameter(0x00AA, 0x00, 0x04, "Player 1 Weapon (No Rapid Fire)"),
+    GameParameter(0x00B0, 0x00, 0x80, "Player 1 Invincibility Timer"),
+    GameParameter(0x0335, 0x00, 0xFF, "Player 2 Horizontal Screen Position"),
+    GameParameter(0x031B, 0x00, 0xFF, "Player 2 Vertical Screen Position"),
+    GameParameter(0x0033, 0x00, 0x09, "Player 2 Spare Lives"),
+    GameParameter(0x00AB, 0x00, 0x04, "Player 2 Weapon (No Rapid Fire)"),
+    GameParameter(0x00B1, 0x00, 0x80, "Player 2 Invincibility Timer")
+};
+
+/// Metroid (US): https://6502disassembly.com/nes-metroid/Metroid_USA.html
+static const GameParameter METROID_PARAMETERS[PARAMETER_COUNTS[METROID]] = {
+    GameParameter(0x030E, 0x00, 0xFF, "Player Horizontal Room Position"),
+    GameParameter(0x030D, 0x00, 0xFF, "Player Vertical Room Position"),
+    GameParameter(0x010E, 0x00, 0x01, "Missile Mode", true),
+    GameParameter(0x0640, 0x00, 0xFF, "Pulse 1 Music Frame Timer"),
+    GameParameter(0x0641, 0x00, 0xFF, "Pulse 2 Music Frame Timer"),
+    GameParameter(0x0642, 0x00, 0xFF, "Triangle Music Frame Timer"),
+    GameParameter(0x0643, 0x00, 0xFF, "Noise Music Frame Timer")
+};
+
+/// Ninja Gaiden (NES): Data Crystal Ninja_Gaiden/RAM_map.
+static const GameParameter NINJA_GAIDEN_PARAMETERS[PARAMETER_COUNTS[NINJA_GAIDEN]] = {
+    GameParameter(0x0086, 0x00, 0xFF, "Player Horizontal Screen Position"),
+    GameParameter(0x008A, 0x00, 0xFF, "Player Vertical Screen Position"),
+    GameParameter(0x0065, 0x00, 0x10, "Player Health"),
+    GameParameter(0x0076, 0x00, 0x09, "Player Lives"),
+    GameParameter(0x0062, 0x00, 0x3C, "Stage Second Countdown")
+};
+
+/// Nintendo Tetris (NES): Data Crystal Tetris_(NES,_Nintendo)/RAM_map.
+static const GameParameter TETRIS_PARAMETERS[PARAMETER_COUNTS[TETRIS]] = {
+    GameParameter(0x0040, 0x00, 0x09, "Falling Piece Column"),
+    GameParameter(0x0041, 0x00, 0x13, "Falling Piece Row"),
+    GameParameter(0x0045, 0x00, 0xFF, "Fall Timer"),
+    GameParameter(0x0046, 0x00, 0xFF, "Horizontal Autorepeat Timer"),
+    GameParameter(0x00C2, 0x00, 0x03, "Music Type")
+};
+
+static const GameParameter* const games[NUM_GAMES] = {
     PLUMBER_PARAMETERS,
-    TUNIC_PARAMETERS
+    TUNIC_PARAMETERS,
+    MEGA_MAN_PARAMETERS,
+    MEGA_MAN_2_PARAMETERS,
+    CASTLEVANIA_PARAMETERS,
+    CASTLEVANIA_2_PARAMETERS,
+    CONTRA_PARAMETERS,
+    METROID_PARAMETERS,
+    NINJA_GAIDEN_PARAMETERS,
+    TETRIS_PARAMETERS
 };
 
 /// @brief A container for memory maps of NES games

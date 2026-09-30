@@ -80,6 +80,11 @@
 
 ### 2.2.0 (Unreleased)
 
+-   Add curated CV Genie maps for Mega Man 1--2, Castlevania 1--2, Contra,
+    Metroid, Ninja Gaiden, and Nintendo Tetris. Preserve existing saved map
+    indices. Replace manual address tables with a generated supported-game
+    list; record mapping sources and cartridge limitations for contributors.
+
 -   Add CV Genie row port names, assignment ranges and trigger modes in menus,
     and full assignment hover help. Clarify RackNES frame-clock and MIX routing
     tooltips.
