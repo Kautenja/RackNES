@@ -336,6 +336,8 @@ class Emulator {
     /// points to an invalid or unsupported ROM file
     ///
     bool dataFromJson(json_t* rootJ) {
+        json_t* fetch = json_object_get(json_object_get(rootJ, "ppu"), "chr_latch_fetches");
+        if (fetch && !PPU::is_valid_latch_fetch_state(fetch)) return false;
         // load cartridge
         {
             json_t* json_data = json_object_get(rootJ, "cartridge");
@@ -373,8 +375,9 @@ class Emulator {
         {
             json_t* json_data = json_object_get(rootJ, "picture_bus");
             if (json_data) picture_bus.dataFromJson(json_data);
-            // Mapper 7 owns its page selection; ignore stale bus-derived state.
-            if (cartridge && cartridge->get_mapper_number() == 7)
+            // New mappers own mirroring; ignore stale bus-derived state.
+            if (cartridge && (cartridge->get_mapper_number() == 7 ||
+                              cartridge->get_mapper_number() == 9))
                 picture_bus.update_mirroring();
         }
         // load cpu

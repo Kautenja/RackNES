@@ -30,6 +30,9 @@ class PictureBus {
     ROM::Mapper* mapper = nullptr;
 
  public:
+    /// Read-sensitive mappers require one fetch per pattern row, not per pixel.
+    bool hasCHRReadLatches() const { return mapper && mapper->hasCHRReadLatches(); }
+
     /// Read a byte from an address on the VRAM.
     ///
     /// @param address the 16-bit address of the byte to read in the VRAM

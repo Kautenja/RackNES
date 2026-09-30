@@ -65,11 +65,11 @@ bundled source. License notices and full texts are distributed separately
 from scholarly citations; see [LICENSING.md](../LICENSING.md) and the
 [component notices](../docs/licenses/THIRD-PARTY.txt).
 
-## Mapper-7 Update: September 30, 2026
+## Mapper Updates: September 30, 2026
 
-The manuscript's dated mapper-7 paragraph describes a subsequent change. The
+The manuscript's dated mapper paragraph describes a subsequent change. The
 rest of the implementation account remains pinned to `e8c99bf86295`; this
-addendum does not retroactively attribute AxROM to that revision.
+addendum does not retroactively attribute AxROM or MMC2 to that revision.
 
 -   [AxROM implementation](../src/nes/mappers/mapper7_AxROM.hpp) and
     [cartridge factory](../src/nes/cartridge.hpp): 32 KiB banking, one-screen
@@ -83,6 +83,17 @@ addendum does not retroactively attribute AxROM to that revision.
     1,789,773 Hz and 768,000 Hz Blip clocks at nominal emulation speed.
     The AxROM audio image repeats the reference program/sample data in four
     PRG banks; a separate DMC check reads distinct bank markers.
+-   [MMC2 implementation](../src/nes/mappers/mapper9_MMC2.hpp),
+    [PPU fetch handling](../src/nes/ppu.cpp), and
+    [MMC2 regressions](../tests/mmc2.hpp): old-bank trigger bytes, independent
+    latch ranges, PRG RAM, mirroring, cached pattern bytes in snapshots,
+    clipped/covered sprites and flipped rows. Adapted from the same upstream
+    revision's `mapper_MMC2.hpp/.cpp`, PPU fetch structure, and MMC2 tests.
+    RackNES combines observation and latch transition in one CHR read;
+    sprite prefetch remains at its existing scanline boundary, not a claim
+    of hardware-exact PPU timing. Earlier mappers retain their pixel-read path.
+    MMC2 joins the same four-rate/two-clock PCM comparison, with switchable
+    code banks and fixed DMC windows.
 -   [Spec 001](../specs/001-nes-py-integration.md) records exact validation
     commands and limitations. No new performance measurements, commercial
     game tests, or manual listening results are claimed.

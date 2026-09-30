@@ -3,8 +3,8 @@
 A technical report by Christian Kauten (Arhythmetic Units), manuscript version 1,
 dated September 30, 2026. It describes RackNES's foundations, architecture, musical
 interaction, and implementation lessons for future engineers and researchers.
-A dated mapper-7 addendum records the subsequent AxROM integration separately from
-the pinned historical implementation account.
+A dated mapper addendum records the subsequent AxROM and MMC2 integrations
+separately from the pinned historical implementation account.
 The report is a repository manuscript; it has no assigned DOI or conference
 publication status.
 

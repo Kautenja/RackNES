@@ -4,12 +4,16 @@
 //
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
+//  Pattern-fetch state adapted from nes-py 301da52f7f75de38 (MIT).
+//  See docs/licenses/THIRD-PARTY.txt for provenance.
+//
 
 #ifndef NES_PPU_HPP
 #define NES_PPU_HPP
 
 #include "picture_bus.hpp"
 #include "ntsc/nes_ntsc.h"
+#include <array>
 #include <jansson.h>
 #include <functional>
 #include <string>
@@ -40,6 +44,18 @@ class PPU {
     std::vector<NES_Byte> sprite_memory = std::vector<NES_Byte>(64 * 4);
     /// OAM memory (sprites) for the next scanline
     std::vector<NES_Byte> scanline_sprites;
+
+    /// Pattern bytes already fetched for CHR-latch mappers. These bytes must
+    /// survive a snapshot: rereading CHR could observe a different bank.
+    bool latch_background_valid = false;
+    NES_Address latch_background_address = 0;
+    NES_Byte latch_background_page = 0;
+    NES_Byte latch_background_low = 0;
+    NES_Byte latch_background_high = 0;
+    std::array<NES_Byte, 16> latch_sprite_patterns = {};
+
+    /// Fetch selected sprite rows in OAM order, including covered/hidden rows.
+    void fetch_latched_sprite_patterns(PictureBus& bus);
 
     /// The current pipeline state of the PPU
     enum State {
@@ -116,6 +132,27 @@ class PPU {
     NES_Pixel ntsc_screen[VISIBLE_SCANLINES][SCANLINE_VISIBLE_DOTS_NTSC];
 
  public:
+    /// Validate the new fetch state before replacing a loaded emulator.
+    static bool is_valid_latch_fetch_state(json_t* state) {
+        if (!json_is_object(state) ||
+            !json_is_boolean(json_object_get(state, "valid"))) return false;
+        const char* fields[] = {"address", "page", "low", "high"};
+        const int limits[] = {65535, 1, 255, 255};
+        for (int i = 0; i < 4; ++i) {
+            json_t* value = json_object_get(state, fields[i]);
+            if (!json_is_integer(value) || json_integer_value(value) < 0 ||
+                json_integer_value(value) > limits[i]) return false;
+        }
+        json_t* sprites = json_object_get(state, "sprites");
+        if (!json_is_array(sprites) || json_array_size(sprites) != 16) return false;
+        for (int i = 0; i < 16; ++i) {
+            json_t* value = json_array_get(sprites, i);
+            if (!json_is_integer(value) || json_integer_value(value) < 0 ||
+                json_integer_value(value) > 255) return false;
+        }
+        return true;
+    }
+
     /// Perform a single cycle on the PPU.
     void cycle(PictureBus& bus);
 
@@ -196,6 +233,15 @@ class PPU {
     /// Convert the object's state to a JSON object.
     json_t* dataToJson() const {
         json_t* rootJ = json_object();
+        json_t* fetch = json_pack("{s:b,s:i,s:i,s:i,s:i}",
+            "valid", latch_background_valid, "address", latch_background_address,
+            "page", latch_background_page, "low", latch_background_low,
+            "high", latch_background_high);
+        json_t* sprites = json_array();
+        for (NES_Byte byte : latch_sprite_patterns)
+            json_array_append_new(sprites, json_integer(byte));
+        json_object_set_new(fetch, "sprites", sprites);
+        json_object_set_new(rootJ, "chr_latch_fetches", fetch);
         // encode sprite_memory
         {
             auto data_string = base64_encode(&sprite_memory[0], sprite_memory.size());
@@ -232,6 +278,21 @@ class PPU {
 
     /// Load the object's state from a JSON object.
     void dataFromJson(json_t* rootJ) {
+        latch_background_valid = false;
+        latch_background_address = latch_background_page = 0;
+        latch_background_low = latch_background_high = 0;
+        latch_sprite_patterns.fill(0);
+        json_t* fetch = json_object_get(rootJ, "chr_latch_fetches");
+        if (is_valid_latch_fetch_state(fetch)) {
+            latch_background_valid = json_is_true(json_object_get(fetch, "valid"));
+            latch_background_address = json_integer_value(json_object_get(fetch, "address"));
+            latch_background_page = json_integer_value(json_object_get(fetch, "page"));
+            latch_background_low = json_integer_value(json_object_get(fetch, "low"));
+            latch_background_high = json_integer_value(json_object_get(fetch, "high"));
+            for (int i = 0; i < 16; ++i)
+                latch_sprite_patterns[i] = json_integer_value(json_array_get(
+                    json_object_get(fetch, "sprites"), i));
+        }
         // load sprite_memory
         {
             json_t* json_data = json_object_get(rootJ, "sprite_memory");

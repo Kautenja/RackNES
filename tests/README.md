@@ -89,6 +89,12 @@ complete emulator or UI validation.
     CHR RAM, old-bank bus conflicts, strict image rejection, malformed mapper
     JSON, cartridge clones after source destruction, live/backup Rack patch
     restoration, CPU/module reset, and DMC callbacks across distinct PRG banks.
+-   MMC2: all PRG/CHR register bytes across supported bank counts, exact and
+    ranged latch triggers, old-byte ordering, non-triggering writes, PRG RAM,
+    mirroring, image/state rejection, clones, and live/backup patch restoration.
+    PPU tests cover clipped background fetches, covered/hidden sprite fetches,
+    both sprite heights and vertical flips, buffered PPUDATA, and fetch-state
+    snapshot continuation. Existing mappers keep their pixel-read path.
 -   Playback safety: Blip_Buffer bulk, one-sample, stereo, and direct-reader
     paths agree on positive and negative PCM, including overlapping buffer
     compaction. PPU reset clears sprite-hit status and stale buffered reads.
@@ -105,13 +111,15 @@ CPU/PPU/APU timing or audio conversion.
 
 ## Focused Audio Characterization
 
-A CPU-program fixture compares NROM, CNROM, and AxROM integer PCM for all
+A CPU-program fixture compares NROM, CNROM, AxROM, and MMC2 integer PCM for all
 five voices, including looping DMC while the CPU writes bank selections.
 AxROM repeats identical code/sample data in four PRG banks, switching from
 bank 0 to bank 3; a separate DMC callback test reads distinct bank markers.
+MMC2 switches the first 8 KiB code window from bank 0 to bank 3, while its
+last three PRG windows retain the reference program's layout and DMC bytes.
 It checks 2,000 host samples at each of 44.1, 48, 96, and 192 kHz, at nominal
 CPU speed with the existing integer cycle loop, using both the core's default
-Blip clock and RackNES's fixed 768,000 Hz Blip clock. All three mapper runs must
+Blip clock and RackNES's fixed 768,000 Hz Blip clock. All four mapper runs must
 match sample by sample, produce nonzero output on every channel, and generate
 the same number of frame callbacks. It also prints a reproducible PCM
 fingerprint for before/after comparisons on the same toolchain.

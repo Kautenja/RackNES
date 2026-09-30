@@ -9,18 +9,16 @@ SAVE. Canceling leaves the current selection alone. Only the first dropped
 file is used.
 
 \subsection{Supported cartridge mappers}
-A mapper arranges cartridge memory. RackNES supports these five IDs;
+A mapper arranges cartridge memory. RackNES supports these six IDs;
 individual games and modified ROMs may still behave incorrectly.
 \begin{center}
-\begin{tabular}{@{}rl@{}}
+\begin{tabular}{@{}rl@{\hspace{3em}}rl@{}}
 \toprule
-\textbf{ID} & \textbf{Name} \\
+\textbf{ID} & \textbf{Name} & \textbf{ID} & \textbf{Name} \\
 \midrule
-0 & NROM \\
-1 & MMC1 \\
-2 & UNROM \\
-3 & CNROM \\
-7 & AxROM / AOROM \\
+0 & NROM & 3 & CNROM \\
+1 & MMC1 & 7 & AxROM / AOROM \\
+2 & UNROM & 9 & MMC2 / PxROM \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -31,6 +29,12 @@ visible PRG byte. Only NTSC layouts are accepted. CHR ROM, battery RAM,
 trainers, four-screen layouts, extra devices, and other variants are rejected.
 Legacy headers cannot reliably identify every board variant.
 
+Mapper 9 accepts power-of-two PRG ROM sizes of 32--128 KiB, CHR ROM sizes
+of 8--128 KiB, and 8 KiB PRG RAM, with optional battery metadata. Supported
+formats are NTSC iNES and NES 2.0 submapper 0. Trainers, CHR RAM, four-screen
+layouts and other variants are rejected. RAM persists in Rack patches and
+SAVE snapshots; external battery-save files are not imported or exported.
+
 Timing is fixed; there is no PAL/NTSC or mapper selector. Audio uses the five
 base NES voices without cartridge expansion sound. CV Genie's game list
 contains memory maps and does not define ROM compatibility.
@@ -39,7 +43,7 @@ contains memory maps and does not define ROM compatibility.
 \begin{description}
 \item[ASIC mapper not implemented for ROM!]
 The file requests a mapper outside the implemented set, or an unsupported
-mapper-7 image layout.
+mapper-7 or mapper-9 image layout.
 \item[ROM file failed to load!]
 The selected path failed ROM validation. Check the file and its format.
 \item[ROM file was not found!]
@@ -49,7 +53,6 @@ same ROM is still present at that path.
 A failed new-ROM attempt leaves the current game, display, and SAVE slot
 in place. Correct the file selection and try again.
 
-\subsection{Moving a patch between computers}
-Keep the original ROM at its saved path: patches store emulator state and
-a path, and restoration reloads the file. Loading a ROM manually starts a
-new session; it does not recover a failed snapshot restore.
+\textbf{Moving patches.} Keep the original ROM at its saved path: restoration
+reloads that file. Loading a ROM manually starts a new session; it does not
+recover a failed snapshot restore.

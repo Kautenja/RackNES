@@ -19,6 +19,7 @@
 #include "mappers/mapper2_UNROM.hpp"
 #include "mappers/mapper3_CNROM.hpp"
 #include "mappers/mapper7_AxROM.hpp"
+#include "mappers/mapper9_MMC2.hpp"
 
 namespace NES {
 
@@ -42,6 +43,7 @@ class Cartridge : public ROM {
         UNROM  = 2,
         CNROM  = 3,
         AXROM  = 7,
+        MMC2   = 9,
     };
 
     /// Create a new Cartridge.
@@ -66,6 +68,15 @@ class Cartridge : public ROM {
                     json_object_get(cartridge_state, "mapper"))))
                 return nullptr;
         }
+        const bool mmc2 = (header[6] >> 4) == 9 && (header[7] & 0xF0) == 0 &&
+            ((header[7] & 0x0C) != 0x08 || (header[8] & 0x0F) == 0);
+        if (mmc2) {
+            file.seekg(0, std::ios::end);
+            if (!MapperMMC2::supports(header, file.tellg()) ||
+                (cartridge_state && !MapperMMC2::is_valid_state(
+                    json_object_get(cartridge_state, "mapper"))))
+                return nullptr;
+        }
         // initialize a new cartridge
         auto cartridge = new Cartridge(path);
         // load the mapper
@@ -79,6 +90,9 @@ class Cartridge : public ROM {
                 cartridge->mapper = new MapperAxROM(*cartridge, callback,
                     header[7] == 0x08 && (header[8] >> 4) == 2);
                 break;
+            case MapperID::MMC2:
+                cartridge->mapper = new MapperMMC2(*cartridge, callback);
+                break;
             default: delete cartridge; cartridge = nullptr;
         }
         // return the cartridge
@@ -91,6 +105,9 @@ class Cartridge : public ROM {
             if (get_mapper_number() == 7)
                 mapper = new MapperAxROM(*this,
                     *static_cast<const MapperAxROM*>(other.mapper), callback);
+            else if (get_mapper_number() == 9)
+                mapper = new MapperMMC2(*this,
+                    *static_cast<const MapperMMC2*>(other.mapper), callback);
             else
                 mapper = other.mapper->clone();
         }

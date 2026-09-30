@@ -237,15 +237,17 @@ routes the five base NES voices. A program must first work within the
 implemented cartridge and machine model before its musical behavior can be
 controlled through the patch.
 
-\paragraph{Mapper-7 update (September 2026).}
-A subsequent AxROM/AOROM adaptation adds 32\,KiB PRG banking, 8\,KiB CHR
-RAM, and one-screen mirroring, with validated image layouts and state
-restoration. Legacy iNES and NES 2.0 submappers 0/1 use no bus conflicts;
-submapper 2 resolves writes against visible PRG data. APU code and scheduling
-are unchanged. Synthetic banking, snapshot and DMC checks pass; five-channel
-PCM matches NROM at four host rates and two buffer clocks. This is not
-commercial-game or listening validation. The separate update's evidence and
-limits are recorded in \code{sources.md} and specification 001.
+\paragraph{Mapper updates (September 2026).}
+Subsequent adaptations add AxROM/AOROM (7), with 32\,KiB PRG banking and
+one-screen mirroring, and MMC2/PxROM (9), with 8\,KiB PRG and latched
+4\,KiB CHR banks. MMC2's triggering read returns the old bank's byte;
+rendering reuses fetched pattern bytes to avoid repeated latch transitions.
+Those bytes and mapper registers survive snapshots. Both additions validate
+supported image layouts. APU code and scheduling are unchanged; five-channel
+PCM matches NROM at four host rates and two buffer clocks. Synthetic banking,
+fetch and state checks are not commercial-game or listening validation.
+The updates' evidence and limits are recorded in \code{sources.md} and
+specification 001, separately from the pinned historical account.
 
 \subsection{Three intervention layers}
 At the \emph{gameplay layer}, sixteen gate inputs represent the eight buttons

@@ -783,6 +783,87 @@ No plugin build, executable regression, manual Rack session, or performance
 measurement was run for this update; earlier results remain attached to their
 implementation increments above.
 
+### MMC2 Integration: September 30, 2026
+
+Mapper 9 (MMC2 / PxROM) is now enabled alongside IDs 0--3 and 7. Adapted
+`mapper_MMC2.hpp/.cpp`, bank behavior, PPU fetch structure and MMC2 test cases
+from the pinned nes-py revision; retained attribution and the MIT notice.
+No mapper IRQ, expansion sound, generic address-observation framework or APU
+rewrite is needed for this mapper.
+
+Implemented contracts:
+
+-   Switchable 8 KiB PRG at `$8000`, with the final three banks fixed at
+    `$A000/$C000/$E000`. Mask PRG registers to four bits and CHR registers to
+    five bits; wrap bank selections within complete available banks.
+-   Four CHR registers feed independent lower/upper 4 KiB windows. Exact
+    `$0FD8/$0FE8` and ranged `$1FD8-$1FDF/$1FE8-$1FEF` reads select FD/FE
+    latches. The triggering read returns the old bank's byte. Observation and
+    transition occur inside one `readCHR` call, so there is no pending latch
+    phase between bus observation and reading. CHR writes do not latch.
+-   The picture bus exposes a mapper capability for read-sensitive CHR.
+    Only MMC2 uses the new rendering path: background pattern bytes are
+    fetched once per tile row and sprite patterns once per selected row in
+    OAM order, including clipped/covered sprites. Background fetches continue
+    behind left-edge clipping. Both sprite heights and vertical flips are
+    handled. Other mappers retain their existing pixel-read behavior.
+-   Preserve fetched bytes in the new `ppu.chr_latch_fetches` JSON object so
+    restoration does not repeat side-effecting reads. Validate these new
+    fields before loading an emulator; older snapshots without the object
+    retain the old mapper behavior. Mapper JSON stores PRG/CHR registers,
+    mirroring and both latch states, with strict type/range checks before
+    cartridge replacement. Recompute bus mirroring from restored mapper state.
+-   Explicitly rebind MMC2 cartridge clones to copied ROM and a destination
+    mirroring callback. The 8 KiB PRG RAM uses the existing CPU bus and
+    `bus.extended_ram` JSON field, including DMA-page access. Fresh cartridge
+    attachment now zeroes/resizes this bus RAM for all mappers instead of
+    retaining a prior cartridge's bytes; JSON restoration follows attachment.
+-   Accept exact-size NTSC iNES or NES 2.0 submapper-0 images with power-of-two
+    32--128 KiB PRG ROM, 8--128 KiB CHR ROM, and 8 KiB PRG RAM. NES 2.0 must
+    explicitly specify volatile or battery-backed PRG RAM consistent with
+    the battery flag. Reject CHR RAM, trainers, four-screen layouts, extra
+    devices, extended size encodings and unsupported regions/submappers.
+    Battery RAM persists through Rack patch/SAVE state, not external files.
+
+Validation on macOS arm64, Apple Clang 21, prepared Rack tree:
+
+-   `make -C tests -j2`: ASan/UBSan pass. New checks cover all byte writes,
+    4/8/16 PRG banks and 2/4/8/16/32 CHR banks, trigger boundaries and
+    old-bank ordering, mirrors, PRG RAM, malformed images/state, clone source
+    destruction, and independent live/backup Rack patch restoration.
+    PPU checks preserve fetched bytes across snapshots and exercise clipped
+    backgrounds, covered/hidden sprites, both heights, vertical flips and
+    buffered PPUDATA. A synthetic CPU program verifies actual mapper writes,
+    PPUDATA latch reads, PRG selection and PRG RAM through emulator callbacks.
+-   The four-mapper NROM/CNROM/AxROM/MMC2 audio workload passes with all five
+    voices nonzero and identical PCM/frame counts at 44.1/48/96/192 kHz,
+    2,000 samples each, nominal emulation speed, and both Blip clocks.
+    MMC2 switches code from PRG bank 0 to 3 while DMC reads its fixed windows;
+    the test verifies the final PRG register. Fingerprints stay
+    `f5146c03e0a6ceb2` (1,789,773 Hz) and `d8915d435c9cf9a9` (768,000 Hz).
+-   `make -j4`: plugin build passes. Existing Rack SDK warnings remain.
+-   Repeated the plugin build and ASan/UBSan suite from a clean source snapshot
+    containing only this mapper change, excluding concurrent SRAM work:
+    `make -C "$snapshot" -j4 RACK_DIR="$rack_dir"` and
+    `make -C "$snapshot/tests" -j2 RACK_DIR="$rack_dir"`. Both pass with the
+    same prepared Rack tree and unchanged PCM fingerprints.
+-   `make -C manual`, `make -C whitepaper`, and `make -C whitepaper source`:
+    pass. Both manuals list mapper 9 and its limits; the whitepaper's dated
+    addendum and evidence inventory cover MMC2 without changing the historical
+    source revision. Native editor compilation also passes. Rendered tables,
+    page flow and references reviewed; no overfull boxes or unresolved final
+    references. `git diff --check` and changed Markdown link checks pass.
+
+Limits: the renderer still uses its coarse scanline model (sprite rows fetch
+at the existing end-of-scanline evaluation), not hardware-exact PPU fetch
+cycles. No commercial-game, manual Rack/listening, other-platform, or
+clock-extreme validation was performed. The complete bus/PPU/JSON/clone and
+IRQ migrations remain open, as do mappers 4/5/69, broad NES 2.0 support and
+Pulsar/PR8 validation. Existing full-state omissions and PPU flag serialization
+still limit deterministic continuation; validation of the new fetch fields
+does not validate all older CPU/PPU/APU or bus JSON. This specification and
+its associated issue gates remain IN PROGRESS.
+
 [upstream]: https://github.com/Kautenja/nes-py/tree/301da52f7f75de380e6e195fd36621c3d5b03757
 [factory]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/mapper_factory.cpp
 [upstream-bus]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/main_bus.cpp

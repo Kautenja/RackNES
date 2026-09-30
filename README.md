@@ -97,9 +97,10 @@ local documentation.
 ### ROM Compatibility
 
 RackNES supports iNES ROMs using cartridge mapper IDs **0 (NROM)**,
-**1 (MMC1)**, **2 (UNROM)**, **3 (CNROM)**, and **7 (AxROM / AOROM)**.
-Mapper 7 accepts standard 32--256 KiB PRG / 8 KiB CHR-RAM layouts and a
-validated subset of NES 2.0; see the [manual](manual/RackNES/sections/roms.tex)
+**1 (MMC1)**, **2 (UNROM)**, **3 (CNROM)**, **7 (AxROM / AOROM)**,
+and **9 (MMC2 / PxROM)**.
+Mappers 7 and 9 accept validated standard layouts and a subset of NES 2.0;
+see the [manual](manual/RackNES/sections/roms.tex)
 for board and format limits. Mapper support does not ensure every game or
 modified ROM works. Extract archives before loading,
 and keep the original ROM at its saved path when reopening a Rack patch.

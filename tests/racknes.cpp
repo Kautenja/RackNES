@@ -15,6 +15,7 @@ static Model inputGenieModel;
 Model* modelInputGenie = &inputGenieModel;
 
 #include "axrom.hpp"
+#include "mmc2.hpp"
 
 /// Preserve held buttons and the unread portion of a controller stream.
 static void check_controller_state() {
@@ -195,7 +196,7 @@ static void check_ppu_reset() {
     assert(ppu.get_data(bus) == 0x55);
 }
 
-/// Exercise all five voices through CPU bus writes on NROM, CNROM and AxROM.
+/// Exercise all five voices through CPU bus writes on NROM, CNROM, AxROM and MMC2.
 static void check_graphics_audio_preservation(uint64_t blip_clock) {
     const char* path = ".build/mapper-audio.nes";
     std::vector<unsigned char> bytes(16 + 0x8000 + 0x8000, 0);
@@ -221,19 +222,33 @@ static void check_graphics_audio_preservation(uint64_t blip_clock) {
     write_register(0x4012, 0x00); write_register(0x4013, 0x01);
     write_register(0x4015, 0x1F);
     const int loop = 0x8000 + pc - 16;
+    const std::size_t bank_write_high = pc + 4;
     write_register(0x8000, 3);  // CHR bank selection while DMC reads PRG.
     bytes[pc++] = 0x4C; bytes[pc++] = loop & 0xFF; bytes[pc++] = loop >> 8;
     for (int i = 0; i < 17; ++i) bytes[16 + 0x4000 + i] = 0x55;
     bytes[16 + 0x7FFC] = 0; bytes[16 + 0x7FFD] = 0x80;
     uint64_t fingerprint = 14695981039346656037ULL;
     for (int rate : {44100, 48000, 96000, 192000}) {
-        std::unique_ptr<NES::Emulator> emulators[3];
-        for (int variant = 0; variant < 3; ++variant) {
+        std::unique_ptr<NES::Emulator> emulators[4];
+        for (int variant = 0; variant < 4; ++variant) {
             bytes[6] = variant == 0 ? 0x00 : variant == 1 ? 0x33 : 0x70;
-            // AxROM uses CHR RAM; all three see identical PRG data.
+            // AxROM uses CHR RAM; each variant executes the same program.
             bytes[5] = variant == 0 ? 1 : variant == 1 ? 4 : 0;
             std::ofstream file(path, std::ios::binary);
-            if (variant == 2) {
+            if (variant == 3) {
+                auto image = mmc2_image(16, 8);
+                // MMC2 switches only the first 8 KiB. Repeat code in banks 0
+                // and 3; keep the reference's last three windows fixed.
+                for (int bank : {0, 3}) {
+                    std::copy(bytes.begin() + 16, bytes.begin() + 16 + 0x2000,
+                              image.begin() + 16 + bank * 0x2000);
+                    image[bank_write_high + bank * 0x2000] = 0xA0;
+                }
+                std::copy(bytes.begin() + 16 + 0x2000, bytes.begin() + 16 + 0x8000,
+                          image.begin() + 16 + 13 * 0x2000);
+                std::fill(image.begin() + 16 + 16 * 0x2000, image.end(), 0);
+                file.write(reinterpret_cast<const char*>(image.data()), image.size());
+            } else if (variant == 2) {
                 // Four identical PRG banks let the CPU switch to bank 3 while
                 // retaining the NROM oracle for every instruction/DMC sample.
                 auto image = axrom_image(4);
@@ -253,25 +268,30 @@ static void check_graphics_audio_preservation(uint64_t blip_clock) {
             emulators[variant]->set_clock_rate(blip_clock);
         }
         int nonzero[5] = {};
-        int frames[3] = {};
+        int frames[4] = {};
         for (int sample = 0; sample < 2000; ++sample) {
-            for (int variant = 0; variant < 3; ++variant)
+            for (int variant = 0; variant < 4; ++variant)
                 for (int cycle = 0; cycle < NES::CLOCK_RATE / double(rate); ++cycle)
                     emulators[variant]->cycle([&]() { ++frames[variant]; });
             for (int channel = 0; channel < 5; ++channel) {
                 const int16_t value = emulators[0]->get_audio_sample(channel);
                 assert(value == emulators[1]->get_audio_sample(channel));
                 assert(value == emulators[2]->get_audio_sample(channel));
+                assert(value == emulators[3]->get_audio_sample(channel));
                 if (value != 0) ++nonzero[channel];
                 fingerprint ^= static_cast<uint16_t>(value);
                 fingerprint *= 1099511628211ULL;
             }
         }
+        json_t* mmc2_state = emulators[3]->dataToJson();
+        assert(json_integer_value(json_object_get(json_object_get(json_object_get(
+            mmc2_state, "cartridge"), "mapper"), "register_prg")) == 3);
+        json_decref(mmc2_state);
         for (int count : nonzero) assert(count > 0);
-        assert(frames[0] == frames[1] && frames[0] == frames[2]);
+        assert(frames[0] == frames[1] && frames[0] == frames[2] && frames[0] == frames[3]);
     }
     assert(std::remove(path) == 0);
-    std::printf("NROM/CNROM/AxROM PCM at Blip clock %llu: %llx\n",
+    std::printf("NROM/CNROM/AxROM/MMC2 PCM at Blip clock %llu: %llx\n",
                 static_cast<unsigned long long>(blip_clock),
                 static_cast<unsigned long long>(fingerprint));
     std::fflush(stdout);
@@ -363,10 +383,14 @@ int main(int argc, char** argv) {
     check_upstream_graphics_fixes();
     check_axrom();
     check_axrom_dmc();
+    check_mmc2_mapping();
+    check_mmc2_ppu();
+    check_mmc2_cpu();
     Context context;
     context.engine = new engine::Engine;
     contextSet(&context);
     check_axrom_module();
+    check_mmc2_state();
     {
         std::unique_ptr<RackNES> module(new RackNES);
         // An empty module must serialize without touching uninitialized hardware.
@@ -422,5 +446,5 @@ int main(int argc, char** argv) {
         json_decref(latest);
         json_decref(saved);
     }
-    std::puts("RackNES: controller state, mapper headers/CHR/AxROM, snapshots, failed loads, and RAM bounds passed");
+    std::puts("RackNES: controller state, mapper headers/CHR/AxROM/MMC2, snapshots, failed loads, and RAM bounds passed");
 }

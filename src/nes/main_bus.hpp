@@ -94,7 +94,9 @@ class MainBus {
     ///
     void set_mapper(ROM::Mapper* mapper_) {
         mapper = mapper_;
-        if (mapper->hasExtendedRAM()) extended_ram.resize(0x2000);
+        // Cartridge replacement starts fresh RAM; JSON restoration follows
+        // attachment and restores the existing bus-owned RAM field.
+        extended_ram.assign(mapper->hasExtendedRAM() ? 0x2000 : 0, 0);
     }
 
     /// Set a callback for when writes occur.

@@ -80,6 +80,12 @@
 
 ### 2.2.0 (Unreleased)
 
+-   Add mapper 9 (MMC2 / PxROM): bounded PRG/CHR banks, post-read CHR latches,
+    mirroring, 8 KiB PRG RAM, validated mapper state, and cartridge clones.
+    Reuse fetched pattern bytes for MMC2 rendering and preserve them in
+    snapshots. Initialize bus-owned cartridge RAM on ROM replacement; saved
+    patch RAM still restores afterward. Document the supported image subset.
+
 -   Add mapper 7 (AxROM / AOROM): bounded 32 KiB PRG banking, one-screen
     mirroring, 8 KiB CHR RAM, validated JSON restoration, and independent
     cartridge clones. Validate supported image layouts before loading;
