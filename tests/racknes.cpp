@@ -16,6 +16,8 @@ Model* modelInputGenie = &inputGenieModel;
 
 #include "axrom.hpp"
 
+#include "ntsc.hpp"
+
 /// Preserve held buttons and the unread portion of a controller stream.
 static void check_controller_state() {
     NES::Controller source, restored;
@@ -480,6 +482,7 @@ int main(int argc, char** argv) {
     check_controller_state();
     check_blip_sample_reads();
     check_ppu_reset();
+    check_ntsc_palette_range();
     check_mmc1_chr_banks();
     check_mmc1_work_ram();
     check_mapper_headers();
@@ -545,5 +548,5 @@ int main(int argc, char** argv) {
         json_decref(latest);
         json_decref(saved);
     }
-    std::puts("RackNES: controller state, mapper headers/CHR/AxROM, snapshots, failed loads, and RAM bounds passed");
+    std::puts("RackNES: controller state, mapper headers/CHR/AxROM, palette/NTSC, snapshots, failed loads, and RAM bounds passed");
 }
