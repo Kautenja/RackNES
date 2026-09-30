@@ -13,6 +13,9 @@ into musical patterns. Add **CV Genie** to put game memory under voltage control
 [RackNES manual (PDF)][RackNES] | [CV Genie manual (PDF)][CVGenie] |
 [Changelog](CHANGELOG.md)
 
+Read the [**technical report (PDF)**][Whitepaper] for the architecture and
+implementation details. [BibTeX citation](whitepaper/CITATION.bib).
+
 ## RackNES
 
 The game supplies the music, sound effects, and visuals. Your patch controls
@@ -154,13 +157,10 @@ That silent title-card fixture supplies the branded display shown above.
 ## Citation
 
 The technical report, [**RackNES: A Voltage-Controlled NES Emulator as a Musical
-Instrument**](whitepaper/README.md), describes the project's foundations, related
+Instrument**][Whitepaper], describes the project's foundations, related
 work, architecture, and implementation. Its [standalone LaTeX source](whitepaper/racknes.tex)
-includes the bibliography and architecture diagram; the report README provides
-PDF build instructions.
-
-<details>
-<summary><strong>Citation Formats And Reproducibility</strong></summary>
+includes the bibliography and architecture diagram. [Download the latest-release
+PDF][Whitepaper] or follow the [local build instructions](whitepaper/README.md).
 
 To cite the project and its implementation account, use the report entry below.
 GitHub's **Cite this repository** button uses the preferred citation in
@@ -185,8 +185,6 @@ or commit used. The report documents RackNES 2.1.0 at source revision
 [`e8c99bf86295318724ef62ad40a17ba6897be696`](https://github.com/Kautenja/RackNES/tree/e8c99bf86295318724ef62ad40a17ba6897be696).
 It is currently a repository manuscript without an assigned DOI or conference
 publication status.
-
-</details>
 
 ## Acknowledgments
 
@@ -225,6 +223,7 @@ The software license does not grant the same permissions for the artwork.
 [LicenseBadge]: https://img.shields.io/badge/source%20license-GPL--3.0--or--later-blue
 [RackNES]: https://github.com/Kautenja/RackNES/releases/latest/download/RackNES.pdf
 [CVGenie]: https://github.com/Kautenja/RackNES/releases/latest/download/CVGenie.pdf
+[Whitepaper]: https://github.com/Kautenja/RackNES/releases/latest/download/RackNES-whitepaper.pdf
 [anlexmatos]: https://github.com/anlexmatos
 [SimpleNES]: https://github.com/amhndu/SimpleNES
 [Nes_Snd_Emu]: https://www.slack.net/~ant/libs/audio.html#Nes_Snd_Emu
