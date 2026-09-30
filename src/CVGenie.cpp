@@ -15,10 +15,19 @@
 
 #include <atomic>
 #include <cmath>
+#include <string>
 
 #include "plugin.hpp"
 #include "GameMaps.hpp"
 #include "theme.hpp"
+
+/// Describe byte endpoints in their mapped order, including descending toggles.
+static std::string elementDescription(const GameParameter* parameter) {
+    if (!parameter) return "Unassigned: no memory writes";
+    return parameter->toggle
+        ? string::f("Trigger toggle: %d / %d", parameter->minimum, parameter->maximum)
+        : string::f("Continuous 0-10 V: %d to %d", parameter->minimum, parameter->maximum);
+}
 
 // ---------------------------------------------------------------------------
 // MARK: Module
@@ -67,9 +76,28 @@ struct CVGenie : Module {
     std::atomic<int> requestedGame{-2};
     std::atomic<SelectionRequest> requestedElement[8];
 
+    /// Build hover text on the UI thread from published selections and static maps.
+    std::string rowDescription(int row) const {
+        const auto* parameter = gameMap.getParameter(memLoc[row].load());
+        if (!parameter) return elementDescription(nullptr);
+        std::string text = parameter->name + "\n" + elementDescription(parameter);
+        if (parameter->toggle)
+            text += "\nTrigger at 2 V; rearm at 0.1 V or below.";
+        return text;
+    }
+
+    /// Rack requests port descriptions on hover; no strings change in process().
+    struct RowPortInfo : engine::PortInfo {
+        std::string getDescription() override {
+            return static_cast<CVGenie*>(module)->rowDescription(portId);
+        }
+    };
+
     /// Initialize a new CV Genie module.
     CVGenie() {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+        for (int row = 0; row < INPUTS; row++)
+            configInput<RowPortInfo>(INPUT_MEMVAL + row, string::f("Row %d CV", row + 1));
         onReset();
     }
 
@@ -232,7 +260,37 @@ struct ElementItem : ui::MenuItem {
 template <class TModule, int SELECTOR_ID>
 struct ElementChoice : LedDisplayChoice {
     /// the module associated with the indicator
-    TModule* module;
+    TModule* module = nullptr;
+
+    /// Scene-owned hover text, detached when the selector leaves or is removed.
+    struct RowTooltip : ui::Tooltip {
+        ElementChoice* choice = nullptr;
+        ~RowTooltip() override { choice->tooltip = nullptr; }
+        void step() override {
+            text = choice->module->rowDescription(SELECTOR_ID);
+            Tooltip::step();
+        }
+    };
+    RowTooltip* tooltip = nullptr;
+
+    ~ElementChoice() override { destroyTooltip(); }
+
+    /// Remove hover help before opening a menu or deleting this selector.
+    void destroyTooltip() {
+        if (!tooltip) return;
+        if (tooltip->parent) tooltip->parent->removeChild(tooltip);
+        delete tooltip;
+        tooltip = nullptr;
+    }
+
+    void onEnter(const EnterEvent& e) override {
+        if (!module || !settings::tooltips || tooltip) return;
+        tooltip = new RowTooltip;
+        tooltip->choice = this;
+        APP->scene->addChild(tooltip);
+    }
+
+    void onLeave(const LeaveEvent& e) override { destroyTooltip(); }
 
     /// Set the module of the indicator
     void setModule(TModule* module) {
@@ -241,6 +299,8 @@ struct ElementChoice : LedDisplayChoice {
 
     /// Respond to an action on the indicator (open the menu)
     void onAction(const event::Action& e) override {
+        if (!module) return;
+        destroyTooltip();
         /// create the menu
 		ui::Menu* menu = createMenu();
         /// add a label to the top of the menu
@@ -258,16 +318,22 @@ struct ElementChoice : LedDisplayChoice {
             /// set the first menu item to "Unassigned", and the rest to their specified names
 			item->text = menuMap.getName(i);
             /// add a checkmark if an item is previously selected
-			item->rightText = CHECKMARK(item->elementId == module->memLoc[SELECTOR_ID]);
+            const auto* parameter = menuMap.getParameter(i);
+            item->rightText = parameter ? elementDescription(parameter) : "";
+            if (item->elementId == module->memLoc[SELECTOR_ID].load())
+                item->rightText += " " + std::string(CHECKMARK_STRING);
             /// add the item to the menu
 			menu->addChild(item);
 		}
 	}
-	void step() override {
+    void step() override {
         /// Set the indicator's text to the specified name of the currently selected memory location
         /// Set to "Unassigned" if no memory location is selected
-		text = (module && module->memLoc[SELECTOR_ID].load() > -1) ? module->gameMap.getName(module->memLoc[SELECTOR_ID].load()) : "Unassigned";
-	}
+        const auto* parameter = module
+            ? module->gameMap.getParameter(module->memLoc[SELECTOR_ID].load()) : nullptr;
+        text = parameter ? parameter->name : "Unassigned";
+        LedDisplayChoice::step();
+    }
 };
 
 /// An LED display containing an indicator for the currently selected memory location

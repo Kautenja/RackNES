@@ -28,8 +28,17 @@ struct Display : rack::TransparentWidget {
     /// a pointer to the pixels to render. A pixel is represented as 4 bytes
     /// in RGBA order
     const uint8_t* pixels;
-    /// a pointer to the image to draw the display to
-    int screen = -1;
+    /// NanoVG image handle; zero means no image (including creation failure).
+    int screen = 0;
+    /// The context owning the image, valid until onContextDestroy().
+    NVGcontext* image_context = nullptr;
+
+    /// Release through the creating context, before it is destroyed.
+    void deleteImage() {
+        if (screen) nvgDeleteImage(image_context, screen);
+        screen = 0;
+        image_context = nullptr;
+    }
 
  public:
     /// whether the screen is turned on
@@ -56,6 +65,15 @@ struct Display : rack::TransparentWidget {
         setSize(render_size);
     }
 
+    /// Release the image when a module is removed while its context is live.
+    ~Display() override { deleteImage(); }
+
+    /// Release before context teardown; the next draw creates a fresh image.
+    void onContextDestroy(const ContextDestroyEvent& e) override {
+        deleteImage();
+        Widget::onContextDestroy(e);
+    }
+
     /// @brief Draw the display on the main context.
     ///
     /// @param args the arguments for the draw context for this widget
@@ -79,9 +97,11 @@ struct Display : rack::TransparentWidget {
             // -------------------------------------------------------------------
             // create / update the image container
             // -------------------------------------------------------------------
-            if (screen == -1)  // check if the screen has been initialized yet
+            if (!screen) {
                 screen = nvgCreateImageRGBA(args.vg, image_size.x, image_size.y, imageFlags, pixels);
-            else  // update the screen with the pixel data
+                if (!screen) return;
+                image_context = args.vg;
+            } else  // update the screen with the pixel data
                 nvgUpdateImage(args.vg, screen, pixels);
             // -------------------------------------------------------------------
             // draw the screen

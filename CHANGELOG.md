@@ -80,6 +80,12 @@
 
 ### 2.2.0 (Unreleased)
 
+-   Add CV Genie row port names, assignment ranges and trigger modes in menus,
+    and full assignment hover help. Clarify RackNES frame-clock and MIX routing
+    tooltips.
+-   Safely construct RackNES browser previews without a module, and release
+    display images on widget deletion and graphics-context teardown.
+
 -   Rebrand RackNES and CV Genie as Arhythmetic Units, including panel and
     manual artwork. Preserve existing plugin and module slugs for saved patches.
 

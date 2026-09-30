@@ -178,13 +178,20 @@ struct RackNES : Module {
         configInput(INPUT_LOAD,            "Load state trigger");
         configInput(INPUT_HANG,            "Hang gate");
         configInput(INPUT_RESET,           "Reset trigger");
-        configOutput(OUTPUT_CLOCK,         "CPU clock");
+        configOutput(OUTPUT_CLOCK,         "Frame clock")->description =
+            "0/10 V frame-counter clock; follows emulation speed.";
         configOutput(OUTPUT_CH + 0,        "Square voice 1");
         configOutput(OUTPUT_CH + 1,        "Square voice 2");
         configOutput(OUTPUT_CH + 2,        "Triangle voice");
         configOutput(OUTPUT_CH + 3,        "Noise voice");
         configOutput(OUTPUT_CH + 4,        "DMC sample voice");
         configOutput(OUTPUT_MIX,           "Audio mix");
+        for (std::size_t channel = 0; channel < NES::APU::NUM_CHANNELS; channel++) {
+            getOutputInfo(OUTPUT_CH + channel)->description =
+                "Connecting this voice removes it from the mix.";
+        }
+        getOutputInfo(OUTPUT_MIX)->description =
+            "Sum of voices whose individual outputs are not connected.";
         // set the division for the CV processing
         cvDivider.setDivision(16);
         // draw the initial screen
@@ -478,7 +485,7 @@ struct RackNESWidget : ThemedWidget<BASENAME> {
         // setup the display for the NES screen
         display = new Display(
             Vec(157, 18),                                         // screen position
-            static_cast<RackNES*>(module)->screen,                // pixel buffer
+            module ? module->screen : nullptr,                   // pixel buffer
             Vec(NES::Emulator::WIDTH, NES::Emulator::HEIGHT),     // buffer size
             Vec(NES::Emulator::WIDTH_NES, NES::Emulator::HEIGHT)  // image size
         );

@@ -45,6 +45,12 @@ then validates ROM initialization, a frame heartbeat, nonblank video, every
 component framebuffer, and GL success. It waits up to 160 draw passes for
 Rack's component caches; incomplete rendering fails the command. Genie shows
 No Game Selected and eight Unassigned rows. The ROM has no Genie game map.
+The harness also captures null-module browser previews in both themes and
+checks display image reuse, retry after allocation failure, cleanup on context
+events, recreation, and deletion. Context events are simulated against the
+live renderer; this is not a full OS graphics-context replacement test.
+Additional Genie captures show a long assignment's hover help and its menu.
+These use a saved Mario map selection without running a commercial ROM.
 
 On macOS, a sandbox without desktop access can prevent GLFW from initializing
 or stall in the OS window service; run the capture in a normal desktop terminal

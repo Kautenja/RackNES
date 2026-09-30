@@ -13,6 +13,85 @@
 
 Plugin* plugin_instance = nullptr;
 
+/// Observe real NanoVG image allocation/deletion without changing the renderer.
+struct ImageLifecycleCheck {
+    NVGparams* params = nvgInternalParams(APP->window->vg);
+    decltype(NVGparams::renderCreateTexture) create = params->renderCreateTexture;
+    decltype(NVGparams::renderDeleteTexture) destroy = params->renderDeleteTexture;
+    int created = 0;
+    int deleted = 0;
+    bool fail_creation = false;
+    static ImageLifecycleCheck* active;
+
+    ImageLifecycleCheck() {
+        active = this;
+        params->renderCreateTexture = [](void* user, int type, int width, int height,
+            int flags, const unsigned char* pixels) {
+            if (active->fail_creation) return 0;
+            int image = active->create(user, type, width, height, flags, pixels);
+            if (image) active->created++;
+            return image;
+        };
+        params->renderDeleteTexture = [](void* user, int image) {
+            active->deleted++;
+            return active->destroy(user, image);
+        };
+    }
+
+    ~ImageLifecycleCheck() {
+        params->renderCreateTexture = create;
+        params->renderDeleteTexture = destroy;
+        active = nullptr;
+    }
+};
+
+ImageLifecycleCheck* ImageLifecycleCheck::active = nullptr;
+
+/// Verify allocation failure, context teardown/recreation, and module removal.
+static void check_display_lifecycle() {
+    ImageLifecycleCheck check;
+    const uint8_t pixel[] = {255, 255, 255, 255};
+    auto draw = [](Display& display) {
+        auto vg = APP->window->vg;
+        nvgBeginFrame(vg, 800, 420, 1.f);
+        Widget::DrawArgs args = {};
+        args.vg = vg;
+        args.clipBox = Rect(Vec(0, 0), Vec(800, 420));
+        display.drawLayer(args, 1);
+        nvgEndFrame(vg);
+    };
+    {
+        Display preview(Vec(), nullptr, Vec(1, 1), Vec(1, 1));
+        preview.is_on = true;
+        draw(preview);
+        if (check.created != 0) throw std::runtime_error("Preview allocated an image");
+        Display display(Vec(), pixel, Vec(1, 1), Vec(1, 1));
+        display.is_on = true;
+        check.fail_creation = true;
+        draw(display);
+        check.fail_creation = false;
+        draw(display);
+        draw(display);
+        if (check.created != 1 || check.deleted != 0)
+            throw std::runtime_error("Display did not retry/reuse its image");
+        Widget::ContextDestroyEvent destroy;
+        destroy.vg = APP->window->vg;
+        display.onContextDestroy(destroy);
+        display.onContextDestroy(destroy);
+        if (check.deleted != 1)
+            throw std::runtime_error("Context teardown did not delete exactly one image");
+        Widget::ContextCreateEvent create;
+        create.vg = APP->window->vg;
+        display.onContextCreate(create);
+        draw(display);
+        if (check.created != 2)
+            throw std::runtime_error("Display did not recreate its image");
+    }
+    if (check.deleted != 2)
+        throw std::runtime_error("Display destruction leaked or double-deleted an image");
+    std::cout << "Display image retry, reuse, context events, and destruction passed\n";
+}
+
 /// @brief Load through the normal module path, then run two seconds at 48 kHz.
 /// @details Processing finishes before any widget reads emulator pixels.
 static void prepare_rom(RackNES* module, const std::string& path) {
@@ -75,6 +154,13 @@ static void capture(ModuleWidget* widget, const std::string& filename) {
         widget->draw(args);
         widget->drawLayer(args, 1);
         nvgRestore(vg);
+        // Menus and tooltips live on the scene, outside the module hierarchy.
+        for (auto child : APP->scene->children) {
+            if (!dynamic_cast<ui::Tooltip*>(child) &&
+                !dynamic_cast<ui::MenuOverlay*>(child)) continue;
+            child->step();
+            APP->scene->drawChild(child, args);
+        }
         glViewport(0, 0, width, height);
         glClearColor(0.2f, 0.2f, 0.2f, 1.f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -95,6 +181,43 @@ static void capture(ModuleWidget* widget, const std::string& filename) {
         output.write(reinterpret_cast<const char*>(pixels.data() + y * width * 3), width * 3);
     if (!output) throw std::runtime_error("Cannot write " + filename);
     std::cout << filename << " pixelRatio=" << ratio << " GL=OK\n";
+}
+
+/// Find the production selector by its displayed assignment, not its layout.
+static LedDisplayChoice* find_choice(Widget* widget, const std::string& text) {
+    if (auto choice = dynamic_cast<LedDisplayChoice*>(widget))
+        if (choice->text == text) return choice;
+    for (auto child : widget->children)
+        if (auto choice = find_choice(child, text)) return choice;
+    return nullptr;
+}
+
+/// Capture hover help for a clipped name, and the actual assignment menu.
+static void capture_genie_help(ModuleWidget* widget, const std::string& directory) {
+    json_t* state = json_loads(
+        "{\"Game\":0,\"Memory Locations\":[{\"Location\":6}]}", 0, nullptr);
+    widget->module->dataFromJson(state);
+    json_decref(state);
+    widget->step();
+    auto choice = find_choice(widget, "Player Horizontal Screen Position");
+    if (!choice) throw std::runtime_error("Genie assignment label missing");
+    APP->scene->box.size = Vec(800, 420);
+    APP->scene->mousePos = Vec(190, 65);
+    settings::tooltips = true;
+    Widget::EnterEvent enter;
+    choice->onEnter(enter);
+    capture(widget, directory + "/CVGenie-Tooltip.ppm");
+    Widget::LeaveEvent leave;
+    choice->onLeave(leave);
+    Widget::ActionEvent action;
+    choice->onAction(action);
+    capture(widget, directory + "/CVGenie-Menu.ppm");
+    // Close the overlay before returning to ordinary panel captures.
+    auto overlay = APP->scene->children.back();
+    if (!dynamic_cast<ui::MenuOverlay*>(overlay))
+        throw std::runtime_error("Genie assignment menu missing");
+    APP->scene->removeChild(overlay);
+    delete overlay;
 }
 
 /// @brief Optional desktop tool; never loads personal patches or starts an engine thread.
@@ -126,7 +249,9 @@ int main(int argc, char** argv) {
         context.window = new window::Window;
         glfwHideWindow(context.window->win);
         glfwSetWindowSize(context.window->win, 800, 420);
+        settings::showTipsOnLaunch = false;
         context.scene = new app::Scene;
+        check_display_lifecycle();
         for (auto model : {modelRackNES, modelInputGenie}) {
             auto module = model->createModule();
             module->id = 1;
@@ -143,6 +268,14 @@ int main(int argc, char** argv) {
                 widget->setPanel(context.window->loadSvg(asset::plugin(&plugin,
                     "res/" + name + "-" + theme + ".svg")));
                 capture(widget.get(), std::string(argv[3]) + "/" + name + "-" + theme + ".ppm");
+            }
+            if (!is_nes) capture_genie_help(widget.get(), argv[3]);
+            std::unique_ptr<ModuleWidget> preview(model->createModuleWidget(nullptr));
+            for (const std::string theme : {"Light", "Dark"}) {
+                preview->setPanel(context.window->loadSvg(asset::plugin(&plugin,
+                    "res/" + name + "-" + theme + ".svg")));
+                capture(preview.get(), std::string(argv[3]) + "/" + name
+                    + "-Preview-" + theme + ".ppm");
             }
         }
     } catch (const std::exception& error) {
