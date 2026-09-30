@@ -211,7 +211,7 @@ class MainBus {
         }
         // encode extended_ram
         {
-            auto data_string = base64_encode(&extended_ram[0], extended_ram.size());
+            auto data_string = base64_encode(extended_ram.data(), extended_ram.size());
             json_object_set_new(rootJ, "extended_ram", json_string(data_string.c_str()));
         }
         return rootJ;

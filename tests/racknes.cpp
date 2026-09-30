@@ -1,4 +1,5 @@
 // Focused snapshot, cartridge header, controller, and expander regressions.
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 #include <cstdio>
@@ -12,6 +13,8 @@
 Plugin* plugin_instance = nullptr;
 static Model inputGenieModel;
 Model* modelInputGenie = &inputGenieModel;
+
+#include "axrom.hpp"
 
 /// Preserve held buttons and the unread portion of a controller stream.
 static void check_controller_state() {
@@ -192,7 +195,7 @@ static void check_ppu_reset() {
     assert(ppu.get_data(bus) == 0x55);
 }
 
-/// Exercise all five voices through CPU bus writes on NROM and CNROM.
+/// Exercise all five voices through CPU bus writes on NROM, CNROM and AxROM.
 static void check_graphics_audio_preservation(uint64_t blip_clock) {
     const char* path = ".build/mapper-audio.nes";
     std::vector<unsigned char> bytes(16 + 0x8000 + 0x8000, 0);
@@ -224,14 +227,24 @@ static void check_graphics_audio_preservation(uint64_t blip_clock) {
     bytes[16 + 0x7FFC] = 0; bytes[16 + 0x7FFD] = 0x80;
     uint64_t fingerprint = 14695981039346656037ULL;
     for (int rate : {44100, 48000, 96000, 192000}) {
-        std::unique_ptr<NES::Emulator> emulators[2];
-        for (int variant = 0; variant < 2; ++variant) {
-            bytes[6] = variant == 0 ? 0x00 : 0x33;
-            // NROM has one CHR bank; CNROM has four. PRG is identical.
-            bytes[5] = variant == 0 ? 1 : 4;
+        std::unique_ptr<NES::Emulator> emulators[3];
+        for (int variant = 0; variant < 3; ++variant) {
+            bytes[6] = variant == 0 ? 0x00 : variant == 1 ? 0x33 : 0x70;
+            // AxROM uses CHR RAM; all three see identical PRG data.
+            bytes[5] = variant == 0 ? 1 : variant == 1 ? 4 : 0;
             std::ofstream file(path, std::ios::binary);
-            file.write(reinterpret_cast<const char*>(bytes.data()),
-                       16 + 0x8000 + bytes[5] * 0x2000);
+            if (variant == 2) {
+                // Four identical PRG banks let the CPU switch to bank 3 while
+                // retaining the NROM oracle for every instruction/DMC sample.
+                auto image = axrom_image(4);
+                for (int bank = 0; bank < 4; ++bank)
+                    std::copy(bytes.begin() + 16, bytes.begin() + 16 + 0x8000,
+                              image.begin() + 16 + bank * 0x8000);
+                file.write(reinterpret_cast<const char*>(image.data()), image.size());
+            } else {
+                file.write(reinterpret_cast<const char*>(bytes.data()),
+                           16 + 0x8000 + bytes[5] * 0x2000);
+            }
             file.close();
             assert(file.good());
             emulators[variant].reset(new NES::Emulator);
@@ -240,24 +253,25 @@ static void check_graphics_audio_preservation(uint64_t blip_clock) {
             emulators[variant]->set_clock_rate(blip_clock);
         }
         int nonzero[5] = {};
-        int frames[2] = {};
+        int frames[3] = {};
         for (int sample = 0; sample < 2000; ++sample) {
-            for (int variant = 0; variant < 2; ++variant)
+            for (int variant = 0; variant < 3; ++variant)
                 for (int cycle = 0; cycle < NES::CLOCK_RATE / double(rate); ++cycle)
                     emulators[variant]->cycle([&]() { ++frames[variant]; });
             for (int channel = 0; channel < 5; ++channel) {
                 const int16_t value = emulators[0]->get_audio_sample(channel);
                 assert(value == emulators[1]->get_audio_sample(channel));
+                assert(value == emulators[2]->get_audio_sample(channel));
                 if (value != 0) ++nonzero[channel];
                 fingerprint ^= static_cast<uint16_t>(value);
                 fingerprint *= 1099511628211ULL;
             }
         }
         for (int count : nonzero) assert(count > 0);
-        assert(frames[0] == frames[1]);
+        assert(frames[0] == frames[1] && frames[0] == frames[2]);
     }
     assert(std::remove(path) == 0);
-    std::printf("NROM/CNROM PCM at Blip clock %llu: %llx\n",
+    std::printf("NROM/CNROM/AxROM PCM at Blip clock %llu: %llx\n",
                 static_cast<unsigned long long>(blip_clock),
                 static_cast<unsigned long long>(fingerprint));
     std::fflush(stdout);
@@ -347,9 +361,12 @@ int main(int argc, char** argv) {
     check_mmc1_chr_banks();
     check_mapper_headers();
     check_upstream_graphics_fixes();
+    check_axrom();
+    check_axrom_dmc();
     Context context;
     context.engine = new engine::Engine;
     contextSet(&context);
+    check_axrom_module();
     {
         std::unique_ptr<RackNES> module(new RackNES);
         // An empty module must serialize without touching uninitialized hardware.
@@ -405,5 +422,5 @@ int main(int argc, char** argv) {
         json_decref(latest);
         json_decref(saved);
     }
-    std::puts("RackNES: controller state, mapper headers/CHR, snapshots, failed loads, and RAM bounds passed");
+    std::puts("RackNES: controller state, mapper headers/CHR/AxROM, snapshots, failed loads, and RAM bounds passed");
 }

@@ -203,7 +203,7 @@ class PPU {
         }
         // encode scanline_sprites
         {
-            auto data_string = base64_encode(&scanline_sprites[0], scanline_sprites.size());
+            auto data_string = base64_encode(scanline_sprites.data(), scanline_sprites.size());
             json_object_set_new(rootJ, "scanline_sprites", json_string(data_string.c_str()));
         }
         json_object_set_new(rootJ, "pipeline_state", json_integer(pipeline_state));

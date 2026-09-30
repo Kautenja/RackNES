@@ -98,7 +98,7 @@ runtime search paths and sanitizer limitations.
 -   `src/nes/emulator.hpp`: CPU, PPU, APU, controller, and bus coordination.
     The other `src/nes/` headers and sources implement those components,
     cartridge loading, and mappers. The cartridge factory currently supports
-    mapper IDs 0 through 3: NROM, MMC1, UNROM, and CNROM.
+    mapper IDs 0 through 3 and 7: NROM, MMC1, UNROM, CNROM, and AxROM.
 -   `src/nes/apu.hpp`: RackNES audio wrapper; `src/nes/apu/` contains the
     bundled sound-emulation code. `src/nes/ntsc/` contains the NTSC filter.
 -   `src/widget/display.hpp`, `src/components.hpp`, and `src/theme.hpp`:

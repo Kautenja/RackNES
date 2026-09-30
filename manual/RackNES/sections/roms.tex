@@ -1,19 +1,16 @@
 \manualchapter{ROMs and compatibility}{sec:roms}
 \subsection{Loading a game}
 Choose \textbf{Load ROM} from the module's right-click menu, or drag a ROM
-file onto the panel. The file chooser accepts \texttt{.nes} and
-\texttt{.NES}. Extract compressed archives before loading; renaming an
-archive does not turn it into an iNES ROM.
+file onto the panel. The chooser accepts \texttt{.nes} and \texttt{.NES}.
+Extract compressed archives first.
 
-Loading a supported ROM resets the emulator and clears the SAVE slot.
-Choosing the same ROM again also starts it afresh. A canceled file dialog
-leaves the current selection alone. If you drop several files, only the
-first path is used.
+Loading a ROM, including the same ROM again, resets the emulator and clears
+SAVE. Canceling leaves the current selection alone. Only the first dropped
+file is used.
 
 \subsection{Supported cartridge mappers}
-A mapper is the cartridge hardware that arranges game memory. RackNES
-implements the following four mapper IDs. Support for a mapper does not
-guarantee that every game or modified ROM using it will behave correctly.
+A mapper arranges cartridge memory. RackNES supports these five IDs;
+individual games and modified ROMs may still behave incorrectly.
 \begin{center}
 \begin{tabular}{@{}rl@{}}
 \toprule
@@ -23,18 +20,26 @@ guarantee that every game or modified ROM using it will behave correctly.
 1 & MMC1 \\
 2 & UNROM \\
 3 & CNROM \\
+7 & AxROM / AOROM \\
 \bottomrule
 \end{tabular}
 \end{center}
-The module uses one fixed NES timing model. It has no PAL/NTSC selector,
-cartridge mapper selector, or cartridge expansion-audio controls. The five
-audio outputs are the base NES voices. The CV Genie game list is a separate
-list of memory maps; it does not define RackNES's full ROM compatibility.
+Mapper 7 accepts 32--256 KiB of PRG ROM in power-of-two sizes, 8 KiB of
+CHR RAM, and either one-screen nametable page. Legacy iNES and NES 2.0
+submappers 0/1 use no bus conflicts; submapper 2 combines writes with the
+visible PRG byte. Only NTSC layouts are accepted. CHR ROM, battery RAM,
+trainers, four-screen layouts, extra devices, and other variants are rejected.
+Legacy headers cannot reliably identify every board variant.
+
+Timing is fixed; there is no PAL/NTSC or mapper selector. Audio uses the five
+base NES voices without cartridge expansion sound. CV Genie's game list
+contains memory maps and does not define ROM compatibility.
 
 \subsection{When loading fails}
 \begin{description}
 \item[ASIC mapper not implemented for ROM!]
-The file requests a mapper outside the implemented set.
+The file requests a mapper outside the implemented set, or an unsupported
+mapper-7 image layout.
 \item[ROM file failed to load!]
 The selected path failed ROM validation. Check the file and its format.
 \item[ROM file was not found!]
@@ -45,7 +50,6 @@ A failed new-ROM attempt leaves the current game, display, and SAVE slot
 in place. Correct the file selection and try again.
 
 \subsection{Moving a patch between computers}
-Keep the original ROM available at its saved path. A Rack patch stores the
-emulator state and a ROM path, but restoring it still validates and reloads
-the file. Loading a ROM manually afterward starts a new session; it does
-not recover a failed snapshot restore automatically.
+Keep the original ROM at its saved path: patches store emulator state and
+a path, and restoration reloads the file. Loading a ROM manually starts a
+new session; it does not recover a failed snapshot restore.

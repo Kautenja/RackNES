@@ -85,6 +85,10 @@ complete emulator or UI validation.
     CNROM CHR-bank bounds, read-only CHR, legacy register restoration, and
     unchanged PRG windows. Four-screen decoding is tested only as metadata;
     four-screen VRAM support is still absent.
+-   AxROM: 1/2/4/8 PRG banks, all byte write values, both one-screen pages,
+    CHR RAM, old-bank bus conflicts, strict image rejection, malformed mapper
+    JSON, cartridge clones after source destruction, live/backup Rack patch
+    restoration, CPU/module reset, and DMC callbacks across distinct PRG banks.
 -   Playback safety: Blip_Buffer bulk, one-sample, stereo, and direct-reader
     paths agree on positive and negative PCM, including overlapping buffer
     compaction. PPU reset clears sprite-hit status and stale buffered reads.
@@ -101,11 +105,13 @@ CPU/PPU/APU timing or audio conversion.
 
 ## Focused Audio Characterization
 
-A CPU-program fixture compares NROM and CNROM integer PCM for all
-five voices, including looping DMC while the CPU writes CHR bank selections.
+A CPU-program fixture compares NROM, CNROM, and AxROM integer PCM for all
+five voices, including looping DMC while the CPU writes bank selections.
+AxROM repeats identical code/sample data in four PRG banks, switching from
+bank 0 to bank 3; a separate DMC callback test reads distinct bank markers.
 It checks 2,000 host samples at each of 44.1, 48, 96, and 192 kHz, at nominal
 CPU speed with the existing integer cycle loop, using both the core's default
-Blip clock and RackNES's fixed 768,000 Hz Blip clock. Both mapper runs must
+Blip clock and RackNES's fixed 768,000 Hz Blip clock. All three mapper runs must
 match sample by sample, produce nonzero output on every channel, and generate
 the same number of frame callbacks. It also prints a reproducible PCM
 fingerprint for before/after comparisons on the same toolchain.

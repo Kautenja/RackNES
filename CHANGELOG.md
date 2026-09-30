@@ -80,6 +80,12 @@
 
 ### 2.2.0 (Unreleased)
 
+-   Add mapper 7 (AxROM / AOROM): bounded 32 KiB PRG banking, one-screen
+    mirroring, 8 KiB CHR RAM, validated JSON restoration, and independent
+    cartridge clones. Validate supported image layouts before loading;
+    NES 2.0 submapper 2 includes bus conflicts. Preserve base NES audio.
+    Safely serialize empty bus RAM and scanline sprite lists during snapshots.
+
 -   Fix overlapping sample-buffer copies and undefined negative-value shifts
     in Blip_Buffer. Initialize PPU edge visibility, sprite-hit status, and the
     PPUDATA buffer on reset. Run the five-channel audio fixture in the default

@@ -228,13 +228,24 @@ wrapper once. This follows the NTSC 3:1 PPU-to-CPU relation~\cite{nesclock};
 it is a description of the stepping arrangement, not a claim of cycle-accurate
 hardware reproduction.
 
-The cartridge layer supports mapper numbers 0--3: NROM, MMC1, UNROM, and CNROM.
+At the pinned revision, the cartridge layer supports mapper numbers 0--3:
+NROM, MMC1, UNROM, and CNROM.
 That boundary is important for reuse: whole-console control does not imply
 support for every cartridge or expansion sound device. Although additional
 sound-chip implementations are present in the bundled library, the module
 routes the five base NES voices. A program must first work within the
 implemented cartridge and machine model before its musical behavior can be
 controlled through the patch.
+
+\paragraph{Mapper-7 update (September 2026).}
+A subsequent AxROM/AOROM adaptation adds 32\,KiB PRG banking, 8\,KiB CHR
+RAM, and one-screen mirroring, with validated image layouts and state
+restoration. Legacy iNES and NES 2.0 submappers 0/1 use no bus conflicts;
+submapper 2 resolves writes against visible PRG data. APU code and scheduling
+are unchanged. Synthetic banking, snapshot and DMC checks pass; five-channel
+PCM matches NROM at four host rates and two buffer clocks. This is not
+commercial-game or listening validation. The separate update's evidence and
+limits are recorded in \code{sources.md} and specification 001.
 
 \subsection{Three intervention layers}
 At the \emph{gameplay layer}, sixteen gate inputs represent the eight buttons

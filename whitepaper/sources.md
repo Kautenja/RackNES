@@ -65,6 +65,28 @@ bundled source. License notices and full texts are distributed separately
 from scholarly citations; see [LICENSING.md](../LICENSING.md) and the
 [component notices](../docs/licenses/THIRD-PARTY.txt).
 
+## Mapper-7 Update: September 30, 2026
+
+The manuscript's dated mapper-7 paragraph describes a subsequent change. The
+rest of the implementation account remains pinned to `e8c99bf86295`; this
+addendum does not retroactively attribute AxROM to that revision.
+
+-   [AxROM implementation](../src/nes/mappers/mapper7_AxROM.hpp) and
+    [cartridge factory](../src/nes/cartridge.hpp): 32 KiB banking, one-screen
+    pages, accepted header layouts, bus conflicts, and cartridge rebinding.
+-   Upstream: nes-py `301da52f7f75de380e6e195fd36621c3d5b03757`,
+    `mapper_AxROM.hpp/.cpp`, `mapper_bank.hpp`, and `test_mapper_AxROM.cpp`;
+    [license and attribution](../docs/licenses/THIRD-PARTY.txt).
+-   [AxROM checks](../tests/axrom.hpp) and
+    [audio comparison](../tests/racknes.cpp): synthetic memory/state/DMC
+    checks and 2,000 samples per host rate (44.1, 48, 96, 192 kHz), with
+    1,789,773 Hz and 768,000 Hz Blip clocks at nominal emulation speed.
+    The AxROM audio image repeats the reference program/sample data in four
+    PRG banks; a separate DMC check reads distinct bank markers.
+-   [Spec 001](../specs/001-nes-py-integration.md) records exact validation
+    commands and limitations. No new performance measurements, commercial
+    game tests, or manual listening results are claimed.
+
 ## Implementation evidence at the pinned revision
 
 Each link below resolves to the specified commit. Function names and line

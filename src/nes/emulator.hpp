@@ -129,6 +129,7 @@ class Emulator {
     /// @brief Load a new game into the emulator.
     ///
     /// @param path a path to the ROM to load into the emulator
+    /// @param cartridge_state optional saved state for pre-load mapper validation
     /// @returns true if the load succeeded, false otherwise
     /// @details
     /// When returning false, the emulator remains in its current state.
@@ -136,11 +137,11 @@ class Emulator {
     /// The boolean output answers the question: is the ASIC mapper
     /// implemented for the ROM at given path?
     ///
-    bool load_game(const std::string& path) {
+    bool load_game(const std::string& path, json_t* cartridge_state = nullptr) {
         // load the new game, but don't overwrite the cartridge yet
         auto game = Cartridge::create(path, [&](){
             picture_bus.update_mirroring();
-        });
+        }, cartridge_state);
         // if the game is nullptr the load failed, return false
         if (game == nullptr) return false;
         // check for an existing game and delete it if it exists
@@ -350,7 +351,7 @@ class Emulator {
             if (!ROM::is_valid_rom(rom_path_string)) return false;
             // load the game into the machine before loading the cartridge
             // data (because cartridge may be nullptr)
-            if (!load_game(rom_path_string)) return false;
+            if (!load_game(rom_path_string, json_data)) return false;
             cartridge->dataFromJson(json_data);
         }
         // load controllers[0]
@@ -372,6 +373,9 @@ class Emulator {
         {
             json_t* json_data = json_object_get(rootJ, "picture_bus");
             if (json_data) picture_bus.dataFromJson(json_data);
+            // Mapper 7 owns its page selection; ignore stale bus-derived state.
+            if (cartridge && cartridge->get_mapper_number() == 7)
+                picture_bus.update_mirroring();
         }
         // load cpu
         {

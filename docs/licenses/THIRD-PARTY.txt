@@ -20,17 +20,21 @@ Historical provenance and import evidence:
 https://github.com/Kautenja/RackNES/blob/master/whitepaper/sources.md
 The exact upstream import revision is unknown.
 
-Selective nes-py graphics and reset fixes
-----------------------------------------
+Selective nes-py graphics, reset, and AxROM adaptations
+-----------------------------------------------------
 Upstream: https://github.com/Kautenja/nes-py
 Revision: 301da52f7f75de380e6e195fd36621c3d5b03757
 Files: mirroring decoding in src/nes/rom.hpp, bounded CHR reads in
        src/nes/mappers/mapper3_CNROM.hpp, reset initialization in src/nes/ppu.cpp,
-       and adapted graphics regression cases in tests/racknes.cpp.
+       src/nes/mappers/mapper7_AxROM.hpp, and adapted regression cases in
+       tests/racknes.cpp and tests/axrom.hpp.
 Sources: nes_emu/src/nes_emu/cartridge.cpp,
          nes_emu/include/nes_emu/mapper_bank.hpp,
          nes_emu/include/nes_emu/mappers/mapper_CNROM.hpp,
          nes_emu/src/nes_emu/ppu.cpp,
+         nes_emu/include/nes_emu/mappers/mapper_AxROM.hpp,
+         nes_emu/src/nes_emu/mappers/mapper_AxROM.cpp,
+         nes_emu/test/nes_emu/mappers/test_mapper_AxROM.cpp,
          nes_emu/test/nes_emu/test_cartridge.cpp, and
          nes_emu/test/nes_emu/mappers/test_mapper_CNROM.cpp.
 These selective adaptations retain the historical notices above. They do not

@@ -667,6 +667,73 @@ Validation on macOS arm64 with Apple Clang 21 and the prepared Rack tree:
     platform build was performed. No remaining sanitizer failure was observed
     in these workloads; broader spec 001 completion gates remain open.
 
+### AxROM Integration: September 30, 2026
+
+Mapper 7 is now enabled alongside IDs 0--3. This bounded implementation moves
+AxROM ahead of the general parser/IRQ migration: AxROM has no IRQ or expansion
+sound and fits the existing PRG/CHR and mirroring interfaces. The broader
+implementation sequence remains required for IRQ-capable mappers. This does
+not complete issue #1 (MMC3 and manual validation remain), issue #31, or this
+specification.
+
+Implemented contracts:
+
+-   Adapt upstream `mapper_AxROM.hpp/.cpp`, bank-selection semantics, and test
+    cases from the pinned revision; retain the MIT notice/source inventory.
+-   Map one 32 KiB PRG window using bits 0--2, wrapping within complete banks.
+    Bit 4 selects the lower/upper nametable page; fixed 8 KiB CHR RAM is
+    writable. Switching and reads add no allocation, file I/O, or IRQ hooks.
+-   Before legacy ROM construction, validate mapper-7 magic, complete header,
+    exact file size and supported memory layout: power-of-two 32--256 KiB PRG,
+    no CHR ROM, battery RAM, trainer, or four-screen request. Accept clean
+    NTSC iNES headers (RAM-size byte 0/1) or NES 2.0 submappers 0/1/2 with
+    explicit 8 KiB volatile CHR RAM, no PRG RAM, and no extra devices. Reject
+    other layouts, extended size encodings, regions and submappers.
+-   iNES and NES 2.0 submappers 0/1 follow upstream's no-conflict policy;
+    submapper 2 ANDs each write with the byte in the old PRG bank. Legacy
+    iNES cannot identify every board's conflict behavior.
+-   Serialize the latch and full CHR RAM. Reject malformed mapper JSON before
+    replacing an active game; derive mirroring from the restored latch even
+    if saved picture-bus page offsets disagree. Preserve old mapper JSON.
+-   Rebind AxROM cartridge copies to their own ROM storage and an explicitly
+    supplied callback. Clones survive source destruction and own independent
+    CHR RAM. CPU reset retains mapper state; ROM replacement initializes it;
+    Rack module initialization removes the cartridge and SAVE slot.
+-   Replace empty-vector element access in bus-RAM and scanline-sprite
+    serialization with `data()` so mapper-7 full snapshots are well-defined.
+    No APU implementation, scheduler, DMC callback, or MIX routing changes.
+
+Validation on macOS arm64, Apple Clang 21, prepared Rack tree:
+
+-   `make -C tests -j2`: ASan/UBSan pass. Tests cover 1/2/4/8 PRG banks, all
+    byte write values, PRG-window boundaries, both nametable pages, CHR RAM,
+    conflict variants, rejected images, malformed state, source destruction,
+    CPU reset/ROM replacement, Rack SAVE/LOAD and independent live/backup
+    patch restoration. A real APU DMC callback checks distinct PRG bank data.
+-   The CPU-program audio fixture compares NROM/CNROM/AxROM sample by sample,
+    including both pulse voices, triangle, noise and looping DMC. AxROM
+    switches from bank 0 to bank 3 with identical code/sample data in four
+    banks. All channels are nonzero and frame counts agree at 44.1, 48, 96,
+    and 192 kHz (2,000 host samples each), with Blip clocks 1,789,773 Hz and
+    768,000 Hz. Fingerprints remain `f5146c03e0a6ceb2` and
+    `d8915d435c9cf9a9`, respectively.
+-   `make -j4`: plugin build passes; existing SDK warnings remain.
+-   `make -C manual`, `make -C whitepaper`, `make -C whitepaper source`:
+    successful. Updated both manuals' mapper coverage and added a dated
+    whitepaper paragraph with evidence in `whitepaper/sources.md`, preserving
+    the historical source revision. Native editor compilation also passes.
+    Rendered PDFs reviewed for table/page flow and references.
+-   `git diff --check`: passes. No manual Rack/gameplay/listening session,
+    other-platform build, or clock-extreme performance claim.
+
+Remaining work includes mappers 4/5/9/69, general NES 2.0 parsing and legacy
+mapper bank bounds, full-state validation/migration, generic clone/callback
+ownership (including the unused native `Emulator::copy_from` path), picture
+bus fixes and four-screen storage, CPU/IRQ contracts, and the wider audio and
+manual acceptance matrix. The new validation covers mapper-7 state fields;
+it does not make arbitrary CPU/PPU/APU or bus JSON safe. PPU flag serialization
+and the pre-existing snapshot omissions still limit deterministic continuation.
+
 [upstream]: https://github.com/Kautenja/nes-py/tree/301da52f7f75de380e6e195fd36621c3d5b03757
 [factory]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/mapper_factory.cpp
 [upstream-bus]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/main_bus.cpp
