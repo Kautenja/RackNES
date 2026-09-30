@@ -11,15 +11,16 @@ evidence in the owning spec, then archive it using [the agent workflow][flow].
 | [001](001-nes-py-integration.md) | Cartridge parsing, mapper integration, audio/state compatibility | [#1][i1], [#31][i31] | Deliver parser/tracker and mapper gates as separate increments. |
 | [005](005-mmc1-ntsc-regressions.md) | Metroid and Bubble Bobble reproduction and fixes | [#26][i26], [#45][i45] | Reproduce first; potentially the smallest closures. |
 | [008](008-mmc5-implementation.md) | MMC5 implementation subset, validation, and final manual/report updates | Under 001 | Freeze board profiles before bus/PPU integration; preserve base audio. |
+| [009](009-fme7-implementation.md) | FME-7 / Sunsoft 5B mapper subset, validation, and final manual/report updates | Under 001 | Integrate banked RAM and CPU-cycle IRQs; defer expansion sound. |
 
 Specs 002 and 003 are complete and retained in [the archive](archive/).
 [Spec 004](archive/004-sram-import-export.md) is complete and archived;
 [#52][i52] remains open for SRAM workflow feedback and native dialog checks.
 [Spec 006](archive/006-cv-genie-readback.md) and
 [spec 007](archive/007-snapshot-slots.md) are abandoned and archived.
-Spec 008 is the requested MMC5 implementation sub-spec of 001. Keep general
-parser and audio/state policy in 001 rather than duplicating its ownership;
-record MMC5-specific implementation evidence in 008.
+Specs 008 and 009 are the requested MMC5 and FME-7 implementation sub-specs of
+001. Keep general parser and audio/state policy in 001 rather than duplicating
+its ownership; record mapper-specific implementation evidence in each sub-spec.
 
 ## Issue Dispositions
 

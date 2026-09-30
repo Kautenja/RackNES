@@ -13,7 +13,7 @@ Created: September 30, 2026
 
 ## Current Progress
 
-Reviewed September 30, 2026 against committed revision `2cea414`:
+Reviewed September 30, 2026 against committed revision `42947ae`:
 
 -   Mapper IDs 0 through 4, 7, and 9 are committed. The AxROM, MMC2, and MMC3
     increments record plugin, regression, audio, state, and documentation
@@ -21,6 +21,10 @@ Reviewed September 30, 2026 against committed revision `2cea414`:
 -   [008: MMC5 Mapper Implementation](008-mmc5-implementation.md) is PLANNED
     and owns the mapper 5 implementation details and completion evidence,
     including final manual/whitepaper updates. It adds no runtime support.
+-   [009: FME-7 And Sunsoft 5B Mapper Implementation](009-fme7-implementation.md)
+    is PLANNED and owns mapper 69's implementation details and completion
+    evidence, including final manual/whitepaper updates. Expansion synthesis
+    remains deferred; the specification adds no runtime support.
 -   Mappers 5 and 69, general NES 2.0 support, and the remaining ownership,
     CPU/IRQ, state, audio, and manual gates are incomplete. Issues #1 and #31
     remain open; retain `Status: IN PROGRESS`.
