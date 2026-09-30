@@ -124,7 +124,8 @@
 -   Adapt nes-py's mirroring decoding so battery flags do not alter nametable
     layout, and bound CNROM CHR-bank reads to available graphics banks. Preserve
     PRG mapping, audio scheduling, and existing mapper JSON fields. Four-screen
-    rendering and CNROM bus conflicts remain unsupported.
+    rendering is supported by the new MMC3 mapper; CNROM bus conflicts remain
+    unsupported.
 
 -   Restore controller button and serial-stream bytes from patch JSON correctly,
     ignoring malformed byte values. Decode high mapper bits only for NES 2.0

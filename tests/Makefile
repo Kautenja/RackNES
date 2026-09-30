@@ -17,6 +17,10 @@ ifdef ARCH_WIN
 CPPFLAGS += -D_USE_MATH_DEFINES
 endif
 LDLIBS += -L$(RACK_DIR) -lRack
+ifdef ARCH_LIN
+# Clang/libstdc++ needs this for the runtime atomic lock-free assertions.
+LDLIBS += -latomic
+endif
 SOURCES := ../src/base64.cpp $(wildcard ../src/nes/*.cpp ../src/nes/apu/*.cpp)
 OBJECTS := $(patsubst ../%.cpp,$(BUILD)/%.o,$(SOURCES)) $(BUILD)/src/nes/ntsc/nes_ntsc.o
 .PHONY: check

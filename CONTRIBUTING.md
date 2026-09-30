@@ -373,11 +373,13 @@ git rev-parse HEAD
 ```
 
 Use those values in the update comment, linking the commit and release notes.
-For 2.2.0, mention the Arhythmetic Units branding, CV Genie selection/CV/patch
-fixes, RackNES snapshot and display-resource fixes, and revised manuals.
-The planned nes-py integration is not included. Wait for VCV's build result
-and verify the Library's version before announcing availability there; a
-GitHub release does not update the VCV Library automatically.
+For 2.2.0, mention the Arhythmetic Units branding, CV Genie maps and fixes,
+RackNES snapshot and display-resource fixes, reviewed 8 KiB SRAM interchange,
+selective nes-py fixes, AxROM/MMC2/MMC3 support, and revised manuals. Describe
+the supported cartridge subsets and approximate MMC3 IRQ timing; MMC5 and
+FME-7/Sunsoft 5B remain planned. Wait for VCV's build result and verify the
+Library's version before announcing availability there; a GitHub release
+does not update the VCV Library automatically.
 
 ## Submit A Pull Request
 

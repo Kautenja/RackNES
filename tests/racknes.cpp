@@ -8,6 +8,10 @@
 #include <string>
 #include <vector>
 
+// This executable hosts Rack's engine for module tests. Read its internal
+// constructor before rack.hpp applies the plugin-only PRIVATE restriction.
+#include <engine/Engine.hpp>
+#undef PRIVATE
 #include "../src/RackNES.cpp"
 
 Plugin* plugin_instance = nullptr;
