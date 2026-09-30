@@ -170,11 +170,16 @@ checks, and an actual manual Rack session in completion reports.
 
 ## Manuals And Technical Report
 
-Keep user-facing documentation in the existing manual directories. Edit SVG
-sources for artwork and regenerate the corresponding PDF assets when needed;
-verify that panel positions and numbered references still match the module.
-Follow the active manual makefiles and any shared local style/build sources;
-do not assume Fourier's layout or screenshot exporter is available here.
+Keep user-facing documentation in the existing manual directories. Panel
+references use `figures/panel-layout.tex` with shared TikZ primitives; verify
+that positions and numbered explanations match the widget constructors.
+Covers and README reuse each module's `img/Panel.png`, rendered from production
+widgets by `make -C tools/capture screenshots`. Read `tools/capture/README.md`
+for desktop/SDK prerequisites and the original branded ROM fixture. Refresh
+and visually review captures after visible widget or runtime SVG changes;
+do not recreate screenshots as manually maintained SVG/PDF illustrations.
+Follow the active manual makefiles; ordinary builds use committed screenshots
+without Rack, ROM generation, or a graphical session.
 
 With the TeX tools required by the active recipes (`pdflatex`, BibTeX, and
 `latexmk` where used) and the packages declared by the manuals installed:

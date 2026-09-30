@@ -31,7 +31,7 @@ with each item. Move this document to `docs/specs/archive/` on completion.
     settings. Validate ROM loading, nonblank rendered video, capture geometry,
     build failure handling, the plugin build and focused regression checks.
     Commit and push the tool, fixture sources, screenshots, and evidence.
-- [ ] **3. Reference migration and cleanup.** Switch covers and README images
+- [x] **3. Reference migration and cleanup.** Switch covers and README images
     to the reviewed PNGs. Remove remaining obsolete `Plugin.*` and
     `*-Module.*` panel illustrations after checking all tracked references.
     Document exact capture prerequisites/commands, fixture settings, licenses,
@@ -99,3 +99,21 @@ scroll reload conditions; no production source was changed.
 passed both focused suites. No interactive Rack/audio-device session or
 Linux/Windows capture validation was performed. Tool instructions and fixture
 licensing are in `tools/capture/README.md` and `LICENSING.md`.
+
+Item 3 complete: covers and README share the two reviewed `Panel.png` files.
+Removed nine remaining panel illustration files (13 obsolete assets removed
+across items 1 and 3). Updated the manual guide, contributor instructions, and
+CI paths/prerequisites. Branding/logo assets remain in their existing scope.
+
+`make -C manual` built both 13-page manuals using committed PNGs and TikZ,
+without invoking Rack. All 26 pages were rendered at 1400 px and visually
+reviewed, including covers, control maps, tables, and colophons. PDF metadata,
+outline, language, version, and resolved references passed the existing CI
+checks locally. No overfull boxes appeared. Local documentation links and
+README image paths exist; no active references to removed panel assets remain.
+`git diff --check` passed. The hosted GitHub workflow was not run on this branch.
+
+All three items are complete. Archived after the spec-first commit `93c5490`,
+wireframe commit `5310d09`, and capture commit `29156e5`; each was pushed to
+`origin/techreport`. This archive and reference migration form the final item
+commit. Unrelated concurrent repository changes were preserved.

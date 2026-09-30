@@ -4,7 +4,7 @@ An Arhythmetic Units Nintendo Entertainment System (NES) emulator as if it were
 designed by Bob Moog.
 
 <p align="center">
-<img alt="RackNES" src="manual/RackNES/img/Plugin.svg" height="380px">
+<img alt="RackNES" src="manual/RackNES/img/Panel.png" height="380px">
 </p>
 
 ## Features
@@ -32,7 +32,7 @@ CV Genie is a Game Genie emulator and expander module for RackNES developed by
 [@anlexmatos][anlexmatos]!
 
 <p align="center">
-<img alt="CVGenie" src="manual/CVGenie/img/Plugin.svg" height="380px">
+<img alt="CVGenie" src="manual/CVGenie/img/Panel.png" height="380px">
 </p>
 
 See the [Manual][CVGenie] for more information about the features of this
@@ -53,6 +53,9 @@ make -C manual
 The PDFs are written to `manual/RackNES/.build/manual.pdf` and
 `manual/CVGenie/.build/manual.pdf`. The guides cover the controls and limitations
 of the current implementation, including all built-in CV Genie memory mappings.
+Panel guides use LaTeX wireframes; covers and the images above share captures
+of the production widgets. The [capture guide](tools/capture/README.md) explains
+how to regenerate them with the original Arhythmetic Units demo ROM.
 
 ## Citation
 

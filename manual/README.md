@@ -1,8 +1,9 @@
 # RackNES User Manuals
 
 The RackNES and CV Genie manuals describe the current implementation and
-use Arhythmetic Units branding with the original panel artwork, red accents, and
-Helvetica typography. The version in each `manual.tex` follows `plugin.json`.
+use Arhythmetic Units branding, production panel captures, LaTeX wireframes,
+red accents, and Helvetica typography. The version in each `manual.tex`
+follows `plugin.json`.
 Do not document planned features as available controls.
 
 ## Build
@@ -24,7 +25,8 @@ Outputs are `RackNES/.build/manual.pdf` and `CVGenie/.build/manual.pdf`, relativ
 to this directory. No Rack SDK, plugin build, ROM, or running Rack instance is
 needed. Install a TeX distribution with `latexmk`, `pdflatex`, the recommended
 fonts, and the packages used by `latex/arhythmetic-manual.sty`. On Ubuntu, the
-workflow uses `texlive-latex-extra`, `texlive-fonts-recommended`, `cm-super`, and `latexmk`.
+workflow uses `texlive-latex-extra`, `texlive-pictures`, `texlive-fonts-recommended`,
+`cm-super`, and `latexmk`.
 Poppler (`pdfinfo`, `pdftoppm`) supports PDF inspection.
 
 The shared rules disable shell escape, propagate compilation errors, and run
@@ -45,39 +47,51 @@ rejects an output directory containing a copied `manual.tex`.
 -   `latex/manual.mk`: shared build and cleanup rules.
 -   `RackNES/manual.tex`, `CVGenie/manual.tex`: identity, version, section order.
 -   Each `sections/` directory: operating guide and reference content.
--   Each `img/` directory: module logos, brand wordmarks, and panel
-    illustrations, read in place.
+-   Each `figures/panel-layout.tex`: schematic spatial reference for controls.
+-   `latex/panel-drawing.tex`: shared TikZ primitives.
+-   Each `img/Panel.png`: one reviewed production screenshot, reused on the
+    manual cover and in the root README.
+-   Other `img/` assets: module logos and brand wordmarks, read in place.
 
-The panel reference sections use native TikZ wireframes in each `figures/`
-directory, with shared primitives in `latex/panel-drawing.tex`. Keep their
-coordinates aligned with the widget constructors and their numbered
-explanations. The supplied panel artwork is an illustration, not a new runtime screenshot. Preserve the
-Arhythmetic Units identity and the visual-asset license terms in the root
-`LICENSING.md`.
-The white paper is an independent publication and is not changed by these builds.
+## Maintain Panel Figures
+
+Edit the TikZ wireframes when control positions, labels, or groups change.
+Keep coordinates aligned with the constructors in `src/RackNES.cpp` and
+`src/CVGenie.cpp`, and keep the numbered explanations aligned with the figures.
+The diagrams intentionally omit live values and video content. Rebuild the
+manuals directly; there are no intermediate SVG/PDF diagram exports.
+
+Refresh screenshots when the visible panel, controls, font, or display
+rendering changes. From the repository root:
+
+```shell
+make -C tools/capture screenshots
+make -C manual
+```
+
+Run these sequentially so the manuals include the new PNGs. The optional
+capture command requires Rack 2 headers/libraries/resources, a C++ compiler,
+an OpenGL desktop session, Python, and Pillow. The
+[capture guide](../tools/capture/README.md) documents SDK overrides, geometry,
+validation, and the original ROM source. Ordinary manual/CI builds consume the
+committed screenshots and do not invoke this tool or require Rack.
+
+The RackNES capture runs an original silent Arhythmetic Units mapper-0 ROM
+for two seconds at 48 kHz through the production emulator and NTSC display.
+It is a title-card fixture, not a game or evidence of audio validation.
+CV Genie shows No Game Selected and eight Unassigned rows; the demo ROM has
+no Genie mapping. Review both light and dark captures, then commit only the
+two cropped light PNGs. Intermediate captures, ROM binaries, and build outputs
+stay in the tool's ignored `.build/` directory.
 
 The `ArhythmeticUnits.pdf` wordmarks are copied from Fourier's manual assets.
 The panel logo outlines in `../res/ArhythmeticUnits.svg` come from Fourier's
 `src/rack_extensions/panel_artwork.hpp` at revision
-`12ac3236e332b7d0a01b2d750fa07a0849132341`. The same outlines are embedded
-in the four runtime panels and four manual/README illustrations. Keep those
-copies aligned; retain the CV Genie collaborator credit alongside the brand.
-
-After editing the illustration SVGs, regenerate their PDFs from the repository
-root with CairoSVG (2.9.1 was used for this branding update):
-
-```shell
-for module in RackNES CVGenie; do
-    for asset in "$module-Module" Plugin; do
-        cairosvg "manual/$module/img/$asset.svg" -o "manual/$module/img/$asset.pdf"
-    done
-done
-cairosvg manual/CVGenie/img/Plugin.svg -o manual/CVGenie/img/Plugin.png
-```
-
-CairoSVG requires Cairo. On macOS, a Homebrew Cairo installation may require
-`DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib` when running these commands.
-These exports are tracked artwork assets; compiled manuals remain ignored.
+`12ac3236e332b7d0a01b2d750fa07a0849132341`. Keep the four runtime panel SVGs
+aligned with that source; captures inherit their artwork directly. Retain the
+CV Genie collaborator credit alongside the brand. Preserve the visual-asset
+license terms in [LICENSING.md](../LICENSING.md).
+The white paper is an independent publication and is not changed by these builds.
 
 ## Verify Content Against The Code
 
@@ -141,7 +155,9 @@ Keep review images and generated PDFs untracked.
 
 [Manuals and white paper](../.github/workflows/manuals.yml) builds both manuals
 and the standalone white paper on relevant pull requests and pushes to `master`,
-version-tag pushes, published releases, and manual dispatch. It checks manual
+version-tag pushes, published releases, and manual dispatch. Runtime artwork
+and capture-tool changes also trigger PDF validation; CI consumes the reviewed
+PNG assets and does not regenerate screenshots. It checks manual
 version agreement with the manifest, readable PDFs, navigation, metadata, and
 resolved references, then retains a downloadable `publication-pdfs` artifact for
 14 days. Source changes also trigger the build so a reviewer can consider
