@@ -31,6 +31,9 @@ compiler, SDK, or sanitizer flags, rebuild with `make -C tests -B`. For a compil
 without sanitizer support, `SANITIZERS=` disables instrumentation; report that
 limitation when recording results.
 
+When `BUILD` points elsewhere, `check` still creates `tests/.build/` for the
+temporary ROM fixtures before running the suites.
+
 ## Continuous Integration
 
 [Rack plugin and regression tests](../.github/workflows/rack-tests.yml) builds

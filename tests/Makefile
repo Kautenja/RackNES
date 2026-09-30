@@ -21,6 +21,8 @@ SOURCES := ../src/base64.cpp $(wildcard ../src/nes/*.cpp ../src/nes/apu/*.cpp)
 OBJECTS := $(patsubst ../%.cpp,$(BUILD)/%.o,$(SOURCES)) $(BUILD)/src/nes/ntsc/nes_ntsc.o
 .PHONY: check
 check: $(BUILD)/cv-genie$(EXE_SUFFIX) $(BUILD)/racknes$(EXE_SUFFIX)
+	# ROM fixtures use .build even when binaries are built outside the checkout.
+	@mkdir -p .build
 	DYLD_LIBRARY_PATH="$(RACK_DIR):$$DYLD_LIBRARY_PATH" LD_LIBRARY_PATH="$(RACK_DIR):$$LD_LIBRARY_PATH" $(BUILD)/cv-genie$(EXE_SUFFIX)
 	DYLD_LIBRARY_PATH="$(RACK_DIR):$$DYLD_LIBRARY_PATH" LD_LIBRARY_PATH="$(RACK_DIR):$$LD_LIBRARY_PATH" $(BUILD)/racknes$(EXE_SUFFIX)
 	DYLD_LIBRARY_PATH="$(RACK_DIR):$$DYLD_LIBRARY_PATH" LD_LIBRARY_PATH="$(RACK_DIR):$$LD_LIBRARY_PATH" $(BUILD)/racknes$(EXE_SUFFIX) --audio-only
