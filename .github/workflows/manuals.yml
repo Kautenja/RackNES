@@ -41,13 +41,19 @@ jobs:
           sudo apt-get install --yes --no-install-recommends \
             texlive-latex-extra texlive-pictures texlive-fonts-recommended cm-super lmodern latexmk poppler-utils python3-pypdf
 
-      - name: Check manual versions
+      - name: Check release and manual versions
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name || (github.ref_type == 'tag' && github.ref_name) || '' }}
         run: |
           test -f manual/latex/manual.mk
           python3 - <<'PY'
           import json
+          import os
           from pathlib import Path
           version = json.loads(Path('plugin.json').read_text())['version']
+          tag = os.environ['RELEASE_TAG']
+          if tag:
+              assert tag in (version, 'v' + version), (tag, version)
           for module in ('RackNES', 'CVGenie'):
               source = Path('manual', module, 'manual.tex').read_text()
               assert '\\newcommand{\\manualversion}{' + version + '}' in source, module

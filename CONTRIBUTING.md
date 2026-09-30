@@ -9,6 +9,7 @@ and explains the architecture and compatibility requirements used in review.
 -   [Build and test](#development-and-testing)
 -   [Choose validation for your change](#choosing-validation)
 -   [Update manual figures](#manual-figures)
+-   [Prepare a release and VCV update](#prepare-a-release-and-vcv-update)
 -   [Submit a pull request](#submit-a-pull-request)
 
 ## Before You Start
@@ -316,6 +317,64 @@ GitHub publication and VCV Library submission are separate actions; verify
 current submission requirements and the distributed revision before claiming
 availability in Rack.
 
+### Prepare A Release And VCV Update
+
+Release preparation does not publish a GitHub release or notify VCV. Keep the
+changelog entry marked `Unreleased` until choosing the publication date.
+Before publishing, use the intended release checkout and configured Rack SDK:
+
+```shell
+make -B -j4
+make dist
+make -C tests -B -j2
+make -C manual
+make -C whitepaper
+git diff --check
+```
+
+Inspect the package in `dist/` for the matching `plugin.json`, plugin binary,
+runtime resources, and license files. Review the PDFs and perform the
+[manual Rack checks](#choosing-validation). Record the platforms, SDK version,
+results, and skipped checks in the release notes. Confirm the Rack matrix,
+instrumentation, and publication workflows pass on the release revision;
+feature-branch pushes alone do not trigger these workflows. Use a pull request
+or an eligible workflow dispatch before release. The current Rack matrix covers
+Linux x64, macOS arm64, and Windows x64; it does not validate macOS x64.
+
+For publication, date the changelog and integrate the final release content
+into `master`, which the public changelog and report links reference. Create
+a new `v<version>` tag at the tested release commit. Verify the tag resolves to
+the intended full commit hash and that its `plugin.json` version matches.
+Never reuse or move a published tag. Publish the GitHub release with its change
+summary and validation limitations. Confirm its assets include `RackNES.pdf`,
+`CVGenie.pdf`, and `RackNES-whitepaper.pdf`, and that the README and manifest
+download links resolve to the new manuals. The PDF workflow rejects tags that
+disagree with the manifest; see the [asset workflow](manual/README.md#ci-and-release-assets)
+for dispatch and upload details.
+
+VCV's [open-source update instructions][vcv-updates] require a comment with the
+new version and full commit hash in the plugin's permanent thread,
+[VCVRack/library#650][vcv-thread]. Reuse that thread even when it is closed;
+maintainers reopen it. Do not open a duplicate issue or submit a branch name
+instead of a commit. Review the current [manifest requirements][vcv-manifest]
+and [plugin guidelines][vcv-guidelines] before submission. Preserve the plugin
+slug `KautenjaDSP-RackNES` and module slugs `RackNES` and `InputGenie` across
+branding changes.
+
+After pushing the final release commit, obtain its identifiers with:
+
+```shell
+jq -r .version plugin.json
+git rev-parse HEAD
+```
+
+Use those values in the update comment, linking the commit and release notes.
+For 2.2.0, mention the Arhythmetic Units branding, CV Genie selection/CV/patch
+fixes, RackNES snapshot and display-resource fixes, and revised manuals.
+The planned nes-py integration is not included. Wait for VCV's build result
+and verify the Library's version before announcing availability there; a
+GitHub release does not update the VCV Library automatically.
+
 ## Submit A Pull Request
 
 1.  Keep one coherent change per contribution. Update affected documentation,
@@ -340,3 +399,7 @@ availability in Rack.
 [issues]: https://github.com/Kautenja/RackNES/issues
 [cpp-style]: docs/style-guides/cpp.md
 [markdown-style]: docs/style-guides/markdown.md
+[vcv-updates]: https://github.com/VCVRack/library#pushing-an-update
+[vcv-thread]: https://github.com/VCVRack/library/issues/650
+[vcv-manifest]: https://vcvrack.com/manual/Manifest
+[vcv-guidelines]: https://vcvrack.com/manual/PluginLicensing#vcv-plugin-ethics-guidelines

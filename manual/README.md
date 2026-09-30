@@ -164,6 +164,11 @@ resolved references, then retains a downloadable `publication-pdfs` artifact for
 whether the manual needs a corresponding update; CI does not prove behavioral
 accuracy or replace visual inspection.
 
+Release and dispatch tags must equal the manifest version, optionally prefixed
+with `v`. A mismatched tag fails validation before PDFs can be uploaded. Follow
+the [release and VCV update checklist](../CONTRIBUTING.md#prepare-a-release-and-vcv-update)
+for the remaining publication and submission steps.
+
 Only a published-release event or manual dispatch attaches assets to a release.
 The separate upload job has write permission; ordinary build jobs have read
 permission. Manual asset names are **RackNES.pdf** and **CVGenie.pdf**, matching
