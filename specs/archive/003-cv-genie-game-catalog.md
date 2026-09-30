@@ -59,8 +59,8 @@ commercial ROMs are outside this change. No broad emulator or UI rewrite.
 ## Acceptance And Validation
 
 -   Ten game maps are selectable; every new entry has traceable evidence.
--   Automated checks cover all maps' bounds, game menu-item actions, CV endpoints,
-    disconnects, saved selections, and the existing legacy patch fixture.
+-   Automated checks cover all maps' bounds, menu enumeration and actions,
+    CV endpoints, disconnects, saved selections, and the legacy patch fixture.
 -   Compare the complete original Mario/Zelda arrays against the base revision.
 -   Build the plugin and both manuals; inspect the rendered manual pages.
 -   Check generated list freshness, links, and the complete diff before commit.
@@ -96,6 +96,13 @@ Completed: 2026-09-30.
     toggles, game menu-item actions, endpoints, disconnects, randomization,
     saved selection round trips, bounds, and new-map duplicate detection.
     The original debug patch compatibility check also passed.
+-   Follow-up validation on 2026-09-30 exercises the actual menu population,
+    checking all ten labels, serialized IDs, checkmarks, and selection actions.
+    Every restored assignment produces its expected endpoint write, including
+    the next toggle edge; disconnects clear both expander buffers. The menu
+    population helper preserves the existing UI behavior and runs without a
+    graphical scene. `make -j2` and `make -C tests -j2` passed with the same
+    toolchain and sanitizers above.
 -   `make -C manual`: both manuals passed. After final CV Genie prose edits,
     `make -C manual/CVGenie` passed again; the final LaTeX pass has no warnings.
     Inspected rendered pages using Poppler PNGs, including all changed pages

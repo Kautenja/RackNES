@@ -388,8 +388,11 @@ struct GameChoice : LedDisplayChoice {
 
     /// Respond to an action on the indicator (open the menu)
     void onAction(const event::Action& e) override {
-        /// create the menu
-		ui::Menu* menu = createMenu();
+        appendGameItems(createMenu());
+    }
+
+    /// Populate the game menu independently of the graphical scene.
+    void appendGameItems(ui::Menu* menu) {
         /// add a label to the top of the menu
 		menu->addChild(createMenuLabel("Games"));
         /// add all available games to the menu

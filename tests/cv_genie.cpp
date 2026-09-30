@@ -248,6 +248,26 @@ void check_catalog() {
     };
     assert(NUM_GAMES == 10);
     assert(PARAMETER_COUNTS[PLUMBER] == 53 && PARAMETER_COUNTS[TUNIC] == 55);
+    Fixture menu_fixture;
+    menu_fixture.genie.selectGame(TUNIC);
+    GameChoice<Genie> choice;
+    choice.setModule(&menu_fixture.genie);
+    ui::Menu menu;
+    choice.appendGameItems(&menu);
+    unsigned menu_game = 0;
+    for (auto* child : menu.children) {
+        auto* item = dynamic_cast<GameItem<Genie>*>(child);
+        if (!item) continue;  // Skip the menu label.
+        assert(menu_game < NUM_GAMES);
+        assert(item->gameId == menu_game);
+        assert(item->text == expected_names[menu_game]);
+        assert(item->rightText == CHECKMARK(menu_game == TUNIC));
+        item->onAction(event::Action());
+        menu_fixture.process();
+        assert(menu_fixture.genie.gameMap.gameId == static_cast<int>(menu_game));
+        menu_game++;
+    }
+    assert(menu_game == NUM_GAMES);
     for (int game = 0; game < NUM_GAMES; game++) {
         Fixture f;
         GameItem<Genie> item;
@@ -304,7 +324,18 @@ void check_catalog() {
             assert(restored.genie.memLoc[0] == static_cast<int>(index));
             assert(restored.genie.gameMap.getAddress(restored.genie.memLoc[0]) ==
                    parameter->address);
+            restored.connect(0, parameter->toggle ? 0.f : 10.f);
+            auto* restored_message = restored.process();
+            if (parameter->toggle) {
+                assert(restored_message[0] == 0);
+                restored.connect(0, 5.f);
+                restored_message = restored.process();
+            }
+            assert(restored_message[0] == parameter->address);
+            assert(restored_message[1] == parameter->maximum);
             f.genie.inputs[0].channels = 0;
+            assert(f.process()[0] == 0);
+            f.flip();
             assert(f.process()[0] == 0);
         }
         f.genie.onRandomize();
@@ -328,6 +359,10 @@ void check_catalog() {
 }
 
 int main() {
+    // Rack's menu child cleanup uses the context's event state.
+    Context context;
+    context.event = new widget::EventState;
+    contextSet(&context);
     check_unassigned_and_invalid_selections();
     check_continuous_voltage();
     check_toggles_and_message_lifetime();
