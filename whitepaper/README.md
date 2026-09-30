@@ -47,8 +47,8 @@ the report alongside the user manuals on relevant pull requests, pushes to
 `master`, version tags, published releases, and manual dispatch. The PDF is
 retained in the `publication-pdfs` artifact for 14 days. Published-release events
 and dispatches for an existing release also attach **RackNES-whitepaper.pdf**;
-tag pushes alone do not publish assets. Historical tags without the manuscript
-produce manuals only. See the [manual workflow guide](../manual/README.md#ci-and-release-assets)
+tag pushes alone do not publish assets. All three PDFs are required; historical
+tags without the manuscript are unsupported. See the [manual workflow guide](../manual/README.md#ci-and-release-assets)
 for the supported tag layout and release requirements.
 
 ## Sources and maintenance

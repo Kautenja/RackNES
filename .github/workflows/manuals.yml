@@ -5,14 +5,14 @@ on:
     paths: ['manual/**', 'whitepaper/**', 'src/**', 'res/**', 'tools/capture/**', 'plugin.json', '.github/workflows/manuals.yml']
   push:
     branches: [master]
-    tags: ['v*']
+    tags: ['v*', '[0-9]*']
     paths: ['manual/**', 'whitepaper/**', 'src/**', 'res/**', 'tools/capture/**', 'plugin.json', '.github/workflows/manuals.yml']
   release:
     types: [published]
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing release tag containing the shared manual build (and optional white paper)
+        description: Existing release tag containing both manuals and the white paper
         required: true
         type: string
 
@@ -62,11 +62,7 @@ jobs:
       - name: Build PDFs
         run: |
           make -C manual
-          if [ -f whitepaper/racknes.tex ]; then
-            make -C whitepaper
-          else
-            echo '::notice::This tag predates the white paper; uploading manuals only.'
-          fi
+          make -C whitepaper
 
       - name: Validate PDFs and stage release names
         run: |
@@ -85,21 +81,17 @@ jobs:
               text = '\n'.join(page.extract_text() or '' for page in pdf.pages)
               assert 'Arhythmetic Units' in text and 'KautenjaDSP' not in text, module
               assert '??' not in text, module
-          paper = Path('whitepaper/.build/racknes.pdf')
-          if Path('whitepaper/racknes.tex').exists():
-              pdf = PdfReader(paper)
-              assert len(pdf.pages) > 1, 'white paper'
-              assert 'RackNES' in pdf.metadata.title, 'white paper'
-              assert pdf.outline, 'white paper'
-              text = '\n'.join(page.extract_text() or '' for page in pdf.pages)
-              assert '??' not in text, 'white paper'
+          pdf = PdfReader(Path('whitepaper/.build/racknes.pdf'))
+          assert len(pdf.pages) > 1, 'white paper'
+          assert 'RackNES' in pdf.metadata.title, 'white paper'
+          assert pdf.outline, 'white paper'
+          text = '\n'.join(page.extract_text() or '' for page in pdf.pages)
+          assert '??' not in text, 'white paper'
           PY
           mkdir -p publication-pdfs
           cp manual/RackNES/.build/manual.pdf publication-pdfs/RackNES.pdf
           cp manual/CVGenie/.build/manual.pdf publication-pdfs/CVGenie.pdf
-          if [ -f whitepaper/racknes.tex ]; then
-            cp whitepaper/.build/racknes.pdf publication-pdfs/RackNES-whitepaper.pdf
-          fi
+          cp whitepaper/.build/racknes.pdf publication-pdfs/RackNES-whitepaper.pdf
           for pdf in publication-pdfs/*.pdf; do
             test -s "$pdf"
             pdfinfo "$pdf"
@@ -132,4 +124,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ inputs.tag || github.event.release.tag_name }}
-        run: gh release upload "$RELEASE_TAG" pdfs/*.pdf --clobber
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            pdfs/RackNES.pdf pdfs/CVGenie.pdf pdfs/RackNES-whitepaper.pdf --clobber

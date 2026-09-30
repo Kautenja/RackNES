@@ -35,7 +35,7 @@ limitation when recording results.
 
 [Rack plugin and regression tests](../.github/workflows/rack-tests.yml) builds
 the plugin and runs both headless fixtures on Linux x64, macOS arm64, and
-Windows x64. It runs on pull requests, pushes to `master`, version tags, and
+Windows x64. It runs on pull requests, pushes to `master`, and
 manual dispatch. Rack SDK 2.6.3 archives and the Windows runtime are verified
 against SHA-256 checksums, following Fourier's workflow. The Windows installer
 is extracted without running it. These matrix runs disable sanitizers.

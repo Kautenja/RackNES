@@ -222,6 +222,9 @@ disables sanitizers. The separate
 [instrumentation workflow](.github/workflows/instrumentation.yml) runs Linux
 Clang sanitizer and coverage jobs. Coverage focuses on the exercised Rack
 integration sources, excluding the bundled libraries and prebuilt Rack host.
+Both test workflows run on pull requests and pushes to `master` (including
+merges), with manual dispatch available. Tag pushes do not rerun tests; create
+release tags from tested commits on `master`.
 See the test guide for triggers, SDK versions, and report artifacts.
 
 The [publication workflow](.github/workflows/manuals.yml) builds and validates

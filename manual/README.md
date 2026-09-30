@@ -164,7 +164,8 @@ resolved references, then retains a downloadable `publication-pdfs` artifact for
 whether the manual needs a corresponding update; CI does not prove behavioral
 accuracy or replace visual inspection.
 
-Release and dispatch tags must equal the manifest version, optionally prefixed
+Version-tag pushes accept `v*` and numeric-leading tags. Release and dispatch
+tags must equal the manifest version, optionally prefixed
 with `v`. A mismatched tag fails validation before PDFs can be uploaded. Follow
 the [release and VCV update checklist](../CONTRIBUTING.md#prepare-a-release-and-vcv-update)
 for the remaining publication and submission steps.
@@ -175,10 +176,13 @@ permission. Manual asset names are **RackNES.pdf** and **CVGenie.pdf**, matching
 the existing README and manifest links. The report is attached as
 **RackNES-whitepaper.pdf**. Rebuilding a release replaces assets with
 those names. A tag push alone builds an artifact without publishing assets.
+All three PDFs must build and pass validation before the upload job can run.
+The manifest's plugin and module `manualUrl` fields use
+`releases/latest/download/RackNES.pdf` and `releases/latest/download/CVGenie.pdf`
+so they follow the latest full release; prereleases do not replace these links.
 
 To rebuild an existing release, run the workflow with its tag. That tag must
-already contain this shared manual layout; historical tags using the old build
-are not supported by this workflow. Tags that have the shared manuals but
-predate the white paper upload only the manuals. The release must already exist.
+already contain this shared manual layout and the white paper; historical tags
+missing either are not supported by this workflow. The release must already exist.
 If a release is created by another workflow using `GITHUB_TOKEN`, dispatch this
 workflow manually when the release event does not start a run.
