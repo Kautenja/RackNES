@@ -13,15 +13,15 @@ Created: September 30, 2026
 
 ## Current Progress
 
-Reviewed September 30, 2026 against committed revision `4e11320`:
+Reviewed September 30, 2026 against committed revision `2cea414`:
 
--   Mapper IDs 0 through 3 and 7 are committed. The AxROM increment records
-    passing plugin, sanitizer, audio, state, and documentation checks below;
-    manual Rack/gameplay/listening validation remains open.
--   MMC2 (mapper 9) and its PPU fetch changes are local work in progress,
-    outside this specification update. They have no recorded mapper-specific
-    regression or Rack validation and are not a supported-mapper claim.
--   Mappers 4, 5, and 69, general NES 2.0 support, and the remaining ownership,
+-   Mapper IDs 0 through 4, 7, and 9 are committed. The AxROM, MMC2, and MMC3
+    increments record plugin, regression, audio, state, and documentation
+    checks below; manual Rack/gameplay/listening validation remains open.
+-   [008: MMC5 Mapper Implementation](008-mmc5-implementation.md) is PLANNED
+    and owns the mapper 5 implementation details and completion evidence,
+    including final manual/whitepaper updates. It adds no runtime support.
+-   Mappers 5 and 69, general NES 2.0 support, and the remaining ownership,
     CPU/IRQ, state, audio, and manual gates are incomplete. Issues #1 and #31
     remain open; retain `Status: IN PROGRESS`.
 
