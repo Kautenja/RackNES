@@ -101,11 +101,25 @@
     snapshots. Initialize bus-owned cartridge RAM on ROM replacement; saved
     patch RAM still restores afterward. Document the supported image subset.
 
+-   Restore MMC1 CHR windows from saved registers instead of stale derived
+    offsets. Add MMC1 audio, host controls, routing, and game replay regression
+    coverage, including CPU/stack preservation during APU reconstruction.
+
 -   Add mapper 7 (AxROM / AOROM): bounded 32 KiB PRG banking, one-screen
     mirroring, 8 KiB CHR RAM, validated JSON restoration, and independent
     cartridge clones. Validate supported image layouts before loading;
     NES 2.0 submapper 2 includes bus conflicts. Preserve base NES audio.
     Safely serialize empty bus RAM and scanline sprite lists during snapshots.
+
+-   Expose MMC1 work RAM without requiring a battery flag, fixing discarded
+    cartridge RAM writes needed by Metroid (#26). Preserve the existing
+    snapshot format and safely restore legacy empty work RAM. Metroid gameplay
+    listening verification remains pending.
+
+-   Mask rendered palette colors to six bits before NTSC conversion, preventing
+    out-of-range filter lookups and corrupted frames when palette writes or
+    legacy snapshots contain upper bits. Add full-frame regression coverage
+    for all 256 palette byte values while investigating issue #45.
 
 -   Fix overlapping sample-buffer copies and undefined negative-value shifts
     in Blip_Buffer. Initialize PPU edge visibility, sprite-hit status, and the

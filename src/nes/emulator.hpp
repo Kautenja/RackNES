@@ -217,6 +217,10 @@ class Emulator {
     ///
     inline NES_Pixel* get_screen_buffer() { return ppu.get_screen_buffer(); }
 
+    /// Diagnostic frame access for synchronous, headless capture only.
+    inline const NES_Byte* get_palette_buffer() const { return ppu.get_palette_buffer(); }
+    inline bool is_video_frame_complete() const { return ppu.is_video_frame_complete(); }
+
     /// @brief Return a 8-bit pointer to the RAM buffer's first address.
     ///
     /// @returns a 8-bit pointer to the RAM buffer's first address

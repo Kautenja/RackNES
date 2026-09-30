@@ -22,6 +22,7 @@ Model* modelInputGenie = &inputGenieModel;
 #include "mmc2.hpp"
 #include "mmc3.hpp"
 #include "sram.hpp"
+#include "ntsc.hpp"
 
 /// Preserve held buttons and the unread portion of a controller stream.
 static void check_controller_state() {
@@ -57,7 +58,8 @@ static void check_mapper_headers() {
     std::vector<char> bytes(16 + 0x8000 + 0x2000, 0);
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1A;
     bytes[4] = 2; bytes[5] = 1;
-    NES::Emulator active;
+    // Keep large emulator instances off the sanitizer-instrumented stack.
+    std::unique_ptr<NES::Emulator> active(new NES::Emulator);
     for (int format : {0x00, 0x04, 0x08, 0x0C}) {
         for (int mapper = 0; mapper < 4; ++mapper) {
             bytes[6] = mapper << 4;
@@ -81,17 +83,17 @@ static void check_mapper_headers() {
                 json_decref(restored);
                 json_decref(saved);
             }
-            if (!active.has_game()) {
-                assert(active.load_game(path));
-                active.get_memory_buffer()[0x10] = 0xA5;
+            if (!active->has_game()) {
+                assert(active->load_game(path));
+                active->get_memory_buffer()[0x10] = 0xA5;
             }
             if (format == 0x08) {
-                NES::Emulator empty;
+                std::unique_ptr<NES::Emulator> empty(new NES::Emulator);
                 json_t* state = json_pack("{s:{s:s}}", "cartridge", "rom_path", path);
-                assert(!empty.dataFromJson(state));
-                assert(!empty.has_game());
-                assert(!active.dataFromJson(state));
-                assert(active.has_game() && active.get_memory_buffer()[0x10] == 0xA5);
+                assert(!empty->dataFromJson(state));
+                assert(!empty->has_game());
+                assert(!active->dataFromJson(state));
+                assert(active->has_game() && active->get_memory_buffer()[0x10] == 0xA5);
                 json_decref(state);
             }
         }
@@ -141,6 +143,147 @@ static void check_mmc1_chr_banks() {
     check_banks(2, 3);
     write_register(0x8000, 0x1C);
     check_banks(3, 1);
+    // Old snapshots stored derived offsets from the broken startup/alignment.
+    // The serialized registers, including partial writes, remain authoritative.
+    for (int mode : {0x0C, 0x1C}) {
+        write_register(0x8000, mode);
+        mapper->writePRG(0xA000, 0);  // First bit of selecting CHR bank 2.
+        json_t* legacy = mapper->dataToJson();
+        json_object_set_new(legacy, "first_bank_chr", json_integer(0));
+        json_object_set_new(legacy, "second_bank_chr", json_integer(0));
+        mapper->dataFromJson(legacy);
+        check_banks(mode == 0x0C ? 2 : 3, mode == 0x0C ? 3 : 1);
+        for (int bit = 1; bit < 5; ++bit)
+            mapper->writePRG(0xA000, (2 >> bit) & 1);
+        check_banks(2, mode == 0x0C ? 3 : 1);
+        write_register(0xA000, 3);
+        json_decref(legacy);
+    }
+    assert(std::remove(path) == 0);
+}
+
+/// MMC1 work RAM exists without a battery, as required by Metroid (#26).
+static void check_mmc1_work_ram() {
+    const char* path = ".build/mmc1-ram.nes";
+    std::vector<char> bytes(16 + 8 * 0x4000, 0);
+    bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1A;
+    bytes[4] = 8;  // 128 KiB PRG, CHR RAM, legacy unspecified PRG RAM size.
+    for (int bank = 0; bank < 8; ++bank)
+        bytes[16 + bank * 0x4000] = 0x40 + bank;
+    for (int flags : {0x10, 0x12}) {
+        bytes[6] = flags;
+        std::ofstream file(path, std::ios::binary);
+        file.write(bytes.data(), bytes.size());
+        file.close();
+        assert(file.good());
+        std::unique_ptr<NES::Cartridge> cartridge(NES::Cartridge::create(path, []() {}));
+        assert(cartridge);
+        auto* mapper = cartridge->get_mapper();
+        NES::MainBus bus;
+        bus.set_mapper(mapper);
+        // The old battery-only check silently discarded this write.
+        bus.write(0x6000, 0xA5);
+        assert(bus.read(0x6000) == 0xA5);
+        for (int address = 0x6000; address < 0x8000; ++address)
+            bus.write(address, (address ^ (address >> 8)) & 0xFF);
+        const auto check_ram = [&]() {
+            for (int address = 0x6000; address < 0x8000; ++address)
+                assert(bus.read(address) == ((address ^ (address >> 8)) & 0xFF));
+            for (int page = 0x60; page <= 0x7F; ++page) {
+                const auto* data = bus.get_page_pointer(page);
+                assert(data);
+                for (int i = 0; i < 256; ++i)
+                    assert(data[i] == (i ^ page));
+            }
+        };
+        check_ram();
+        // PRG switching and serial-register reset must not replace work RAM.
+        for (int bank = 0; bank < 8; ++bank) {
+            mapper->writePRG(0x8000, 0x80);
+            for (int bit = 0; bit < 5; ++bit)
+                mapper->writePRG(0xE000, (bank >> bit) & 1);
+            assert(bus.read(0x8000) == 0x40 + bank);
+            assert(bus.read(0xC000) == 0x47);
+            check_ram();
+        }
+        json_t* saved = bus.dataToJson();
+        bus.write(0x6000, 0);
+        bus.dataFromJson(saved);
+        check_ram();
+        // Old non-battery snapshots contain an empty RAM string. Short or
+        // mistyped external data must not shrink storage used by the bus.
+        for (json_t* value : {json_string(""), json_string("pQ=="),
+                              json_integer(1), json_null()}) {
+            json_t* legacy = json_pack("{s:O}", "extended_ram", value);
+            bus.dataFromJson(legacy);
+            // Malformed direct bus restores preserve existing mapper-owned RAM.
+            // Full legacy emulator restores below create a fresh zeroed mapper.
+            check_ram();
+            bus.write(0x7FFF, 0x5A);
+            assert(bus.read(0x7FFF) == 0x5A);
+            bus.dataFromJson(saved);
+            check_ram();
+            json_decref(legacy);
+            json_decref(value);
+        }
+        json_decref(saved);
+        // Replacing a cartridge starts fresh storage; missing fields preserve it.
+        std::unique_ptr<NES::Cartridge> replacement(NES::Cartridge::create(path, []() {}));
+        assert(replacement);
+        bus.set_mapper(replacement->get_mapper());
+        for (int address = 0x6000; address < 0x8000; ++address)
+            assert(bus.read(address) == 0);
+        bus.write(0x6000, 0xA5);
+        json_t* missing = json_object();
+        bus.dataFromJson(missing);
+        assert(bus.read(0x6000) == 0xA5);
+        json_decref(missing);
+    }
+    // Execute an original CPU program that stages sprite and room data in
+    // work RAM, then transfers it to internal RAM and the PPU, like Metroid.
+    const unsigned char program[] = {
+        0x78,                           // SEI
+        0xA9, 0x00, 0x8D, 0x00, 0x20,   // Disable NMI.
+        0x8D, 0x01, 0x20,               // Disable rendering during upload.
+        0xA9, 0x5A, 0x8D, 0x00, 0x60,   // Room byte at $6000.
+        0xA9, 0xA5, 0x8D, 0xA0, 0x6E,   // Intro sprite byte at $6EA0.
+        0xAD, 0xA0, 0x6E, 0x8D, 0x00, 0x02,
+        0xA9, 0x20, 0x8D, 0x06, 0x20,   // PPUADDR = $2000.
+        0xA9, 0x00, 0x8D, 0x06, 0x20,
+        0xAD, 0x00, 0x60, 0x8D, 0x07, 0x20,
+        0x4C, 0x29, 0xC1                // Loop at $C129.
+    };
+    bytes[6] = 0x10;
+    for (size_t i = 0; i < sizeof(program); ++i)
+        bytes[16 + 7 * 0x4000 + 0x100 + i] = program[i];
+    bytes[16 + 8 * 0x4000 - 4] = 0;
+    bytes[16 + 8 * 0x4000 - 3] = 0xC1;
+    std::ofstream file(path, std::ios::binary);
+    file.write(bytes.data(), bytes.size());
+    file.close();
+    assert(file.good());
+    std::unique_ptr<NES::Emulator> emulator(new NES::Emulator);
+    assert(emulator->load_game(path));
+    for (int cycle = 0; cycle < 1000; ++cycle) emulator->cycle([]() {});
+    assert(emulator->get_memory_buffer()[0x200] == 0xA5);
+    json_t* saved = emulator->dataToJson();
+    const auto picture_ram = base64_decode(json_string_value(
+        json_object_get(json_object_get(saved, "picture_bus"), "ram")));
+    assert(picture_ram[0] == 0x5A);
+    // Restore the complete emulator, including its cartridge and work RAM.
+    assert(emulator->dataFromJson(saved));
+    json_t* restored = emulator->dataToJson();
+    assert(json_equal(json_object_get(saved, "bus"), json_object_get(restored, "bus")));
+    json_decref(restored);
+    // Old snapshots must remain safe when the running CPU next reads work RAM.
+    json_object_set_new(json_object_get(saved, "bus"), "extended_ram", json_string(""));
+    assert(emulator->dataFromJson(saved));
+    restored = emulator->dataToJson();
+    const auto work_ram = base64_decode(json_string_value(
+        json_object_get(json_object_get(restored, "bus"), "extended_ram")));
+    assert(work_ram == std::string(0x2000, '\0'));
+    json_decref(restored);
+    json_decref(saved);
     assert(std::remove(path) == 0);
 }
 
@@ -202,9 +345,8 @@ static void check_ppu_reset() {
     assert(ppu.get_data(bus) == 0x55);
 }
 
-/// Exercise all five voices through CPU bus writes on NROM, CNROM, AxROM, MMC2 and MMC3.
-static void check_graphics_audio_preservation(uint64_t blip_clock) {
-    const char* path = ".build/mapper-audio.nes";
+/// Original CPU program driving all five voices, with looping DMC.
+static std::vector<unsigned char> make_audio_image(std::size_t* bank_write_high = nullptr) {
     std::vector<unsigned char> bytes(16 + 0x8000 + 0x8000, 0);
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1A;
     bytes[4] = 2; bytes[5] = 4;
@@ -228,18 +370,26 @@ static void check_graphics_audio_preservation(uint64_t blip_clock) {
     write_register(0x4012, 0x00); write_register(0x4013, 0x01);
     write_register(0x4015, 0x1F);
     const int loop = 0x8000 + pc - 16;
-    const std::size_t bank_write_high = pc + 4;
+    if (bank_write_high) *bank_write_high = pc + 4;
     write_register(0x8000, 3);  // CHR bank selection while DMC reads PRG.
     bytes[pc++] = 0x4C; bytes[pc++] = loop & 0xFF; bytes[pc++] = loop >> 8;
     for (int i = 0; i < 17; ++i) bytes[16 + 0x4000 + i] = 0x55;
     bytes[16 + 0x7FFC] = 0; bytes[16 + 0x7FFD] = 0x80;
+    return bytes;
+}
+
+/// Compare all five voices on NROM, CNROM, AxROM, MMC2, MMC3, and MMC1.
+static void check_graphics_audio_preservation(uint64_t blip_clock) {
+    const char* path = ".build/mapper-audio.nes";
+    std::size_t bank_write_high = 0;
+    auto bytes = make_audio_image(&bank_write_high);
     uint64_t fingerprint = 14695981039346656037ULL;
     for (int rate : {44100, 48000, 96000, 192000}) {
-        std::unique_ptr<NES::Emulator> emulators[5];
-        for (int variant = 0; variant < 5; ++variant) {
-            bytes[6] = variant == 0 ? 0x00 : variant == 1 ? 0x33 : 0x70;
+        std::unique_ptr<NES::Emulator> emulators[6];
+        for (int variant = 0; variant < 6; ++variant) {
+            bytes[6] = variant == 0 ? 0x00 : variant == 1 ? 0x33 : variant == 5 ? 0x10 : 0x70;
             // AxROM uses CHR RAM; each variant executes the same program.
-            bytes[5] = variant == 0 ? 1 : variant == 1 ? 4 : 0;
+            bytes[5] = variant == 0 || variant == 5 ? 1 : variant == 1 ? 4 : 0;
             std::ofstream file(path, std::ios::binary);
             if (variant == 4) {
                 auto image = mmc3_image(4, 8);
@@ -282,9 +432,9 @@ static void check_graphics_audio_preservation(uint64_t blip_clock) {
             emulators[variant]->set_clock_rate(blip_clock);
         }
         int nonzero[5] = {};
-        int frames[5] = {};
+        int frames[6] = {};
         for (int sample = 0; sample < 2000; ++sample) {
-            for (int variant = 0; variant < 5; ++variant)
+            for (int variant = 0; variant < 6; ++variant)
                 for (int cycle = 0; cycle < NES::CLOCK_RATE / double(rate); ++cycle)
                     emulators[variant]->cycle([&]() { ++frames[variant]; });
             for (int channel = 0; channel < 5; ++channel) {
@@ -293,6 +443,7 @@ static void check_graphics_audio_preservation(uint64_t blip_clock) {
                 assert(value == emulators[2]->get_audio_sample(channel));
                 assert(value == emulators[3]->get_audio_sample(channel));
                 assert(value == emulators[4]->get_audio_sample(channel));
+                assert(value == emulators[5]->get_audio_sample(channel));
                 if (value != 0) ++nonzero[channel];
                 fingerprint ^= static_cast<uint16_t>(value);
                 fingerprint *= 1099511628211ULL;
@@ -303,10 +454,10 @@ static void check_graphics_audio_preservation(uint64_t blip_clock) {
             mmc2_state, "cartridge"), "mapper"), "register_prg")) == 3);
         json_decref(mmc2_state);
         for (int count : nonzero) assert(count > 0);
-        assert(frames[0] == frames[1] && frames[0] == frames[2] && frames[0] == frames[3] && frames[0] == frames[4]);
+        assert(frames[0] == frames[1] && frames[0] == frames[2] && frames[0] == frames[3] && frames[0] == frames[4] && frames[0] == frames[5]);
     }
     assert(std::remove(path) == 0);
-    std::printf("NROM/CNROM/AxROM/MMC2/MMC3 PCM at Blip clock %llu: %llx\n",
+    std::printf("NROM/CNROM/AxROM/MMC2/MMC3/MMC1 PCM at Blip clock %llu: %llx\n",
                 static_cast<unsigned long long>(blip_clock),
                 static_cast<unsigned long long>(fingerprint));
     std::fflush(stdout);
@@ -382,7 +533,12 @@ static void check_upstream_graphics_fixes() {
     assert(std::remove(path) == 0);
 }
 
+#include "mmc1_host.hpp"
+#include "replay.hpp"
+
 int main(int argc, char** argv) {
+    if (argc == 7 && std::string(argv[1]) == "--replay") return replay_game(argv, false);
+    if (argc == 7 && std::string(argv[1]) == "--replay-roundtrip") return replay_game(argv, true);
     // Allow isolated audio characterization; the default Make target runs it too.
     if (argc == 2 && std::string(argv[1]) == "--audio-only") {
         check_graphics_audio_preservation(NES::CLOCK_RATE);
@@ -397,7 +553,9 @@ int main(int argc, char** argv) {
     check_controller_state();
     check_blip_sample_reads();
     check_ppu_reset();
+    check_ntsc_palette_range();
     check_mmc1_chr_banks();
+    check_mmc1_work_ram();
     check_mapper_headers();
     check_upstream_graphics_fixes();
     check_axrom();
@@ -419,6 +577,7 @@ int main(int argc, char** argv) {
     check_axrom_module();
     check_mmc2_state();
     check_mmc3_emulator();
+    check_mmc1_host();
     {
         std::unique_ptr<RackNES> module(new RackNES);
         // An empty module must serialize without touching uninitialized hardware.
@@ -474,5 +633,5 @@ int main(int argc, char** argv) {
         json_decref(latest);
         json_decref(saved);
     }
-    std::puts("RackNES: controller state, mapper headers/CHR/AxROM/MMC2/MMC3, IRQs, snapshots, failed loads, and RAM bounds passed");
+    std::puts("RackNES: controller state, mapper headers/CHR/AxROM/MMC2/MMC3, IRQs, MMC1 RAM/host, palette/NTSC, snapshots, failed loads, and RAM bounds passed");
 }

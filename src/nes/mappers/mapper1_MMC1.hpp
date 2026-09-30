@@ -65,6 +65,17 @@ class MapperMMC1 : public ROM::Mapper {
         }
     }
 
+    /// Derive CHR windows from registers, including after legacy restoration.
+    void calculateCHRPointers() {
+        if (mode_chr == 0) {
+            first_bank_chr = 0x1000 * (register_chr0 & ~1);
+            second_bank_chr = first_bank_chr + 0x1000;
+        } else {
+            first_bank_chr = 0x1000 * register_chr0;
+            second_bank_chr = 0x1000 * register_chr1;
+        }
+    }
+
  public:
     /// Create a new mapper with a rom.
     ///
@@ -121,6 +132,10 @@ class MapperMMC1 : public ROM::Mapper {
     /// Clone the mapper, i.e., the virtual copy constructor
     MapperMMC1* clone() override { return new MapperMMC1(*this); }
 
+    /// Standard MMC1 boards expose 8 KiB of work RAM even without a battery.
+    /// The iNES battery flag describes persistence, not RAM availability.
+    inline bool hasExtendedRAM() const override { return true; }
+
     /// Return the name table mirroring mode of this mapper.
     inline NameTableMirroring getNameTableMirroring() const override {
         return mirroring;
@@ -162,15 +177,7 @@ class MapperMMC1 : public ROM::Mapper {
                     mode_prg = (temp_register & 0xc) >> 2;
                     calculatePRGPointers();
 
-                    // Recalculate CHR pointers
-                    if (mode_chr == 0) {  // one 8KB bank
-                        // ignore last bit
-                        first_bank_chr = 0x1000 * (register_chr0 & ~1);
-                        second_bank_chr = first_bank_chr + 0x1000;
-                    } else {  // two 4KB banks
-                        first_bank_chr = 0x1000 * register_chr0;
-                        second_bank_chr = 0x1000 * register_chr1;
-                    }
+                    calculateCHRPointers();
                 } else if (address <= 0xbfff) {  // CHR Reg 0
                     register_chr0 = temp_register;
                     // Ignore the low bit in 8KB mode.
@@ -309,16 +316,9 @@ class MapperMMC1 : public ROM::Mapper {
             json_t* json_data = json_object_get(rootJ, "second_bank_prg");
             if (json_data) second_bank_prg = json_integer_value(json_data);
         }
-        // load first_bank_chr
-        {
-            json_t* json_data = json_object_get(rootJ, "first_bank_chr");
-            if (json_data) first_bank_chr = json_integer_value(json_data);
-        }
-        // load second_bank_chr
-        {
-            json_t* json_data = json_object_get(rootJ, "second_bank_chr");
-            if (json_data) second_bank_chr = json_integer_value(json_data);
-        }
+        // Old files can contain offsets produced by the CHR startup/alignment
+        // bugs. Registers describe the intended mapping; offsets are derived.
+        calculateCHRPointers();
         // load character_ram
         {
             json_t* json_data = json_object_get(rootJ, "character_ram");

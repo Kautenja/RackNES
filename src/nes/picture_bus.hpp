@@ -111,7 +111,9 @@ class PictureBus {
     /// @return the index of the RGB tuple in the color array
     ///
     inline NES_Byte read_palette(NES_Byte address) const {
-        return palette[address];
+        // Palette RAM supplies six color bits. Legacy snapshots may retain
+        // upper bits; never pass them to the 64-entry NTSC lookup table.
+        return palette[address] & 0x3F;
     }
 
     /// Update the mirroring and name table from the mapper.

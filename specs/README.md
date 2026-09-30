@@ -9,7 +9,7 @@ evidence in the owning spec, then archive it using [the agent workflow][flow].
 | Spec | Scope | GitHub Issues | Order |
 | --- | --- | --- | --- |
 | [001](001-nes-py-integration.md) | Cartridge parsing, mapper integration, audio/state compatibility | [#1][i1], [#31][i31] | Deliver parser/tracker and mapper gates as separate increments. |
-| [005](005-mmc1-ntsc-regressions.md) | Metroid and Bubble Bobble reproduction and fixes | [#26][i26], [#45][i45] | Reproduce first; potentially the smallest closures. |
+| [005](005-mmc1-ntsc-regressions.md) | Metroid and Bubble Bobble reproduction and fixes | [#26][i26], [#45][i45] | Fixes integrated and game replays verified; listening signoff pending. |
 | [008](008-mmc5-implementation.md) | MMC5 implementation subset, validation, and final manual/report updates | Under 001 | Freeze board profiles before bus/PPU integration; preserve base audio. |
 | [009](009-fme7-implementation.md) | FME-7 / Sunsoft 5B mapper subset, validation, and final manual/report updates | Under 001 | Integrate banked RAM and CPU-cycle IRQs; defer expansion sound. |
 
