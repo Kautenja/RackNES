@@ -20,7 +20,9 @@ listed in the manuscript preamble, then run from the repository root:
 make -C whitepaper
 ```
 
-The output is [`.build/racknes.pdf`](.build/racknes.pdf). The build disables shell
+The output is [`.build/racknes.pdf`](.build/racknes.pdf). After a successful build,
+LaTeX auxiliary files and logs are removed, preserving the PDF and any source
+archive. Failed builds retain their logs for diagnosis. The build disables shell
 escape and only typesets the paper. This is a design and implementation report;
 it contains no comparative experiments or benchmark results.
 

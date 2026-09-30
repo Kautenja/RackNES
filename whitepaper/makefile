@@ -13,6 +13,7 @@ pdf: $(PDF)
 
 $(PDF): $(TEX_SOURCE) makefile | .build
 	$(LATEXMK) -pdf -pdflatex='pdflatex -no-shell-escape %O %S' -interaction=nonstopmode -halt-on-error -outdir=.build $(TEX_SOURCE)
+	$(LATEXMK) -c -outdir=.build $(TEX_SOURCE)
 
 source: $(SOURCE_ARCHIVE)
 
