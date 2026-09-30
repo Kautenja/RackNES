@@ -385,7 +385,7 @@ class ROM {
         ///
         /// @returns true if the ROM requires extended RAM, false otherwise
         ///
-        inline bool hasExtendedRAM() const { return rom.hasExtendedRAM(); }
+        inline virtual bool hasExtendedRAM() const { return rom.hasExtendedRAM(); }
 
         /// @brief Return the name table mirroring mode.
         ///

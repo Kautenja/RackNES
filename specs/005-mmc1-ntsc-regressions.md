@@ -5,7 +5,7 @@ Resolve [#26: Metroid MMC1 failure][metroid] and
 evidence and focused fixes where needed. An old report is not resolved merely
 because nearby code has changed.
 
-Status: PLANNED
+Status: IN PROGRESS
 
 Created: September 30, 2026
 
@@ -99,6 +99,56 @@ Record dates, commits, fixture hashes, reference-emulator versions, screenshots
 or artifact locations, listening observations, executed commands, and skipped
 checks here. The existing synthetic checks and this planning pass are not a
 manual Rack validation. Archive only after both issue dispositions have evidence.
+
+### September 30, 2026: Metroid Work RAM Fix
+
+Investigated #26 from source revision `261b548`. The cartridge bus gated all
+`$6000`--`$7FFF` accesses on the iNES battery flag. Metroid uses volatile work
+RAM: the [disassembly memory map][metroid-memory] places room buffers at
+`$6000`/`$6400`, player state at `$6875`, and intro sprite data at `$6E00` and
+`$6EA0`. Its [startup routine][metroid-startup] clears `$6000`--`$7FFF`.
+This establishes a missing-memory defect relevant to the reported assets;
+it does not establish that every reported graphics/audio symptom is resolved.
+
+An original synthetic iNES fixture uses mapper 1, 128 KiB PRG, CHR RAM, and
+byte 8 equal to zero. With battery flag clear, the unpatched regression aborts
+at `bus.read(0x6000) == 0xA5` after writing `0xA5`. With the patch it passes.
+MMC1 now supplies the bus's conventional 8 KiB work RAM independently of
+battery presence. The bus allocates fresh storage on cartridge replacement.
+Existing `extended_ram` JSON stays unchanged; empty legacy or invalid-sized
+RAM data initializes zero-filled mapper-sized storage instead of shrinking it.
+Other mapper RAM-presence rules are unchanged. Board-specific RAM sizes and
+MMC1 PRG-RAM disable behavior remain outside this fix.
+
+Validation on macOS arm64, Apple Clang 21.0.0, and the prepared Rack 2.6.0 tree:
+
+```shell
+# From the fix worktree, with RACK_DIR pointing to the prepared Rack tree:
+make -C tests -j2 RACK_DIR="$RACK_DIR"
+make -j4 RACK_DIR="$RACK_DIR"
+git diff --check
+```
+
+-   Before the patch: existing suites pass; the new work-RAM assertion fails.
+-   After the patch: AddressSanitizer/UndefinedBehaviorSanitizer suites pass,
+    including full-window RAM patterns, DMA pages, eight PRG banks, mapper
+    reset, fresh storage, current snapshots, and empty/short/mistyped legacy
+    data. An original CPU program transfers cartridge RAM to PPU nametable
+    memory and internal sprite staging RAM; full emulator restore preserves
+    work RAM and accepts the old empty representation safely.
+-   The five-channel NROM/CNROM audio fixtures match their baseline at 44.1,
+    48, 96, and 192 kHz: `f5146c03e0a6ceb2` at the 1,789,773 Hz Blip clock and
+    `d8915d435c9cf9a9` at 768,000 Hz.
+-   Plugin build and `git diff --check` pass. Compiler warnings remain in
+    existing Rack API usage and bundled code; no new build failure occurred.
+-   No user-supplied Metroid ROM was available for this pass. No commercial ROM
+    or copied game code is included. Actual title/gameplay captures, reference
+    emulator comparison, Metroid listening, Rack UI/MIX routing, clock extremes,
+    and manual SAVE/LOAD/hang/reset checks were not run. #26 remains open.
+    #45 was not investigated; this shared spec remains in progress.
+
+[metroid-memory]: https://github.com/nmikstas/metroid-disassembly/blob/master/Source_Files/Metroid_Defines.asm
+[metroid-startup]: https://github.com/nmikstas/metroid-disassembly/blob/master/Source_Files/Bank07.asm
 
 [metroid]: https://github.com/Kautenja/RackNES/issues/26
 [bubble]: https://github.com/Kautenja/RackNES/issues/45

@@ -121,6 +121,10 @@ class MapperMMC1 : public ROM::Mapper {
     /// Clone the mapper, i.e., the virtual copy constructor
     MapperMMC1* clone() override { return new MapperMMC1(*this); }
 
+    /// Standard MMC1 boards expose 8 KiB of work RAM even without a battery.
+    /// The iNES battery flag describes persistence, not RAM availability.
+    inline bool hasExtendedRAM() const override { return true; }
+
     /// Return the name table mirroring mode of this mapper.
     inline NameTableMirroring getNameTableMirroring() const override {
         return mirroring;

@@ -81,6 +81,11 @@ complete emulator or UI validation.
     fixtures round-trip empty CHR RAM through mapper JSON for IDs 0--2 and
     check MMC1's initial CHR banks, odd/even bank selections, and transitions
     between 4 KiB and 8 KiB modes using distinct patterns in each 4 KiB bank.
+    MMC1 work-RAM checks cover all 8 KiB with and without a battery, DMA page
+    reads, PRG bank changes, cartridge replacement, and current/legacy snapshot
+    restoration. An original CPU program stages room and sprite bytes in
+    cartridge RAM and transfers them to the PPU and internal RAM, exercising
+    the missing-memory defect investigated for Metroid #26 without a game ROM.
     Adapted nes-py cases check mirroring independently of battery flags and
     CNROM CHR-bank bounds, read-only CHR, legacy register restoration, and
     unchanged PRG windows. Four-screen decoding is tested only as metadata;

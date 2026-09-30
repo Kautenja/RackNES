@@ -137,6 +137,128 @@ static void check_mmc1_chr_banks() {
     assert(std::remove(path) == 0);
 }
 
+/// MMC1 work RAM exists without a battery, as required by Metroid (#26).
+static void check_mmc1_work_ram() {
+    const char* path = ".build/mmc1-ram.nes";
+    std::vector<char> bytes(16 + 8 * 0x4000, 0);
+    bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1A;
+    bytes[4] = 8;  // 128 KiB PRG, CHR RAM, legacy unspecified PRG RAM size.
+    for (int bank = 0; bank < 8; ++bank)
+        bytes[16 + bank * 0x4000] = 0x40 + bank;
+    for (int flags : {0x10, 0x12}) {
+        bytes[6] = flags;
+        std::ofstream file(path, std::ios::binary);
+        file.write(bytes.data(), bytes.size());
+        file.close();
+        assert(file.good());
+        std::unique_ptr<NES::Cartridge> cartridge(NES::Cartridge::create(path, []() {}));
+        assert(cartridge);
+        auto* mapper = cartridge->get_mapper();
+        NES::MainBus bus;
+        bus.set_mapper(mapper);
+        // The old battery-only check silently discarded this write.
+        bus.write(0x6000, 0xA5);
+        assert(bus.read(0x6000) == 0xA5);
+        for (int address = 0x6000; address < 0x8000; ++address)
+            bus.write(address, (address ^ (address >> 8)) & 0xFF);
+        const auto check_ram = [&]() {
+            for (int address = 0x6000; address < 0x8000; ++address)
+                assert(bus.read(address) == ((address ^ (address >> 8)) & 0xFF));
+            for (int page = 0x60; page <= 0x7F; ++page) {
+                const auto* data = bus.get_page_pointer(page);
+                assert(data);
+                for (int i = 0; i < 256; ++i)
+                    assert(data[i] == (i ^ page));
+            }
+        };
+        check_ram();
+        // PRG switching and serial-register reset must not replace work RAM.
+        for (int bank = 0; bank < 8; ++bank) {
+            mapper->writePRG(0x8000, 0x80);
+            for (int bit = 0; bit < 5; ++bit)
+                mapper->writePRG(0xE000, (bank >> bit) & 1);
+            assert(bus.read(0x8000) == 0x40 + bank);
+            assert(bus.read(0xC000) == 0x47);
+            check_ram();
+        }
+        json_t* saved = bus.dataToJson();
+        bus.write(0x6000, 0);
+        bus.dataFromJson(saved);
+        check_ram();
+        // Old non-battery snapshots contain an empty RAM string. Short or
+        // mistyped external data must not shrink storage used by the bus.
+        for (json_t* value : {json_string(""), json_string("pQ=="),
+                              json_integer(1), json_null()}) {
+            json_t* legacy = json_pack("{s:O}", "extended_ram", value);
+            bus.dataFromJson(legacy);
+            for (int address = 0x6000; address < 0x8000; ++address)
+                assert(bus.read(address) == 0);
+            bus.write(0x7FFF, 0x5A);
+            assert(bus.read(0x7FFF) == 0x5A);
+            bus.dataFromJson(saved);
+            check_ram();
+            json_decref(legacy);
+            json_decref(value);
+        }
+        json_decref(saved);
+        // Replacing a cartridge starts fresh storage; missing fields preserve it.
+        bus.set_mapper(mapper);
+        for (int address = 0x6000; address < 0x8000; ++address)
+            assert(bus.read(address) == 0);
+        bus.write(0x6000, 0xA5);
+        json_t* missing = json_object();
+        bus.dataFromJson(missing);
+        assert(bus.read(0x6000) == 0xA5);
+        json_decref(missing);
+    }
+    // Execute an original CPU program that stages sprite and room data in
+    // work RAM, then transfers it to internal RAM and the PPU, like Metroid.
+    const unsigned char program[] = {
+        0x78,                           // SEI
+        0xA9, 0x00, 0x8D, 0x00, 0x20,   // Disable NMI.
+        0x8D, 0x01, 0x20,               // Disable rendering during upload.
+        0xA9, 0x5A, 0x8D, 0x00, 0x60,   // Room byte at $6000.
+        0xA9, 0xA5, 0x8D, 0xA0, 0x6E,   // Intro sprite byte at $6EA0.
+        0xAD, 0xA0, 0x6E, 0x8D, 0x00, 0x02,
+        0xA9, 0x20, 0x8D, 0x06, 0x20,   // PPUADDR = $2000.
+        0xA9, 0x00, 0x8D, 0x06, 0x20,
+        0xAD, 0x00, 0x60, 0x8D, 0x07, 0x20,
+        0x4C, 0x29, 0xC1                // Loop at $C129.
+    };
+    bytes[6] = 0x10;
+    for (size_t i = 0; i < sizeof(program); ++i)
+        bytes[16 + 7 * 0x4000 + 0x100 + i] = program[i];
+    bytes[16 + 8 * 0x4000 - 4] = 0;
+    bytes[16 + 8 * 0x4000 - 3] = 0xC1;
+    std::ofstream file(path, std::ios::binary);
+    file.write(bytes.data(), bytes.size());
+    file.close();
+    assert(file.good());
+    NES::Emulator emulator;
+    assert(emulator.load_game(path));
+    for (int cycle = 0; cycle < 1000; ++cycle) emulator.cycle([]() {});
+    assert(emulator.get_memory_buffer()[0x200] == 0xA5);
+    json_t* saved = emulator.dataToJson();
+    const auto picture_ram = base64_decode(json_string_value(
+        json_object_get(json_object_get(saved, "picture_bus"), "ram")));
+    assert(picture_ram[0] == 0x5A);
+    // Restore the complete emulator, including its cartridge and work RAM.
+    assert(emulator.dataFromJson(saved));
+    json_t* restored = emulator.dataToJson();
+    assert(json_equal(json_object_get(saved, "bus"), json_object_get(restored, "bus")));
+    json_decref(restored);
+    // Old snapshots must remain safe when the running CPU next reads work RAM.
+    json_object_set_new(json_object_get(saved, "bus"), "extended_ram", json_string(""));
+    assert(emulator.dataFromJson(saved));
+    restored = emulator.dataToJson();
+    const auto work_ram = base64_decode(json_string_value(
+        json_object_get(json_object_get(restored, "bus"), "extended_ram")));
+    assert(work_ram == std::string(0x2000, '\0'));
+    json_decref(restored);
+    json_decref(saved);
+    assert(std::remove(path) == 0);
+}
+
 /// Negative samples agree across bulk, overlapping, stereo, and reader paths.
 static void check_blip_sample_reads() {
     Blip_Buffer bulk, chunked, stereo, direct;
@@ -359,6 +481,7 @@ int main(int argc, char** argv) {
     check_blip_sample_reads();
     check_ppu_reset();
     check_mmc1_chr_banks();
+    check_mmc1_work_ram();
     check_mapper_headers();
     check_upstream_graphics_fixes();
     check_axrom();

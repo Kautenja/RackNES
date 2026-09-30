@@ -86,6 +86,11 @@
     NES 2.0 submapper 2 includes bus conflicts. Preserve base NES audio.
     Safely serialize empty bus RAM and scanline sprite lists during snapshots.
 
+-   Expose MMC1 work RAM without requiring a battery flag, fixing discarded
+    cartridge RAM writes needed by Metroid (#26). Preserve the existing
+    snapshot format and safely restore legacy empty work RAM. Game-level
+    Metroid graphics and audio verification remains pending.
+
 -   Fix overlapping sample-buffer copies and undefined negative-value shifts
     in Blip_Buffer. Initialize PPU edge visibility, sprite-hit status, and the
     PPUDATA buffer on reset. Run the five-channel audio fixture in the default

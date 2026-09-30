@@ -94,7 +94,7 @@ class MainBus {
     ///
     void set_mapper(ROM::Mapper* mapper_) {
         mapper = mapper_;
-        if (mapper->hasExtendedRAM()) extended_ram.resize(0x2000);
+        extended_ram.assign(mapper->hasExtendedRAM() ? 0x2000 : 0, 0);
     }
 
     /// Set a callback for when writes occur.
@@ -232,9 +232,14 @@ class MainBus {
         {
             json_t* json_data = json_object_get(rootJ, "extended_ram");
             if (json_data) {
-                std::string data_string = json_string_value(json_data);
-                data_string = base64_decode(data_string);
-                extended_ram = std::vector<NES_Byte>(data_string.begin(), data_string.end());
+                // Legacy non-battery MMC1 snapshots saved an empty string.
+                // Keep mapper-sized storage even for empty or malformed data.
+                extended_ram.assign(mapper && mapper->hasExtendedRAM() ? 0x2000 : 0, 0);
+                if (json_is_string(json_data)) {
+                    const auto data_string = base64_decode(json_string_value(json_data));
+                    if (data_string.size() == extended_ram.size())
+                        extended_ram.assign(data_string.begin(), data_string.end());
+                }
             }
         }
     }
