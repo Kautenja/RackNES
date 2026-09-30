@@ -13,9 +13,21 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //
 
+#include <atomic>
+#include <cmath>
+#include <string>
+
 #include "plugin.hpp"
 #include "GameMaps.hpp"
 #include "theme.hpp"
+
+/// Describe byte endpoints in their mapped order, including descending toggles.
+static std::string elementDescription(const GameParameter* parameter) {
+    if (!parameter) return "Unassigned: no memory writes";
+    return parameter->toggle
+        ? string::f("Trigger toggle: %d / %d", parameter->minimum, parameter->maximum)
+        : string::f("Continuous 0-10 V: %d to %d", parameter->minimum, parameter->maximum);
+}
 
 // ---------------------------------------------------------------------------
 // MARK: Module
@@ -44,138 +56,178 @@ struct CVGenie : Module {
     };
 
     /// Container for maps of game-specific memory locations
-    GameMap gameMap = GameMap();
-    /// The currently selected memory locations
-    int memLoc[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
+    GameMap gameMap;
+    /// Engine-owned selections, published atomically for UI labels and menus.
+    std::atomic<int> memLoc[8];
 
     /// A Schmitt Trigger used when a memory location is marked as a boolean
     /// toggle (i.e., with only two valid values)
     dsp::SchmittTrigger cvTrigger[8];
-    /// The current state of selected & toggleable memory locations
+    /// Engine-owned choice of the first (false) or second (true) endpoint.
     bool toggleState[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-    /// Initialize a new CV Genie module
+    /// A row menu request carries its game so stale menus cannot change a new map.
+    struct SelectionRequest {
+        int game;
+        int element;
+    };
+
+    /// UI requests are applied on the engine thread; -2 means no pending change.
+    std::atomic<int> requestedGame{-2};
+    std::atomic<SelectionRequest> requestedElement[8];
+
+    /// Build hover text on the UI thread from published selections and static maps.
+    std::string rowDescription(int row) const {
+        const auto* parameter = gameMap.getParameter(memLoc[row].load());
+        if (!parameter) return elementDescription(nullptr);
+        std::string text = parameter->name + "\n" + elementDescription(parameter);
+        if (parameter->toggle)
+            text += "\nTrigger at 2 V; rearm at 0.1 V or below.";
+        return text;
+    }
+
+    /// Rack requests port descriptions on hover; no strings change in process().
+    struct RowPortInfo : engine::PortInfo {
+        std::string getDescription() override {
+            return static_cast<CVGenie*>(module)->rowDescription(portId);
+        }
+    };
+
+    /// Initialize a new CV Genie module.
     CVGenie() {
         config(NUM_PARAMS, NUM_INPUTS, NUM_OUTPUTS, NUM_LIGHTS);
+        for (int row = 0; row < INPUTS; row++)
+            configInput<RowPortInfo>(INPUT_MEMVAL + row, string::f("Row %d CV", row + 1));
+        onReset();
     }
 
-    /// Reset module to initialized state
+    /// @brief Clear row assignments and their engine-owned trigger state.
+    void clearRows() {
+        for (int row = 0; row < 8; row++) {
+            memLoc[row].store(-1);
+            toggleState[row] = false;
+            cvTrigger[row].reset();
+        }
+    }
+
+    /// @brief Apply a game change on the engine thread, clearing stale rows.
+    void selectGame(int id) {
+        const int nextGame = GameMap::isValidGame(id) ? id : -1;
+        if (gameMap.gameId.load() == nextGame) return;
+        clearRows();
+        gameMap.setGame(nextGame);
+    }
+
+    /// @brief Apply a row selection on the engine thread and reset its toggle.
+    void selectElement(int row, int id) {
+        if (row < 0 || row >= 8) return;
+        const int nextElement = gameMap.getParameter(id) ? id : -1;
+        if (memLoc[row].load() == nextElement) return;
+        memLoc[row].store(nextElement);
+        toggleState[row] = false;
+        cvTrigger[row].reset();
+    }
+
+    /// @brief Apply bounded UI requests before building any expander messages.
+    void processSelections() {
+        const int game = requestedGame.exchange(-2);
+        if (game != -2) selectGame(game);
+        for (int row = 0; row < 8; row++) {
+            const auto request = requestedElement[row].exchange({-1, -2});
+            if (request.element != -2 && request.game == gameMap.gameId.load())
+                selectElement(row, request.element);
+        }
+    }
+
+    /// Reset module to initialized state.
     void onReset() final {
-        gameMap.gameId = -1;
-        memset(memLoc, -1, sizeof memLoc);
+        gameMap.setGame(-1);
+        clearRows();
+        requestedGame.store(-2);
+        for (auto& request : requestedElement) request.store({-1, -2});
     }
 
-    /// Randomize the memory-location selectors
+    /// Randomize selections only when a game has available entries.
     void onRandomize() final {
-        for (int i = 0; i < 8; i++)
-            memLoc[i] = random::uniform() * gameMap.getNumCheats();
+        processSelections();
+        const unsigned count = gameMap.getNumCheats();
+        if (count == 0) return;
+        clearRows();
+        for (int row = 0; row < 8; row++)
+            selectElement(row, static_cast<int>(random::uniform() * count));
     }
 
-    /// Process a sample.
-    void process(const ProcessArgs &args) final {
-        // check if a RackNES module is immediately to the left of this module
-		if (leftExpander.module && leftExpander.module->model == modelRackNES) {
-            // check if this is an Input Genie
-            if (INPUTS == 8) {
-                // get producer message from RackNES in order to fill it and flip it into a consumer message for RackNES
-                uint16_t *message = (uint16_t*) leftExpander.module->rightExpander.producerMessage;
-                // each of 8 possible messages contains 2 submessages (address and value)
-                // so, iterate over all possible submessages
-                for (int i = 0; i < 16; i += 2) {
-                    // check if the input associated with this message is connected
-                    if (inputs[INPUT_MEMVAL + i / 2].isConnected()) {
-                        // check if the associated memory location is a toggle
-                        if (gameMap.isToggle(memLoc[i / 2])) {  // NOTE: toggle often takes a few triggers to work...
-                            // check if a trigger has been received at the input
-                            auto cv = inputs[INPUT_MEMVAL + i / 2].getVoltage();
-                            if (cvTrigger[i / 2].process(rescale(cv, 0.1, 2, 0, 1))) {
-                                // flip the state of the toggle
-                                toggleState[i / 2] ^= true;
-                                // write the selected memory address to submessage 1
-                                message[i] = gameMap.getAddress(memLoc[i / 2]);
-                                // write the state of the toggle to submessage 2
-                                message[i + 1] = toggleState[i / 2];
-                            }
-                        }
-                        // otherwise, this memory location is not a toggle
-                        else {
-                            // write the selected memory address to submessage 1
-                            message[i] = gameMap.getAddress(memLoc[i / 2]);
-                            // get the minimum and maximum values for the selected memory location
-                            uint8_t min = gameMap.getMinValue(memLoc[i / 2]);
-                            uint8_t max = gameMap.getMaxValue(memLoc[i / 2]);
-                            // check if the minimum is less than maximum
-                            if (min < max) {
-                                // scale the input voltage from 0v-10v to the appropriate two-byte range
-                                message[i + 1] = rescale(inputs[INPUT_MEMVAL + i / 2].getVoltage(), 0.f, 10.f, min, max);
-                            }
-                            else {
-                                // flip input voltage to 10v-0v, then scale to the appropriate range
-                                message[i + 1] = rescale(10.f - inputs[INPUT_MEMVAL + i / 2].getVoltage(), 0.f, 10.f, max, min);
-                            }
-                        }
-                    }
-                    else
-                        // input is not connected, so signal to RackNES that nothing should be written
-                        message[i] = 0;
-                }
+    /// Process a sample, emitting at most one address/value pair per row.
+    void process(const ProcessArgs& args) final {
+        processSelections();
+        if (INPUTS != 8 || !leftExpander.module ||
+            leftExpander.module->model != modelRackNES) return;
+        auto* message = static_cast<uint16_t*>(leftExpander.module->rightExpander.producerMessage);
+        if (!message) return;
+        for (int row = 0; row < 8; row++) {
+            // Never replay a previous write when this sample has no event.
+            message[2 * row] = 0;
+            message[2 * row + 1] = 0;
+            const auto* parameter = gameMap.getParameter(memLoc[row].load());
+            const float voltage = inputs[INPUT_MEMVAL + row].getVoltage();
+            if (!parameter || !inputs[INPUT_MEMVAL + row].isConnected() ||
+                !std::isfinite(voltage)) {
+                cvTrigger[row].reset();
+                continue;
             }
-            else {
-                /// TODO: Output Genie
-                /* // get message from RackNES
-                uint16_t *message = (uint16_t*) leftExpander.consumerMessage;
-                // iterate over all possible messages
-                for (int i = 0; i < 8; i++) {
-                    // check if the message is empty
-                    if (message[i] != -1) {
-                        // check if a cable is connected to the output
-                        if (outputs[OUTPUT_MEMVAL + i].isConnected()) {
-                            // get the minimum and maximum values for the selected memory location
-                            uint8_t min = gameMap.getMinValue(memLoc[i / 2]);
-                            uint8_t max = gameMap.getMaxValue(memLoc[i / 2]);
-                            // check if the minimum is less than maximum
-                            if (min < max) {
-                                // scale the two-byte value from its valid range to a voltage from 0V-10V
-                                outputs[OUTPUT_MEMVAL + i].setVoltage(rescale(message[i], min, max, 0.f, 10.f));
-                            }
-                            else {
-                                // scale the two-byte value from its valid range to a voltage from 0V-10V
-                                outputs[OUTPUT_MEMVAL + i].setVoltage(rescale(message[i], max, min, 0.f, 10.f));
-                            }
-                        }
-                    }
-                } */
+            uint8_t value;
+            if (parameter->toggle) {
+                if (!cvTrigger[row].process(rescale(voltage, 0.1f, 2.f, 0.f, 1.f)))
+                    continue;
+                toggleState[row] = !toggleState[row];
+                value = toggleState[row] ? parameter->maximum : parameter->minimum;
+            } else {
+                const float normalized = clamp(voltage, 0.f, 10.f) / 10.f;
+                value = static_cast<uint8_t>(rescale(normalized, 0.f, 1.f,
+                    parameter->minimum, parameter->maximum));
             }
-            // flip messages at the end of the timestep
-			leftExpander.module->rightExpander.messageFlipRequested = true;
-		}
-		else {
-			// RackNES is not connected.
-		}
-	}
+            message[2 * row] = parameter->address;
+            message[2 * row + 1] = value;
+        }
+        leftExpander.module->rightExpander.messageFlipRequested = true;
+    }
 
     /// Convert the module's state to a JSON object.
     json_t* dataToJson() override {
+        processSelections();
         json_t* rootJ = json_object();
-        json_object_set_new(rootJ, "Game", json_integer(gameMap.gameId));
+        json_object_set_new(rootJ, "Game", json_integer(gameMap.gameId.load()));
         json_t* memLocationsJ = json_array();
         for (int i = 0; i < 8; i++) {
             json_t* locationJ = json_object();
-            json_object_set_new(locationJ, "Location", json_integer(memLoc[i]));
+            json_object_set_new(locationJ, "Location", json_integer(memLoc[i].load()));
+            json_object_set_new(locationJ, "Toggle State", json_boolean(toggleState[i]));
             json_array_append_new(memLocationsJ, locationJ);
         }
         json_object_set_new(rootJ, "Memory Locations", memLocationsJ);
         return rootJ;
     }
 
+    /// Restore at most eight valid rows; legacy patches default toggles to false.
     void dataFromJson(json_t* rootJ) override {
-        gameMap.setGame(static_cast<GameIds>(json_integer_value(json_object_get(rootJ, "Game"))));
-        json_t* memLocationsJ = json_object_get(rootJ, "Memory Locations");
-        json_t* locationJ; size_t locationIndex;
-        json_array_foreach(memLocationsJ, locationIndex, locationJ) {
-            memLoc[locationIndex] = json_integer_value(json_object_get(locationJ, "Location"));
+        onReset();
+        json_t* gameJ = json_object_get(rootJ, "Game");
+        if (!json_is_integer(gameJ)) return;
+        const json_int_t game = json_integer_value(gameJ);
+        if (game < 0 || game >= NUM_GAMES) return;
+        selectGame(static_cast<int>(game));
+        json_t* locationsJ = json_object_get(rootJ, "Memory Locations");
+        for (int row = 0; row < 8; row++) {
+            json_t* locationJ = json_array_get(locationsJ, row);
+            json_t* indexJ = json_object_get(locationJ, "Location");
+            if (!json_is_integer(indexJ)) continue;
+            const json_int_t index = json_integer_value(indexJ);
+            if (index < 0 || index >= gameMap.getNumCheats()) continue;
+            selectElement(row, static_cast<int>(index));
+            toggleState[row] = json_is_true(json_object_get(locationJ, "Toggle State"));
         }
     }
+
 };
 
 // ---------------------------------------------------------------------------
@@ -189,10 +241,12 @@ struct ElementItem : ui::MenuItem {
     TModule* module;
     /// the ID of the menu item
     int elementId;
+    /// The map shown when this menu was opened.
+    int gameId = -1;
 
     /// Respond to an action on the menu item
     void onAction(const event::Action& e) override {
-		module->memLoc[SELECTOR_ID] = elementId;
+		module->requestedElement[SELECTOR_ID].store({gameId, elementId});
 	}
 
     /// Associate a module with the menu item
@@ -206,7 +260,37 @@ struct ElementItem : ui::MenuItem {
 template <class TModule, int SELECTOR_ID>
 struct ElementChoice : LedDisplayChoice {
     /// the module associated with the indicator
-    TModule* module;
+    TModule* module = nullptr;
+
+    /// Scene-owned hover text, detached when the selector leaves or is removed.
+    struct RowTooltip : ui::Tooltip {
+        ElementChoice* choice = nullptr;
+        ~RowTooltip() override { choice->tooltip = nullptr; }
+        void step() override {
+            text = choice->module->rowDescription(SELECTOR_ID);
+            Tooltip::step();
+        }
+    };
+    RowTooltip* tooltip = nullptr;
+
+    ~ElementChoice() override { destroyTooltip(); }
+
+    /// Remove hover help before opening a menu or deleting this selector.
+    void destroyTooltip() {
+        if (!tooltip) return;
+        if (tooltip->parent) tooltip->parent->removeChild(tooltip);
+        delete tooltip;
+        tooltip = nullptr;
+    }
+
+    void onEnter(const EnterEvent& e) override {
+        if (!module || !settings::tooltips || tooltip) return;
+        tooltip = new RowTooltip;
+        tooltip->choice = this;
+        APP->scene->addChild(tooltip);
+    }
+
+    void onLeave(const LeaveEvent& e) override { destroyTooltip(); }
 
     /// Set the module of the indicator
     void setModule(TModule* module) {
@@ -215,29 +299,41 @@ struct ElementChoice : LedDisplayChoice {
 
     /// Respond to an action on the indicator (open the menu)
     void onAction(const event::Action& e) override {
+        if (!module) return;
+        destroyTooltip();
         /// create the menu
 		ui::Menu* menu = createMenu();
         /// add a label to the top of the menu
 		menu->addChild(createMenuLabel("Game Element"));
-        /// add all available memory locations for the currently selected game
-        for (int i = -1; i < (int)module->gameMap.getNumCheats(); i++) {
+        // Keep labels and requests tied to the map shown when this menu opens.
+        const int gameId = module->gameMap.gameId.load();
+        GameMap menuMap;
+        menuMap.setGame(gameId);
+        for (int i = -1; i < static_cast<int>(menuMap.getNumCheats()); i++) {
             /// create a menu item for a memory location
 			ElementItem<TModule, SELECTOR_ID>* item = new ElementItem<TModule, SELECTOR_ID>;
             item->setModule(module);
             item->elementId = i;
+            item->gameId = gameId;
             /// set the first menu item to "Unassigned", and the rest to their specified names
-			item->text = i > -1 ? module->gameMap.getName(i) : "Unassigned";
+			item->text = menuMap.getName(i);
             /// add a checkmark if an item is previously selected
-			item->rightText = CHECKMARK(item->elementId == module->memLoc[SELECTOR_ID]);
+            const auto* parameter = menuMap.getParameter(i);
+            item->rightText = parameter ? elementDescription(parameter) : "";
+            if (item->elementId == module->memLoc[SELECTOR_ID].load())
+                item->rightText += " " + std::string(CHECKMARK_STRING);
             /// add the item to the menu
 			menu->addChild(item);
 		}
 	}
-	void step() override {
+    void step() override {
         /// Set the indicator's text to the specified name of the currently selected memory location
         /// Set to "Unassigned" if no memory location is selected
-		text = (module && module->memLoc[SELECTOR_ID] > -1) ? module->gameMap.getName(module->memLoc[SELECTOR_ID]) : "Unassigned";
-	}
+        const auto* parameter = module
+            ? module->gameMap.getParameter(module->memLoc[SELECTOR_ID].load()) : nullptr;
+        text = parameter ? parameter->name : "Unassigned";
+        LedDisplayChoice::step();
+    }
 };
 
 /// An LED display containing an indicator for the currently selected memory location
@@ -269,7 +365,7 @@ struct GameItem : ui::MenuItem {
 
     /// Respond to an action on the menu item
     void onAction(const event::Action& e) override {
-		module->gameMap.setGame(gameId);
+		module->requestedGame.store(gameId);
 	}
 
     /// Associate a module with the menu item
@@ -292,8 +388,11 @@ struct GameChoice : LedDisplayChoice {
 
     /// Respond to an action on the indicator (open the menu)
     void onAction(const event::Action& e) override {
-        /// create the menu
-		ui::Menu* menu = createMenu();
+        appendGameItems(createMenu());
+    }
+
+    /// Populate the game menu independently of the graphical scene.
+    void appendGameItems(ui::Menu* menu) {
         /// add a label to the top of the menu
 		menu->addChild(createMenuLabel("Games"));
         /// add all available games to the menu
@@ -313,7 +412,7 @@ struct GameChoice : LedDisplayChoice {
         /// Set the indicator's text to the name of the currently selected game
         /// Set to "No Game Selected" if no game is selected
         /// Set to "CV Genie" if the module has not been created (we are in the module browser or library.vcvrack.com)
-		text = module ? (module->gameMap.gameId > -1 ? module->gameMap.getGameName(module->gameMap.gameId) : "No Game Selected") : "CV Genie";
+		text = module ? (module->gameMap.gameId.load() > -1 ? module->gameMap.getGameName(module->gameMap.gameId.load()) : "No Game Selected") : "CV Genie";
 	}
 };
 

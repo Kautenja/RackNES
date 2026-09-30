@@ -1,0 +1,41 @@
+\manualchapter{Supported games}{sec:maps}
+CV Genie includes built-in memory maps for the following NES games:
+
+\input{sections/game-list}
+
+Select the matching game in the top display, then open a row's
+\textbf{Game Element} menu to see its available controls. Each menu entry
+shows its range and continuous or trigger-toggle mode; hover over a row or
+jack for the full assignment name and voltage behavior. The menus are the
+assignment reference, so this manual does not duplicate their address tables.
+
+\subsection{Cartridge and revision compatibility}
+The added maps target the original North American NES cartridges; Tetris
+means Nintendo's version. Famicom Disk System releases, regional variants,
+ROM hacks, and other revisions may use different addresses. The older Mario
+and Zelda maps do not identify a precise ROM revision. Genie neither detects
+nor verifies the ROM. These maps were checked against RAM documentation;
+that does not establish gameplay testing of every control or revision.
+
+RackNES currently supports cartridge mappers 0--3, 4 (MMC3 / TxROM),
+7 (AxROM / AOROM), and 9 (MMC2 / PxROM). The RackNES manual describes the
+accepted board and NES 2.0 layouts. MMC5 (5) and FME-7 / Sunsoft 5B (69) are
+not implemented, and cartridge expansion sound is unavailable.
+Mapper support does not guarantee that every game or board variant works;
+adding a memory map cannot supply missing emulation behavior. An installed
+VCV Library build may also predate these mapper additions. The game list is a
+curated selection, not a percentage of all NES games or a guarantee that any
+ROM bearing one of these names works.
+
+\subsection{Useful starting points}
+Try Mega Man's health or weapon energy, Contra's player positions and weapons,
+or Metroid's per-channel music frame timers. A held timer can stop progression
+until its cable is disconnected. Contra's weapon controls select base weapons
+and clear rapid fire. Metroid's Missile Mode does not grant missiles.
+
+Start during active play with one row connected and a RackNES SAVE snapshot
+ready. Position writes can move a character into walls or place a Tetris piece
+across occupied cells; range limits cannot enforce the rules of the current
+scene. Games may overwrite a value or use its address differently in menus.
+Disconnect inputs before restoring a snapshot. When reporting an incorrect
+mapping, include the ROM region/revision, selected element, voltage, and scene.

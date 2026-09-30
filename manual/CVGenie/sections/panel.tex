@@ -1,0 +1,40 @@
+\manualchapter{Panel and placement}{sec:panel}
+\begin{minipage}[t]{.37\textwidth}
+\vspace{0pt}\resizebox{\textwidth}{!}{\input{figures/panel-layout.tex}}
+\end{minipage}\hfill
+\begin{minipage}[t]{.58\textwidth}
+\setlength{\parskip}{6pt}
+\vspace{0pt}
+\subsection{1. Game selection}
+Click the top display to open \textbf{Games} and choose the running game.
+The display initially reads \textbf{No Game Selected}.
+Choose a game here to populate the row menus.
+
+Selecting a different game clears the row assignments. It does not change
+the loaded ROM; select the matching game in RackNES too.
+
+\subsection{2. Eight input rows}
+Each jack controls the selection shown directly to its right. Click the
+row display to open \textbf{Game Element}; the menu lists the current map's
+entries plus \textbf{Unassigned}. Each entry shows its byte endpoints and
+continuous or trigger-toggle mode. Hover over a row display or jack for the
+full assignment name and voltage behavior. Rows have no built-in attenuator,
+offset, voltage meter, or readback of the game's current value.
+
+Use external CV utilities to scale and offset a source. Leave unused rows
+Unassigned. The eight rows are equivalent; the top is row 1, the bottom row 8.
+\end{minipage}
+
+\subsection{One adjacent expander}
+Only the Genie touching RackNES's right edge communicates with it. A Genie
+to the left, on another rack row, or behind a second Genie has no direct
+connection. There is no cable for the expander link and no link-status light.
+The module has eight monophonic inputs; each reads only the first channel
+of a polyphonic cable.
+
+\subsection{Panel themes}
+CV Genie and RackNES follow Rack's \textbf{View > Use dark panels if available}
+setting (Rack 2.4 or newer). Existing panels and module-browser previews
+update together; turn the setting off for light panels. This replaces the
+\textbf{Plugin Theme} menu and the legacy \texttt{RackNES.json} preference.
+Rack stores the global preference separately from patches.

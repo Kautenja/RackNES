@@ -27,6 +27,9 @@ class Emulator {
  private:
     /// the number of elapsed cycles
     uint32_t cycles = 0;
+    /// Engine-owned lifecycle identity; never serialized into patches.
+    uint64_t cartridge_generation = 1;
+
     /// the virtual cartridge with ROM and mapper data
     Cartridge* cartridge = nullptr;
     /// the 2 controllers on the emulator
@@ -69,7 +72,10 @@ class Emulator {
         bus.set_write_callback(PPUCTRL,  [&](NES_Byte b) { ppu.control(b);                                             });
         bus.set_write_callback(PPUMASK,  [&](NES_Byte b) { ppu.set_mask(b);                                            });
         bus.set_write_callback(OAMADDR,  [&](NES_Byte b) { ppu.set_OAM_address(b);                                     });
-        bus.set_write_callback(PPUADDR,  [&](NES_Byte b) { ppu.set_data_address(b);                                    });
+        bus.set_write_callback(PPUADDR, [&](NES_Byte b) {
+            ppu.set_data_address(b);
+            ppu.observe_cpu_address(picture_bus);
+        });
         bus.set_write_callback(PPUSCROL, [&](NES_Byte b) { ppu.set_scroll(b);                                          });
         bus.set_write_callback(PPUDATA,  [&](NES_Byte b) { ppu.set_data(picture_bus, b);                               });
         bus.set_write_callback(OAMDMA,   [&](NES_Byte b) { cpu.skip_DMA_cycles(); ppu.do_DMA(bus.get_page_pointer(b)); });
@@ -99,10 +105,10 @@ class Emulator {
         bus.set_write_callback(SND_CHN,     [&](NES_Byte b) { apu.write(SND_CHN, b);     });
         bus.set_write_callback(JOY2,        [&](NES_Byte b) { apu.write(JOY2, b);        });
         // set the interrupt callback for the PPU
-        ppu.set_interrupt_callback([&]() { cpu.interrupt(bus, CPU::NMI_INTERRUPT); });
+        ppu.set_interrupt_callback([&]() { cpu.request_nmi(); });
         // setup the DMC reader callback (for loading samples from RAM)
         apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
-        apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
+        // IRQ levels are polled at CPU boundaries; the APU notifier is not an IRQ edge.
     }
 
     // @brief Destroy this emulator.
@@ -126,9 +132,23 @@ class Emulator {
     ///
     inline bool has_game() const { return cartridge != nullptr; }
 
+    /// Engine-side SRAM interface; UI code must use the bounded mailbox.
+    void invalidate_sram_requests() { ++cartridge_generation; }
+    uint64_t get_cartridge_generation() const { return cartridge_generation; }
+    std::size_t persistent_size() const {
+        return cartridge ? cartridge->get_mapper()->persistent_size() : 0;
+    }
+    bool import_sram(const NES_Byte* data, std::size_t size) {
+        return cartridge && cartridge->get_mapper()->import_sram(data, size);
+    }
+    bool export_sram(NES_Byte* data, std::size_t size) const {
+        return cartridge && cartridge->get_mapper()->export_sram(data, size);
+    }
+
     /// @brief Load a new game into the emulator.
     ///
     /// @param path a path to the ROM to load into the emulator
+    /// @param cartridge_state optional saved state for pre-load mapper validation
     /// @returns true if the load succeeded, false otherwise
     /// @details
     /// When returning false, the emulator remains in its current state.
@@ -136,11 +156,11 @@ class Emulator {
     /// The boolean output answers the question: is the ASIC mapper
     /// implemented for the ROM at given path?
     ///
-    bool load_game(const std::string& path) {
+    bool load_game(const std::string& path, json_t* cartridge_state = nullptr) {
         // load the new game, but don't overwrite the cartridge yet
         auto game = Cartridge::create(path, [&](){
             picture_bus.update_mirroring();
-        });
+        }, cartridge_state);
         // if the game is nullptr the load failed, return false
         if (game == nullptr) return false;
         // check for an existing game and delete it if it exists
@@ -157,6 +177,8 @@ class Emulator {
 
     /// @brief Remove the inserted game from the emulator.
     inline void remove_game() {
+        ++cartridge_generation;
+        bus.set_mapper(nullptr);
         if (cartridge != nullptr) {
             delete cartridge;
             cartridge = nullptr;
@@ -194,6 +216,10 @@ class Emulator {
     /// @returns a 32-bit pointer to the screen buffer's first address
     ///
     inline NES_Pixel* get_screen_buffer() { return ppu.get_screen_buffer(); }
+
+    /// Diagnostic frame access for synchronous, headless capture only.
+    inline const NES_Byte* get_palette_buffer() const { return ppu.get_palette_buffer(); }
+    inline bool is_video_frame_complete() const { return ppu.is_video_frame_complete(); }
 
     /// @brief Return a 8-bit pointer to the RAM buffer's first address.
     ///
@@ -256,11 +282,13 @@ class Emulator {
 
     /// @brief Emulate pressing the reset button on the NES.
     inline void reset() {
+        ++cartridge_generation;
         // ignore the call if there is no game
         if (!has_game()) return;
         // reset the CPU, PPU, and APU
         cpu.reset(bus);
         ppu.reset();
+        cartridge->get_mapper()->resetPPUObservation();
         apu.reset();
     }
 
@@ -276,7 +304,7 @@ class Emulator {
         ppu.cycle(picture_bus);
         ppu.cycle(picture_bus);
         ppu.cycle(picture_bus);
-        cpu.cycle(bus);
+        cpu.cycle(bus, cartridge->get_mapper()->irqPending() || apu.irq_pending());
         apu.cycle();
         // increment the cycles counter
         ++cycles;
@@ -292,6 +320,7 @@ class Emulator {
     /// @param other the other instance to copy the data from into this
     ///
     void copy_from(const Emulator &other) {
+        ++cartridge_generation;
         if (other.cartridge != nullptr) {  // other has cartridge to clone
             cartridge = other.cartridge->clone();
         } else if (cartridge != nullptr) {  // other has no cartridge, this does
@@ -302,6 +331,7 @@ class Emulator {
         controllers[0] = other.controllers[0];
         controllers[1] = other.controllers[1];
         bus = other.bus;
+        bus.set_mapper(cartridge ? cartridge->get_mapper() : nullptr);
         picture_bus = other.picture_bus;
         cpu = other.cpu;
         ppu = other.ppu;
@@ -314,6 +344,8 @@ class Emulator {
     ///
     json_t* dataToJson() const {
         json_t* rootJ = json_object();
+        // An empty module may not have initialized its hardware state yet.
+        if (!has_game()) return rootJ;
         if (cartridge != nullptr)
             json_object_set_new(rootJ, "cartridge", cartridge->dataToJson());
         json_object_set_new(rootJ, "controllers[0]", controllers[0].dataToJson());
@@ -330,9 +362,14 @@ class Emulator {
     ///
     /// @param rootJ the JSON object containing the emulator data
     /// @returns true if no errors occurred, false if the ROM path existed, but
-    /// points to an invalid ROM file
+    /// points to an invalid or unsupported ROM file
     ///
     bool dataFromJson(json_t* rootJ) {
+        ++cartridge_generation;
+        json_t* fetch = json_object_get(json_object_get(rootJ, "ppu"), "chr_latch_fetches");
+        if (fetch && !PPU::is_valid_latch_fetch_state(fetch)) return false;
+        json_t* irq_fetches = json_object_get(json_object_get(rootJ, "ppu"), "irq_sprite_addresses");
+        if (irq_fetches && !PPU::is_valid_irq_fetch_state(irq_fetches)) return false;
         // load cartridge
         {
             json_t* json_data = json_object_get(rootJ, "cartridge");
@@ -348,7 +385,7 @@ class Emulator {
             if (!ROM::is_valid_rom(rom_path_string)) return false;
             // load the game into the machine before loading the cartridge
             // data (because cartridge may be nullptr)
-            load_game(rom_path_string);
+            if (!load_game(rom_path_string, json_data)) return false;
             cartridge->dataFromJson(json_data);
         }
         // load controllers[0]
@@ -370,6 +407,11 @@ class Emulator {
         {
             json_t* json_data = json_object_get(rootJ, "picture_bus");
             if (json_data) picture_bus.dataFromJson(json_data);
+            // New mappers own mirroring; ignore stale bus-derived state.
+            if (cartridge && (cartridge->get_mapper_number() == 4 ||
+                              cartridge->get_mapper_number() == 7 ||
+                              cartridge->get_mapper_number() == 9))
+                picture_bus.update_mirroring();
         }
         // load cpu
         {

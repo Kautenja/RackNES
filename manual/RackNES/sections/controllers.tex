@@ -1,0 +1,44 @@
+\manualchapter{Controllers and gate inputs}{sec:controllers}
+Each player has eight momentary buttons and eight matching CV inputs:
+\textbf{Up, Down, Left, Right, Select, Start, B, A} from top to bottom.
+Player 1 is on the left edge and Player 2 on the right.
+
+\subsection{Hold a button with a gate}
+A controller button is pressed while either its panel button or its CV gate
+is high. Release both to release the virtual button. A held gate is a held
+button, not a stream of repeated presses. For repeated presses, use a pulse
+train with a low interval between pulses.
+
+Both players are available simultaneously. The game decides whether Player 2
+is active, and what simultaneous or opposing directions mean. RackNES does
+not turn these inputs into keyboard or physical gamepad mappings.
+
+\subsection{Thresholds and timing}
+The controller, SAVE, LOAD, HANG, and RESET CV inputs use hysteresis:
+a rising signal reaches the high state at about \textbf{2 V}, and must
+return to about \textbf{0.1 V} or below to re-arm. The intermediate region
+retains the previous state. Ordinary 0--5 V or 0--10 V gates are suitable.
+
+These inputs are checked once every \textbf{16 Rack samples}. At 48 kHz,
+that is approximately 0.333 ms. Very short pulses can fall between checks.
+For controller actions, hold a gate long enough for the game itself to read
+it; a pulse that RackNES detects may still be too short for a game's input
+polling. Try tens of milliseconds or longer when a game misses a press.
+
+All inputs read the first channel of a cable. Polyphonic voices do not act
+as separate controllers or combine into a larger gate.
+
+\subsection{Triggers and held controls}
+\begin{tabularx}{\textwidth}{@{}p{.26\textwidth}X@{}}
+\toprule
+\textbf{Control} & \textbf{Response} \\
+\midrule
+Player buttons & Pressed for the duration of the high state. \\
+SAVE / LOAD / RESET & Act once on a rising edge. A sustained high gate does not repeat the action. \\
+HANG & Suspends execution for the duration of the high state. \\
+\bottomrule
+\end{tabularx}
+
+Panel buttons and CV triggers are detected separately. For example, pressing
+LOAD by hand can restore a snapshot even while its CV input is already
+high. Controller and Hang states instead use the combined held state.

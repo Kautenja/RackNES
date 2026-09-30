@@ -30,6 +30,19 @@ class PictureBus {
     ROM::Mapper* mapper = nullptr;
 
  public:
+    /// Read-sensitive mappers require one fetch per pattern row, not per pixel.
+    bool hasCHRReadLatches() const { return mapper && mapper->hasCHRReadLatches(); }
+
+    bool observesPPUAddresses() const { return mapper && mapper->observesPPUAddresses(); }
+    void observe_address(NES_Address address) {
+        if (mapper) mapper->observePPUAddress(address & 0x3FFF);
+    }
+    /// One elapsed dot, separate from read count and cached pixel rendering.
+    void clock_address(NES_Address address) {
+        observe_address(address);
+        if (mapper) mapper->clockPPU();
+    }
+
     /// Read a byte from an address on the VRAM.
     ///
     /// @param address the 16-bit address of the byte to read in the VRAM
@@ -85,7 +98,10 @@ class PictureBus {
     ///
     inline void set_mapper(ROM::Mapper *mapper_) {
         mapper = mapper_;
-        update_mirroring();
+        if (mapper) {
+            ram.resize(mapper->getNameTableMirroring() == FOUR_SCREEN ? 0x1000 : 0x800, 0);
+            update_mirroring();
+        }
     }
 
     /// Read a color index from the palette.
@@ -95,12 +111,18 @@ class PictureBus {
     /// @return the index of the RGB tuple in the color array
     ///
     inline NES_Byte read_palette(NES_Byte address) const {
-        return palette[address];
+        // Palette RAM supplies six color bits. Legacy snapshots may retain
+        // upper bits; never pass them to the 64-entry NTSC lookup table.
+        return palette[address] & 0x3F;
     }
 
     /// Update the mirroring and name table from the mapper.
     void update_mirroring() {
+        if (!mapper) return;
         switch (mapper->getNameTableMirroring()) {
+            case FOUR_SCREEN:
+                for (std::size_t i = 0; i < 4; ++i) name_tables[i] = i * 0x400;
+                break;
             case HORIZONTAL:
                 name_tables[0] = name_tables[1] = 0;
                 name_tables[2] = name_tables[3] = 0x400;

@@ -42,7 +42,7 @@ class MapperUNROM : public ROM::Mapper {
     }
 
     /// Create a mapper as a copy of another mapper.
-    MapperUNROM(const MapperUNROM& other) : ROM::Mapper(*this),
+    MapperUNROM(const MapperUNROM& other) : ROM::Mapper(other),
         has_character_ram(other.has_character_ram),
         last_bank_pointer(other.last_bank_pointer),
         select_prg(other.select_prg),
@@ -108,7 +108,7 @@ class MapperUNROM : public ROM::Mapper {
         json_object_set_new(rootJ, "select_prg", json_integer(select_prg));
         // encode character_ram
         {
-            auto data_string = base64_encode(&character_ram[0], character_ram.size());
+            auto data_string = base64_encode(character_ram.data(), character_ram.size());
             json_object_set_new(rootJ, "character_ram", json_string(data_string.c_str()));
         }
         return rootJ;

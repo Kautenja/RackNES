@@ -1,0 +1,135 @@
+name: Rack plugin and regression tests
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rack:
+    name: Rack plugin and headless suites (${{ matrix.platform }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: lin-x64
+            shell: bash
+            library: libRack.so
+            plugin: plugin.so
+            sha256: 9571627becc12092c3279fc473e48dda62ca049b1d6158ee157996547568393d
+          - os: macos-14
+            platform: mac-arm64
+            shell: bash
+            library: libRack.dylib
+            plugin: plugin.dylib
+            sha256: a256d7f8c97c004419db4bef5a5f461c250c4ad2d877ab2e4454ecefd1a847cf
+          - os: windows-2022
+            platform: win-x64
+            shell: msys2 {0}
+            library: libRack.dll.a
+            plugin: plugin.dll
+            sha256: b5983ccc4ace9c2af29bcac07a18fdcca02e382485d3e7680520f9b789a58f0f
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    env:
+      RACK_SDK_VERSION: '2.6.3'
+      RACK_SDK_SHA256: ${{ matrix.sha256 }}
+      RACK_PLATFORM: ${{ matrix.platform }}
+      RACK_LIBRARY: ${{ matrix.library }}
+      PLUGIN_BINARY: ${{ matrix.plugin }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Linux build and runtime dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            g++ make jq curl unzip libglu1-mesa-dev libx11-dev \
+            libasound2t64 libjack-jackd2-0 libpulse0
+
+      - name: Install macOS build tools
+        if: runner.os == 'macOS'
+        run: brew install jq
+
+      - name: Install Windows build tools
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          # Match the MinGW/MSVCRT toolchain used by the Rack SDK.
+          msystem: MINGW64
+          install: >-
+            mingw-w64-x86_64-gcc
+            jq
+            make
+            curl
+            unzip
+
+      - name: Download and verify Rack SDK
+        run: |
+          sdk_root="$RUNNER_TEMP"
+          if [ "$RUNNER_OS" = Windows ]; then
+            sdk_root="$(cygpath -u "$RUNNER_TEMP")"
+          fi
+          sdk_archive="$sdk_root/Rack-SDK.zip"
+          curl --fail --location --retry 3 \
+            "https://vcvrack.com/downloads/Rack-SDK-${RACK_SDK_VERSION}-${RACK_PLATFORM}.zip" \
+            --output "$sdk_archive"
+          if [ "$RUNNER_OS" = macOS ]; then
+            printf '%s  %s\n' "$RACK_SDK_SHA256" "$sdk_archive" | shasum -a 256 --check
+          else
+            printf '%s  %s\n' "$RACK_SDK_SHA256" "$sdk_archive" | sha256sum --check
+          fi
+          unzip -q "$sdk_archive" -d "$sdk_root"
+          RACK_DIR="$sdk_root/Rack-SDK"
+          test -f "$RACK_DIR/plugin.mk"
+          test -f "$RACK_DIR/$RACK_LIBRARY"
+          echo "RACK_DIR=$RACK_DIR" >> "$GITHUB_ENV"
+
+      - name: Extract prebuilt Windows Rack runtime
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          RACK_RUNTIME_SHA256: 0f8b6ea79e0f78576ab08bb52b61567f1277a66c9cba4eb5cb4cd934dda21182
+        run: |
+          $installer = Join-Path $env:RUNNER_TEMP 'RackFree.exe'
+          $runtime = Join-Path $env:RUNNER_TEMP 'Rack-runtime'
+          Invoke-WebRequest "https://vcvrack.com/downloads/RackFree-$env:RACK_SDK_VERSION-win-x64.exe" -OutFile $installer
+          if ((Get-FileHash $installer -Algorithm SHA256).Hash.ToLower() -ne $env:RACK_RUNTIME_SHA256) {
+            throw 'Rack runtime checksum mismatch'
+          }
+          # Extract only; do not run the installer or modify the runner registry.
+          & 7z x $installer "-o$runtime" -y
+          if ($LASTEXITCODE -ne 0) { throw 'Rack runtime extraction failed' }
+          $dll = @(Get-ChildItem $runtime -Recurse -Filter libRack.dll)
+          if ($dll.Count -ne 1) { throw 'Expected exactly one Rack runtime DLL' }
+          'RACK_RUNTIME_DIR=' + $dll[0].DirectoryName | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Build Rack plugin
+        run: |
+          make -j2 all
+          test -s "$PLUGIN_BINARY"
+
+      - name: Run headless regression checks
+        run: |
+          if [ "$RUNNER_OS" = Windows ]; then
+            # Prefer the compiler's current C++ runtime over the installer's
+            # older copies, while making libRack.dll discoverable.
+            export PATH="$PATH:$(cygpath -u "$RACK_RUNTIME_DIR")"
+          fi
+          make -C tests -j2 SANITIZERS=

@@ -4,10 +4,14 @@
 //
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
+//  Bounded CHR reads adapted from nes-py 301da52f7f75de38 (MIT).
+//  See docs/licenses/THIRD-PARTY.txt for the upstream notice.
+//
 
 #ifndef NES_MAPPERS_MAPPER_CNROM_HPP
 #define NES_MAPPERS_MAPPER_CNROM_HPP
 
+#include <cstddef>
 #include "../rom.hpp"
 
 namespace NES {
@@ -30,7 +34,7 @@ class MapperCNROM : public ROM::Mapper {
         select_chr(0) { }
 
     /// Create a mapper as a copy of another mapper.
-    MapperCNROM(const MapperCNROM& other) : ROM::Mapper(*this),
+    MapperCNROM(const MapperCNROM& other) : ROM::Mapper(other),
         is_one_bank(other.is_one_bank),
         select_chr(other.select_chr) { }
 
@@ -67,7 +71,12 @@ class MapperCNROM : public ROM::Mapper {
     /// @return the byte located at the given address in CHR RAM
     ///
     inline NES_Byte readCHR(NES_Address address) override {
-        return rom.getVROM()[address | (select_chr << 13)];
+        const auto& memory = rom.getVROM();
+        const std::size_t bank_count = memory.size() / 0x2000;
+        if (bank_count == 0) return 0;
+        // Resolve the legacy register on reads so saved JSON stays unchanged.
+        const std::size_t bank = select_chr % bank_count;
+        return memory[bank * 0x2000 + (address & 0x1FFF)];
     }
 
     /// Write a byte to an address in the CHR RAM.

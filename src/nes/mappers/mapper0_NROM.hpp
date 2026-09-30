@@ -38,7 +38,7 @@ class MapperNROM : public ROM::Mapper {
     }
 
     /// Create a mapper as a copy of another mapper.
-    MapperNROM(const MapperNROM& other) : ROM::Mapper(*this),
+    MapperNROM(const MapperNROM& other) : ROM::Mapper(other),
         is_one_bank(other.is_one_bank),
         has_character_ram(other.has_character_ram),
         character_ram(other.character_ram) { }
@@ -102,7 +102,7 @@ class MapperNROM : public ROM::Mapper {
         json_object_set_new(rootJ, "has_character_ram", json_boolean(has_character_ram));
         // encode character_ram
         {
-            auto data_string = base64_encode(&character_ram[0], character_ram.size());
+            auto data_string = base64_encode(character_ram.data(), character_ram.size());
             json_object_set_new(rootJ, "character_ram", json_string(data_string.c_str()));
         }
         return rootJ;

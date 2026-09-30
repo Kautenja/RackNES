@@ -1,0 +1,45 @@
+\manualchapter{Patch ideas and interaction}{sec:patches}
+\subsection{Move a game variable with an LFO}
+\begin{enumerate}
+\item In Super Mario Bros., reach active play and SAVE a RackNES snapshot.
+\item With the Genie row unplugged, select
+\textbf{Player Horizontal Screen Position}.
+\item Scale a slow LFO to 0--10 V, connect it, and watch the result.
+\item Reduce the range to affect a smaller part of the byte's range.
+\item Unplug the row before pressing RackNES LOAD to return to the saved
+situation without immediately writing over it again.
+\end{enumerate}
+A memory write does not coordinate all of the game's other position or
+collision variables. Jumps, wrapping, or unexpected movement can be a
+consequence of editing one byte while the game is running.
+
+\subsection{Explore Zelda's sound driver}
+Select \textbf{The Legend of Zelda} with that game loaded in RackNES.
+Start with one continuous entry, such as \textbf{Song Position (Pulse 1)}
+or \textbf{Note Duration (Pulse 1)}, and a steady 0--10 V source. Use the
+separate SQ1 output on RackNES to hear that voice in isolation.
+
+These are addresses used by the game's sound driver, not general-purpose
+synthesizer parameters. Not every byte represents a valid musical state.
+The active song and game scene affect the result; names such as
+\textbf{Frequency (Triangle)} do not imply V/oct tuning. Try a narrow range,
+then compare with the input disconnected.
+
+\subsection{Trigger a toggle}
+Choose \textbf{Player Swimming} in Super Mario Bros. or a Zelda entry marked
+\textbf{Trigger toggle} in the menu. Feed separated 0--5 V gates. Each rising
+edge alternates between the entry's two endpoint values. Holding a gate does
+not keep rewriting it,
+and a second row's trigger state is independent.
+
+\subsection{How rows interact}
+If several rows target the same address, they compete. RackNES consumes rows
+in top-to-bottom order, so a later row with a write in the same update takes
+precedence. The game can then overwrite that value during emulation.
+Assign distinct elements when you want independent control of game variables.
+
+Genie works at Rack's sample rate rather than the controller inputs' slower
+16-sample scan. Expander messages pass between processing steps, so a write
+is not guaranteed to coincide with a particular NES instruction or frame.
+RackNES processes Genie messages even during HANG. Use disconnected inputs,
+not Hang, when you need to stop Genie from changing memory.

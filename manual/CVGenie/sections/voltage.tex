@@ -1,0 +1,52 @@
+\manualchapter{Voltage, byte values, and toggles}{sec:voltage}
+\subsection{Continuous entries}
+For an ordinary entry, CV Genie maps \textbf{0--10 V} linearly to the two
+endpoint values in the game map and repeatedly writes the result while the
+input is connected. Values become integers; there is no smoothing or
+musical pitch quantization. The ranges are byte values, not units such as
+hertz, percent, or screen pixels guaranteed by Genie.
+
+For endpoints $L$ and $H$, a voltage $v$ in the intended range produces
+approximately
+\[
+\text{byte}=\left\lfloor L+(H-L)\frac{v}{10}\right\rfloor.
+\]
+Floating-point arithmetic can affect a boundary value. A decreasing endpoint
+pair reverses the direction of the mapping.
+
+\begin{center}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Mapped endpoints} & \textbf{0 V} & \textbf{5 V} & \textbf{10 V} \\
+\midrule
+0--255 & 0 & 127 & 255 \\
+0--2 & 0 & 1 & 2 \\
+8--255 (Max Bomb Count) & 8 & 131 & 255 \\
+\bottomrule
+\end{tabular}
+\end{center}
+For 0--2, the highest value is reached only at the upper endpoint. Use a
+steady voltage source when you need a particular value instead of relying
+on an LFO to linger there.
+
+Continuous input voltage is limited to \textbf{0--10 V} before conversion.
+Negative voltage selects the first endpoint; voltage above 10 V selects the
+second. Offset and attenuate a bipolar LFO to use its full sweep across the
+range. Non-finite signals are ignored.
+
+\subsection{Toggle entries}
+Entries marked \textbf{Trigger toggle} in the menu alternate between the
+first and second displayed endpoint values on each rising trigger. The gate
+activates around
+\textbf{2 V} and must fall to about \textbf{0.1 V} or below before another
+trigger. The falling edge does not write a value, and a held high gate does
+not continuously enforce it.
+
+A newly assigned row starts with the first endpoint selected internally. Its
+first detected rising edge writes the second endpoint, and the next writes
+the first. Most entries use 0 and 1. Spawn Powerup instead alternates 0/46, Reverb (Pulse) alternates 128/1,
+and Potion Type alternates 0/2.
+
+The toggle tracks your trigger sequence, not the game's current byte. Game
+logic can change the byte after a write. Saving the Rack patch preserves the
+row's toggle choice so the next rising edge continues the sequence.

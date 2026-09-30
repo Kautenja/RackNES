@@ -1,0 +1,98 @@
+% Spatial guide to RackNESWidget in src/RackNES.cpp; not runtime artwork.
+% Styling stays local to this figure; control centers use Rack coordinates.
+\begin{tikzpicture}[x=1pt,y=-1pt,
+  group/.style={fill=manualInk!4,draw=none,rounded corners=4pt},
+  heading/.style={font=\sffamily\bfseries\fontsize{8}{9}\selectfont,
+    text=manualInk},
+  label/.style={font=\sffamily\fontsize{8}{9}\selectfont,text=manualInk},
+  badge/.append style={minimum size=15pt,font=\sffamily\bfseries
+    \fontsize{9}{9}\selectfont}]
+  \renewcommand{\PanelJack}[2]{%
+    \draw[draw=manualMuted!65,line width=.6pt,fill=white]
+      (#1,#2) circle (9);
+    \draw[draw=manualInk!25,line width=.5pt] (#1,#2) circle (6.5);
+    \fill[manualInk] (#1,#2) circle (4.5);}
+  \renewcommand{\PanelKnob}[2]{%
+    \draw[draw=manualInk!30,line width=.5pt,fill=white]
+      (#1,#2) circle (13);
+    \draw[draw=manualInk,line width=.7pt,fill=manualInk!7]
+      (#1,#2) circle (10.5);
+    \draw[manualAccent,line width=1.8pt,line cap=round]
+      (#1,#2-3)--(#1,#2-9);}
+  \renewcommand{\PanelButton}[2]{%
+    \draw[draw=manualInk!65,line width=.6pt,fill=white,rounded corners=2pt]
+      (#1-10,#2-10) rectangle (#1+10,#2+10);
+    \draw[draw=manualInk!12,line width=.5pt,rounded corners=1pt]
+      (#1-7,#2-7) rectangle (#1+7,#2+7);}
+
+  % Soft group fields separate the controllers, timing, state, and audio.
+  \draw[panel,draw=manualInk!35,fill=white,rounded corners=5pt]
+    (0,0) rectangle (570,380);
+  \path[group] (12,12) rectangle (92,368);
+  \path[group] (478,12) rectangle (558,368);
+  \path[group] (98,28) rectangle (151,258);
+  \path[group] (418,28) rectangle (472,258);
+  \path[group] (157,263) rectangle (369,374);
+  \path[group,fill=manualAccent!7] (375,263) rectangle (413,374);
+
+  % Group captions sit outside the panel instead of competing with controls.
+  \PanelBadge{20}{-13}{1}
+  \node[heading,anchor=west] at (32,-13) {PLAYER 1};
+  \node[heading] at (125,-13) {TIMING};
+  \node[heading] at (285,-13) {RACKNES};
+  \node[heading] at (445,-13) {STATE};
+  \PanelBadge{486}{-13}{2}
+  \node[heading,anchor=west] at (498,-13) {PLAYER 2};
+
+  % A quiet, dark screen anchors the drawing without implying live content.
+  \fill[manualInk,rounded corners=3pt] (157,18) rectangle (413,258);
+  \draw[white!18!manualInk,line width=.6pt,rounded corners=1pt]
+    (164,25) rectangle (406,251);
+  \draw[manualAccent,line width=2pt] (269,109)--(301,109);
+  \node[font=\sffamily\bfseries\fontsize{20}{22}\selectfont,text=white]
+    at (285,134) {NES VIDEO};
+  \node[font=\sffamily\fontsize{9}{11}\selectfont,text=white!75!manualInk]
+    at (285,156) {Display only};
+
+  % Controller order: UP, DOWN, LEFT, RIGHT, SELECT, START, B, A.
+  \foreach \y/\name in {34/UP,80/DOWN,126/LEFT,172/RIGHT,
+    218/SELECT,264/START,301/B,347/A} {
+    \PanelButton{37}{\y}\PanelJack{74}{\y}
+    \PanelJack{494}{\y}\PanelButton{528}{\y}
+    \node[label,font=\sffamily\bfseries\fontsize{7}{8}\selectfont]
+      at (55,\y-17) {\name};
+    \node[label,font=\sffamily\bfseries\fontsize{7}{8}\selectfont]
+      at (511,\y-17) {\name};
+  }
+  \foreach \x in {37,528} {
+    \foreach \y in {301,347} {
+      \fill[manualAccent!85,rounded corners=1pt]
+        (\x-7,\y-7) rectangle (\x+7,\y+7);
+    }
+  }
+
+  \PanelJack{128}{61}\PanelBadge{102}{61}{3}
+  \PanelKnob{128}{113}\PanelBadge{102}{113}{4}
+  \PanelKnob{128}{168}\PanelBadge{102}{168}{5}
+  \PanelJack{128}{225}\PanelBadge{102}{225}{6}
+  \node[label] at (128,41) {CLK};
+  \node[label] at (128,91) {SPEED};
+  \node[label] at (125,195) {AMOUNT};
+  \node[label] at (128,247) {MOD};
+
+  % Keep each state number beside its label, clear of the following row.
+  \foreach \y/\name/\num in {60/SAVE/7,115/LOAD/8,170/HANG/9,225/RESET/10} {
+    \PanelBadge{427}{\y-20}{\num}
+    \node[label,anchor=west,inner sep=0pt] at (439,\y-20) {\name};
+    \PanelJack{433}{\y}\PanelButton{463}{\y}
+  }
+
+  \foreach \x/\name in {174/SQ1,218/SQ2,262/TRI,306/NOI,350/DMC,394/MIX} {
+    \node[heading] at (\x,273) {\name};
+    \PanelJack{\x}{291}\PanelKnob{\x}{338}
+  }
+  \draw[detail] (166,357)--(360,357);
+  \PanelBadge{239}{366}{11}
+  \node[heading,anchor=west,inner sep=0pt] at (251,366) {VOICES};
+  \PanelBadge{394}{366}{12}
+\end{tikzpicture}

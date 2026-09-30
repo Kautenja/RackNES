@@ -1,0 +1,45 @@
+\manualchapter{Control values and settings}{sec:reference}
+\begin{tabularx}{\textwidth}{@{}p{.30\textwidth}p{.25\textwidth}X@{}}
+\toprule
+\textbf{Control} & \textbf{Range} & \textbf{Initial setting} \\
+\midrule
+Clock Speed & $1/16$--$16\times$ base & 1.789773 MHz \\
+Speed CV attenuverter & $-100\%$ to $+100\%$ & 0\% (CV off) \\
+Voice levels (five) & 0--200\% & 100\% each \\
+Mix Volume & 0--200\% & 100\% \\
+Controller / action buttons & Momentary & Released \\
+ROM / SAVE slot & One of each & Empty \\
+CLK output & 0 or 10 V & Static until counter advances \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Clock equation}
+Let $k$ be the knob's internal setting ($-4$ to $+4$), $a$ the attenuverter
+($-1$ to $+1$), and $v$ the MOD voltage in volts. The requested rate is
+\[
+f_{\mathrm{request}}=1{,}789{,}773\;2^{\operatorname{clamp}(k+av/5,-4,4)}
+\quad\text{cycles/s}.
+\]
+The implementation converts this to an integer rate, then performs
+\[
+N=\left\lceil\frac{\lfloor f_{\mathrm{request}}\rfloor}{f_s}\right\rceil
+\quad\text{cycles per Rack sample},\qquad
+f_{\mathrm{CLK}}\approx\frac{Nf_s}{29{,}781},
+\]
+where $f_s$ is Rack's sample rate. Floating-point rounding can affect exact
+boundary cases. These equations describe execution and CLK, not a promised
+pitch ratio for the audio outputs. CLK stops cycling when execution stops.
+
+\subsection{Light and dark panels}
+Both modules follow Rack's \textbf{View > Use dark panels if available}
+setting (Rack 2.4 or newer). Existing panels and module-browser previews
+update when the setting changes. Turn it off for light panels.
+The former \textbf{Plugin Theme} menu has been removed, and the legacy
+\texttt{RackNES.json} preference is no longer read. Rack stores the global
+preference separately from patches.
+
+\subsection{Persistence at a glance}
+Rack saves panel parameters and cabling with the patch. RackNES adds current
+emulator state and the optional SAVE slot. Theme is stored separately.
+The ROM file must remain accessible, and restoring a snapshot does not
+restore an exact audio-buffer or clock phase.

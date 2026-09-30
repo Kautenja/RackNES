@@ -1,0 +1,37 @@
+\manualchapter{Patch ideas}{sec:patches}
+\subsection{Repeat a phrase with LOAD}
+\begin{enumerate}
+\item Load a game, start its music, and press SAVE just before an event.
+\item Send a slow, regular trigger to LOAD. Each rising edge revisits that
+moment; adjust the interval to choose how far the game advances.
+\item Try different channel levels or route voices to separate effects.
+\item Move SAVE to a new moment when you want to replace the phrase.
+\end{enumerate}
+An independent Rack clock is useful here. CLK's phase is not restored by
+LOAD, so it is not a sample-accurate loop marker.
+
+\subsection{Make the game control the patch}
+Patch CLK to a clock divider, then use the divided outputs to trigger
+percussion or advance a sequencer. Turn Clock Speed slowly to move both
+the game and the downstream events. The correspondence is to the emulator's
+frame counter, not to the game's internal music tempo.
+
+\subsection{Play with gates}
+Send separate gate patterns to Player 1 A and a direction. Use longer gates
+for movement and shorter, separated gates for repeated button presses.
+Try SAVE/LOAD to revisit the same starting situation while comparing
+patterns. The result depends on the game's input handling.
+
+\subsection{Alternate between two speeds}
+With the main clock knob near its center, send a 0--5 V gate to MOD and turn
+the attenuverter toward +100\%. The requested rate doubles during the high
+part of the gate. Reduce the attenuverter for gentler changes, or make it
+negative to slow the game during each gate.
+
+\subsection{Add CV Genie}
+Place \textbf{CV Genie (Input)} immediately to the right of RackNES. Select
+the matching game and assign the memory locations you want to control.
+Unassigned rows remain inactive, even with CV connected. Genie can alter game data such as position, palette, or the
+Zelda sound-driver state. Its separate manual lists the maps and the
+important setup limitations. RackNES accepts only the directly adjacent
+input Genie; a chain of Genies does not extend the eight inputs.

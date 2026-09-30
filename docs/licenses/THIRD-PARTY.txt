@@ -1,0 +1,133 @@
+RackNES bundled dependency notices
+==================================
+
+These notices describe third-party code bundled in the RackNES source and
+plugin. See ../../LICENSING.md for the separate RackNES source and artwork terms.
+Original notices in individual source files remain in effect.
+
+SimpleNES
+---------
+Upstream: https://github.com/amhndu/SimpleNES
+Adaptation: https://github.com/Kautenja/nes-py
+Files: adapted emulator code in src/nes/, excluding the separately listed
+       sound and NTSC libraries below.
+License: GNU General Public License version 3 (see ../../LICENSE).
+Attribution: Amish Naidu and the SimpleNES contributors; Christian Kauten
+and the nes-py contributors. RackNES adaptations retain their individual
+file notices.
+
+Historical provenance and import evidence:
+https://github.com/Kautenja/RackNES/blob/master/whitepaper/sources.md
+The exact upstream import revision is unknown.
+
+Selective nes-py graphics, reset, AxROM, MMC2, and MMC3 adaptations
+-----------------------------------------------------------
+Upstream: https://github.com/Kautenja/nes-py
+Revision: 301da52f7f75de380e6e195fd36621c3d5b03757
+Files: mirroring decoding in src/nes/rom.hpp, bounded CHR reads in
+       src/nes/mappers/mapper3_CNROM.hpp, reset/fetch handling in src/nes/ppu.cpp
+       and src/nes/ppu.hpp,
+       src/nes/mappers/mapper7_AxROM.hpp, src/nes/mappers/mapper9_MMC2.hpp,
+       src/nes/mappers/mapper4_MMC3.hpp,
+       and adapted regression cases in tests/racknes.cpp, tests/axrom.hpp,
+       tests/mmc2.hpp, and tests/mmc3.hpp.
+Sources: nes_emu/src/nes_emu/cartridge.cpp,
+         nes_emu/include/nes_emu/mapper_bank.hpp,
+         nes_emu/include/nes_emu/mappers/mapper_CNROM.hpp,
+         nes_emu/src/nes_emu/ppu.cpp, nes_emu/include/nes_emu/ppu.hpp,
+         nes_emu/include/nes_emu/mappers/mapper_AxROM.hpp,
+         nes_emu/src/nes_emu/mappers/mapper_AxROM.cpp,
+         nes_emu/test/nes_emu/mappers/test_mapper_AxROM.cpp,
+         nes_emu/include/nes_emu/mappers/mapper_MMC3.hpp,
+         nes_emu/src/nes_emu/mappers/mapper_MMC3.cpp,
+         nes_emu/include/nes_emu/mappers/mapper_MMC2.hpp,
+         nes_emu/src/nes_emu/mappers/mapper_MMC2.cpp,
+         nes_emu/test/nes_emu/mappers/test_mapper_MMC2.cpp,
+         nes_emu/test/nes_emu/test_cartridge.cpp, and
+         nes_emu/test/nes_emu/mappers/test_mapper_CNROM.cpp.
+These selective adaptations retain the historical notices above. They do not
+relicense the older emulator or the separately licensed sound libraries.
+
+MIT License
+
+Copyright (c) 2019 Christian Kauten
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Nes_Snd_Emu, Blip_Buffer, and related sound-emulation code
+------------------------------------------------------
+Upstream: https://www.slack.net/~ant/libs/audio.html
+Files: src/nes/apu/
+Copyright (C) 2003-2006 Shay Green (individual file years vary).
+Author: Shay Green, also known as blargg.
+License: GNU Lesser General Public License version 2.1 or, at your option,
+any later version (see LGPL-2.1.txt).
+The bundled files identify Nes_Snd_Emu 0.1.7, Blip_Buffer 0.3.3, and
+Game_Music_Emu 0.5.2. RackNES adaptations retain their file notices,
+including the additional GPL-3.0-or-later notice in apu_snapshot.h.
+RackNES also corrects overlapping buffer compaction and signed-delta scaling
+in Blip_Buffer.cpp and Blip_Buffer.h; the original LGPL notices remain intact.
+The MMC3 integration refreshes IRQ scheduling after restoring APU snapshot
+flags in apu_snapshot.cpp; synthesis and buffer timing are unchanged.
+
+nes_ntsc
+--------
+Upstream: https://www.slack.net/~ant/libs/ntsc.html
+Files: src/nes/ntsc/
+Version: 0.2.2
+Copyright (C) 2006-2007 Shay Green (individual file years vary).
+Author: Shay Green, also known as blargg.
+License: GNU Lesser General Public License version 2.1 or, at your option,
+any later version (see LGPL-2.1.txt).
+
+cpp-base64
+----------
+Upstream: https://github.com/ReneNyffenegger/cpp-base64
+Files: src/base64.cpp and src/base64.h
+License: zlib. The bundled notice is reproduced below verbatim.
+
+base64.cpp and base64.h
+
+   base64 encoding and decoding with C++.
+   More information at
+     https://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp
+
+   Version: 2.rc.04 (release candidate)
+
+   Copyright (C) 2004-2017, 2020 René Nyffenegger
+
+   This source code is provided 'as-is', without any express or implied
+   warranty. In no event will the author be held liable for any damages
+   arising from the use of this software.
+
+   Permission is granted to anyone to use this software for any purpose,
+   including commercial applications, and to alter it and redistribute it
+   freely, subject to the following restrictions:
+
+   1. The origin of this source code must not be misrepresented; you must not
+      claim that you wrote the original source code. If you use this source code
+      in a product, an acknowledgment in the product documentation would be
+      appreciated but is not required.
+
+   2. Altered source versions must be plainly marked as such, and must not be
+      misrepresented as being the original source code.
+
+   3. This notice may not be removed or altered from any source distribution.
+
+   René Nyffenegger rene.nyffenegger@adp-gmbh.ch

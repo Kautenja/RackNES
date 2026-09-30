@@ -1,0 +1,125 @@
+\manualchapter{ROMs and compatibility}{sec:roms}
+\subsection{Loading a game}
+Choose \textbf{Load ROM} from the module's right-click menu, or drag a ROM
+file onto the panel. The chooser accepts \texttt{.nes} and \texttt{.NES}.
+Extract compressed archives first.
+
+Loading a ROM, including the same ROM again, resets the emulator and clears
+SAVE. Canceling leaves the current selection alone. Only the first dropped
+file is used.
+
+\subsection{Supported cartridge mappers}
+A mapper arranges cartridge memory. RackNES supports these seven IDs;
+individual games and modified ROMs may still behave incorrectly.
+This list describes the current development checkout; installed VCV Library
+builds and published manuals may lag behind it.
+\begin{center}
+\begin{tabular}{@{}rl@{\hspace{3em}}rl@{}}
+\toprule
+\textbf{ID} & \textbf{Name} & \textbf{ID} & \textbf{Name} \\
+\midrule
+0 & NROM & 4 & MMC3 / TxROM \\
+1 & MMC1 & 7 & AxROM / AOROM \\
+2 & UNROM & 9 & MMC2 / PxROM \\
+3 & CNROM & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+Mapper 4 supports standard MMC3B/C TxROM: power-of-two PRG ROM sizes of
+32--512 KiB, CHR ROM sizes of 8--256 KiB or 8 KiB banked CHR RAM, and
+8 KiB PRG RAM. Horizontal, vertical and four-screen mirroring are supported.
+Accepted formats are clean NTSC iNES and NES 2.0 submapper 0; trainers,
+MMC6, alternate IRQ revisions and mixed CHR ROM/RAM boards are excluded.
+NES 2.0 must declare exactly 8 KiB of PRG RAM, with its volatile or
+nonvolatile type matching the battery flag.
+Scanline IRQs use timed PPU address observations with an approximate A12
+filter; cycle-exact raster effects and commercial-game compatibility have
+not been verified. Cartridge RAM survives patches and SAVE snapshots;
+mapper 4 does not support SRAM file import/export.
+
+Mapper 7 accepts 32--256 KiB of PRG ROM in power-of-two sizes, 8 KiB of
+CHR RAM, and either one-screen nametable page. Legacy iNES and NES 2.0
+submappers 0/1 use no bus conflicts; submapper 2 combines writes with the
+visible PRG byte. Only NTSC layouts are accepted. CHR ROM, battery RAM,
+trainers, four-screen layouts, extra devices, and other variants are rejected.
+Legacy headers cannot reliably identify every board variant.
+NES 2.0 must declare 8 KiB of volatile CHR RAM and no PRG RAM.
+
+Mapper 9 accepts power-of-two PRG ROM sizes of 32--128 KiB, CHR ROM sizes
+of 8--128 KiB, and 8 KiB PRG RAM, with optional battery metadata. Supported
+formats are NTSC iNES and NES 2.0 submapper 0. Trainers, CHR RAM, four-screen
+layouts and other variants are rejected. RAM persists in Rack patches and
+SAVE snapshots; external battery-save files are not imported or exported.
+NES 2.0 must explicitly declare the 8 KiB PRG RAM allocation and its battery
+status. Latch-switched graphics are implemented, but hardware-exact PPU fetch
+timing and commercial-game compatibility have not been verified.
+
+Timing is fixed; there is no PAL/NTSC or mapper selector. Audio uses the five
+base NES voices without cartridge expansion sound. CV Genie's game list
+contains memory maps and does not define ROM compatibility.
+
+\newpage
+\subsection{Format and save limits}
+The new mapper layouts require exact file sizes and supported memory
+declarations. A NES 2.0 header alone does not establish compatibility:
+extended size encodings, other boards, and tracker-specific layouts may still
+be rejected. Pulsar and PR8 have not been validated by these mapper additions.
+MMC5 (5) and FME-7 / Sunsoft 5B (69) are not implemented.
+
+SAVE and patch restoration preserve the new mapper registers and cartridge
+RAM, but snapshots still omit queued audio and some timing state; see
+page~\pageref{sec:state}. The separate SRAM file commands below remain limited
+to reviewed mapper 0--3 layouts, even when another mapper has battery RAM.
+
+\subsection{When loading fails}
+\begin{description}
+\item[ASIC mapper not implemented for ROM!]
+The file requests a mapper outside the implemented set, or an unsupported
+mapper-4, mapper-7 or mapper-9 image layout.
+\item[ROM file failed to load!]
+The selected path failed ROM validation. Check the file and its format.
+\item[ROM file was not found!]
+A patch's stored ROM path could not be validated on restore. Check that the
+same ROM is still present at that path.
+\end{description}
+A failed new-ROM attempt leaves the current game, display, and SAVE slot
+in place. Correct the file selection and try again.
+
+\textbf{Moving patches.} Keep the original ROM at its saved path: restoration
+reloads that file. Loading a ROM manually starts a new session; it does not
+recover a failed snapshot restore.
+\newpage
+\subsection{Importing and exporting SRAM}\label{sec:sram}
+For supported cartridges, use \textbf{Import SRAM...} or
+\textbf{Export SRAM...} in the right-click menu. These commands exchange a
+raw \texttt{.sav} file of exactly 8,192 bytes, ordered from cartridge address
+\texttt{\$6000} through \texttt{\$7FFF}. Match the game and ROM revision:
+raw saves contain no ROM identity. Extract archives first; emulator-specific
+save states and RackNES SAVE snapshots are different formats.
+
+The initial support is limited to mapper IDs 0--3 with one declared 8 KiB
+battery-backed PRG RAM window. Clean NTSC iNES headers must explicitly declare
+one RAM bank (byte 8 equals 1). NES 2.0 submapper 0 must declare 8 KiB PRG
+NVRAM, no volatile PRG RAM, and no CHR NVRAM. Supported PRG ROM sizes are
+16--32 KiB for NROM/CNROM and 16--256 KiB for MMC1/UNROM, in powers of two.
+CHR ROM is limited to 8 KiB for NROM, 8/16/32 KiB for CNROM, and powers of two
+up to 128 KiB for MMC1; UNROM uses CHR RAM. When CHR ROM is absent, the layout
+must use 8 KiB volatile CHR RAM. Trainers, four-screen layouts, extra devices,
+ambiguous headers, and banked or larger saves are excluded. Unsupported or
+empty cartridges and an outstanding transfer disable the menu commands.
+Mappers 4, 7 and 9 do not support these file commands.
+
+Import checks the complete file before applying it. A wrong size or a file
+error leaves live RAM and SAVE unchanged. Import changes only persistent
+cartridge memory: it does not replace the ROM or automatically reset the NES.
+Use the game's normal load command, or press RESET if needed. Existing SAVE
+snapshots keep their old RAM; LOAD can undo an import. Patches still include
+both current emulator state and the SAVE slot.
+
+Export takes one coherent RAM copy, then writes a temporary file beside the
+chosen destination and replaces it only after a successful write. The save
+dialog asks before overwriting. A failed write preserves the previous file.
+Transfers work while Hang is active, but need Rack's engine to be processing.
+Reset, ROM replacement, patch restoration, or removing the module cancels
+stale work. Dialogs and file operations run on the UI thread; existing ROM
+loading and snapshot operations still have separate engine-thread limitations.

@@ -1,0 +1,42 @@
+\manualchapter{Changing games and saving patches}{sec:state}
+\subsection{Change the game map}
+Select the new game in the top display and load the matching ROM in RackNES.
+Changing to a different map clears all eight row assignments and resets their
+toggles. Choose new Game Elements to enable the rows you want to use. Cables
+can remain connected while rows are Unassigned.
+
+Selecting the same game again leaves existing assignments intact. Choosing
+a different element in a row starts that row's toggle sequence afresh.
+The game selector does not load or identify ROMs automatically.
+
+\subsection{Initialize and Randomize}
+Rack's \textbf{Initialize} action clears the game, all assignments, and the
+row toggles. Inputs remain inactive until you select a game and assign rows.
+
+\textbf{Randomize} assigns a random element to each row from the current
+map and resets the toggles. With no game selected, it does nothing. It
+randomizes selections, not voltages or game values, and can choose duplicate
+entries. Disconnect inputs first if you want to inspect the random choices
+before applying them to the game.
+
+\subsection{What a Rack patch preserves}
+CV Genie saves its game, all eight assignments, and each row's toggle choice.
+Rack also saves your cables and external CV settings. The next detected
+rising edge continues the saved toggle sequence. A high gate already present
+when a row is initialized does not count as a new edge; return it low and
+then high to trigger.
+
+Patches made before toggle choices were saved still load their original
+game and assignments. Their toggle sequences start with the first endpoint
+selected.
+Invalid or missing assignments load as Unassigned.
+
+\subsection{Use RackNES snapshots with Genie}
+RackNES's SAVE slot captures the emulator, while Genie has its own selections
+and toggle choices. A connected continuous row keeps writing after LOAD.
+Disconnect it or select Unassigned before restoring a snapshot when you
+want to inspect the saved state without further modification.
+
+For repeatable experiments, save a Rack patch with the correct ROM path,
+the intended Genie map, and your CV settings. To start an individual toggle
+sequence again, set its row to Unassigned and reselect the element.

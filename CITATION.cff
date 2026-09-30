@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use RackNES or its design and implementation account, please cite the technical report below and identify the software version or commit used."
+type: software
+title: "RackNES: A Nintendo Entertainment System Emulator for VCV Rack"
+abstract: >-
+  RackNES integrates a Nintendo Entertainment System emulator with VCV Rack,
+  exposing clock control, game-controller inputs, emulator-state recall, and
+  individual audio channels to a modular synthesis patch. The CV Genie expander
+  provides voltage-controlled game-memory intervention.
+authors:
+  - family-names: Kauten
+    given-names: Christian
+repository-code: "https://github.com/Kautenja/RackNES"
+version: "2.2.0"
+license: GPL-3.0-or-later
+keywords:
+  - Nintendo Entertainment System
+  - emulation
+  - musical interfaces
+  - modular synthesis
+  - chiptune
+  - VCV Rack
+  - C++
+preferred-citation:
+  type: report
+  title: "RackNES: A Voltage-Controlled NES Emulator as a Musical Instrument"
+  authors:
+    - family-names: Kauten
+      given-names: Christian
+      affiliation: Arhythmetic Units
+  institution:
+    name: Arhythmetic Units
+  year: 2026
+  month: 9
+  version: "1"
+  url: "https://github.com/Kautenja/RackNES/tree/master/whitepaper"
+  notes: "Manuscript version 1, dated September 30, 2026; repository manuscript"

@@ -58,6 +58,10 @@ class APU {
         apu.dmc_reader(callback);
     }
 
+    /// Poll the level without acknowledging $4015. Notifier callbacks only
+    /// report changes to scheduling, not necessarily an asserted interrupt.
+    bool irq_pending() const { return apu.earliest_irq() == Nes_Apu::irq_waiting; }
+
     /// @brief Set the callback function for IRQ interrupting the CPU.
     ///
     /// @param callback the callback method that interrupts the CPU (IRQ)
@@ -132,7 +136,9 @@ class APU {
     ///
     json_t* dataToJson() const {
         json_t* rootJ = json_object();
-        apu_snapshot_t snapshot;
+        // The bundled snapshot writer omits triangle.phase; do not serialize
+        // an uninitialized stack byte when comparing or saving module state.
+        apu_snapshot_t snapshot = {};
         apu.save_snapshot(&snapshot);
         json_object_set_new(rootJ, "apu", snapshot.dataToJson());
         return rootJ;

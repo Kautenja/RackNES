@@ -1,0 +1,14 @@
+# Exclude bundled third-party libraries from GitHub language statistics.
+src/base64.cpp linguist-vendored
+src/base64.h linguist-vendored
+src/nes/apu/** linguist-vendored
+src/nes/ntsc/** linguist-vendored
+
+# Exclude documentation, including manuals and the technical report.
+docs/** linguist-documentation
+manual/** linguist-documentation
+whitepaper/** linguist-documentation
+
+# Exclude Rack patches and presets from language statistics.
+patches/** -linguist-detectable
+presets/** -linguist-detectable

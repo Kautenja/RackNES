@@ -1,0 +1,35 @@
+\manualchapter{Troubleshooting and further reading}{sec:troubleshooting}
+\begin{description}
+\item[Nothing changes in the game.]
+Put Genie immediately to the right of RackNES, load a game, select the
+matching map, and assign the connected row. Check that the scene uses the
+chosen variable. Some values are quickly overwritten by game logic.
+\item[The rows became Unassigned after changing games.]
+Each map has its own set of elements. Choose assignments from the new map;
+existing cables can stay connected while rows are inactive.
+\item[A toggle appears to ignore the gate.]
+Use distinct rising edges above about 2 V, separated by lows below about
+0.1 V. A high gate writes only on its rising edge. The row's internal state
+may disagree with the game, and the game can overwrite the byte.
+\item[LOAD does not undo a change.]
+Disconnect continuous CV writes before restoring RackNES's snapshot. Genie
+selections and toggle states are outside that snapshot.
+\item[Two controls change together.]
+Check whether multiple rows target the same element. A later row takes
+precedence when both write in the same update. Game logic can also link
+variables that have distinct memory addresses.
+\item[The result stays at one end of the range.]
+Continuous input is limited to 0--10 V. Scale and offset your source if it
+spends much of its time outside that range. Also check whether the selected
+byte value is meaningful in the current game scene.
+\end{description}
+
+\subsection{Sources and credits}
+CV Genie was developed by \textbf{@anlexmatos}. The embedded maps credit
+Data Crystal and the Metroid disassembly. The
+\href{https://github.com/Kautenja/RackNES/blob/master/docs/game-maps.md}{mapping contributor reference}
+records sources and range decisions. The shipped assignments live in
+\texttt{src/GameMaps.hpp}; operating behavior follows \texttt{src/CVGenie.cpp}
+and the expander handling in \texttt{src/RackNES.cpp}.
+See the \href{https://github.com/Kautenja/RackNES/releases/latest/download/RackNES.pdf}{RackNES manual}
+for ROM loading, controller gates, snapshots, clocking, and audio routing.
