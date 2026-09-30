@@ -78,7 +78,7 @@
 -   theme support
     -   new dark theme
 
-### 2.2.0 (Unreleased)
+### 2.2.0 (2026-09-30)
 
 -   Add standard MMC3B/C mapper 4 banking, banked CHR RAM, RAM protection,
     four-screen mirroring, filtered PPU A12 IRQs, and validated mapper state.
