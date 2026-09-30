@@ -1,18 +1,18 @@
-name: User manuals
+name: Manuals and white paper
 
 on:
   pull_request:
-    paths: ['manual/**', 'src/**', 'plugin.json', '.github/workflows/manuals.yml']
+    paths: ['manual/**', 'whitepaper/**', 'src/**', 'plugin.json', '.github/workflows/manuals.yml']
   push:
     branches: [master]
     tags: ['v*']
-    paths: ['manual/**', 'src/**', 'plugin.json', '.github/workflows/manuals.yml']
+    paths: ['manual/**', 'whitepaper/**', 'src/**', 'plugin.json', '.github/workflows/manuals.yml']
   release:
     types: [published]
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing release tag containing the shared manual build
+        description: Existing release tag containing the shared manual build (and optional white paper)
         required: true
         type: string
 
@@ -20,16 +20,16 @@ permissions:
   contents: read
 
 concurrency:
-  group: manuals-${{ github.event_name }}-${{ inputs.tag || github.event.release.tag_name || github.event.pull_request.number || github.ref }}
+  group: pdfs-${{ github.event_name }}-${{ inputs.tag || github.event.release.tag_name || github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/master') }}
 
 jobs:
   build:
-    name: Build and validate manuals
+    name: Build and validate publication PDFs
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - name: Check out manual sources
+      - name: Check out publication sources
         uses: actions/checkout@v7.0.1
         with:
           ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
@@ -39,7 +39,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends \
-            texlive-latex-extra texlive-fonts-recommended cm-super latexmk poppler-utils python3-pypdf
+            texlive-latex-extra texlive-fonts-recommended cm-super lmodern latexmk poppler-utils python3-pypdf
 
       - name: Check manual versions
         run: |
@@ -54,7 +54,13 @@ jobs:
           PY
 
       - name: Build PDFs
-        run: make -C manual
+        run: |
+          make -C manual
+          if [ -f whitepaper/racknes.tex ]; then
+            make -C whitepaper
+          else
+            echo '::notice::This tag predates the white paper; uploading manuals only.'
+          fi
 
       - name: Validate PDFs and stage release names
         run: |
@@ -73,23 +79,36 @@ jobs:
               text = '\n'.join(page.extract_text() or '' for page in pdf.pages)
               assert 'Arhythmetic Units' in text and 'KautenjaDSP' not in text, module
               assert '??' not in text, module
+          paper = Path('whitepaper/.build/racknes.pdf')
+          if Path('whitepaper/racknes.tex').exists():
+              pdf = PdfReader(paper)
+              assert len(pdf.pages) > 1, 'white paper'
+              assert 'RackNES' in pdf.metadata.title, 'white paper'
+              assert pdf.outline, 'white paper'
+              text = '\n'.join(page.extract_text() or '' for page in pdf.pages)
+              assert '??' not in text, 'white paper'
           PY
-          mkdir -p manual-pdfs
-          cp manual/RackNES/.build/manual.pdf manual-pdfs/RackNES.pdf
-          cp manual/CVGenie/.build/manual.pdf manual-pdfs/CVGenie.pdf
-          pdfinfo manual-pdfs/RackNES.pdf
-          pdfinfo manual-pdfs/CVGenie.pdf
+          mkdir -p publication-pdfs
+          cp manual/RackNES/.build/manual.pdf publication-pdfs/RackNES.pdf
+          cp manual/CVGenie/.build/manual.pdf publication-pdfs/CVGenie.pdf
+          if [ -f whitepaper/racknes.tex ]; then
+            cp whitepaper/.build/racknes.pdf publication-pdfs/RackNES-whitepaper.pdf
+          fi
+          for pdf in publication-pdfs/*.pdf; do
+            test -s "$pdf"
+            pdfinfo "$pdf"
+          done
 
-      - name: Save validated PDFs
+      - name: Save publication PDFs
         uses: actions/upload-artifact@v7
         with:
-          name: user-manuals
-          path: manual-pdfs/*.pdf
+          name: publication-pdfs
+          path: publication-pdfs/*.pdf
           retention-days: 14
           if-no-files-found: error
 
   publish:
-    name: Attach manuals to release
+    name: Attach PDFs to release
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
     needs: build
     runs-on: ubuntu-24.04
@@ -100,7 +119,7 @@ jobs:
       - name: Download validated PDFs
         uses: actions/download-artifact@v8
         with:
-          name: user-manuals
+          name: publication-pdfs
           path: pdfs
       - name: Upload release assets
         env:

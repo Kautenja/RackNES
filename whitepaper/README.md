@@ -40,6 +40,17 @@ latexmk -pdf -pdflatex='pdflatex -no-shell-escape %O %S' racknes.tex
 PDF, compilation logs, and source archive. The archive target does not publish or
 submit the manuscript.
 
+## CI And Release PDF
+
+The [publication workflow](../.github/workflows/manuals.yml) builds and validates
+the report alongside the user manuals on relevant pull requests, pushes to
+`master`, version tags, published releases, and manual dispatch. The PDF is
+retained in the `publication-pdfs` artifact for 14 days. Published-release events
+and dispatches for an existing release also attach **RackNES-whitepaper.pdf**;
+tag pushes alone do not publish assets. Historical tags without the manuscript
+produce manuals only. See the [manual workflow guide](../manual/README.md#ci-and-release-assets)
+for the supported tag layout and release requirements.
+
 ## Sources and maintenance
 
 The implementation account describes RackNES 2.1.0 at source revision

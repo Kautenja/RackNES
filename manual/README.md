@@ -137,22 +137,25 @@ Keep review images and generated PDFs untracked.
 
 ## CI And Release Assets
 
-[User manuals](../.github/workflows/manuals.yml) builds both PDFs on relevant
-pull requests and pushes to `master`, version-tag pushes, published releases,
-and manual dispatch. It checks version agreement with the manifest, readable
-PDFs, navigation, metadata, and resolved references, then retains a downloadable
-`user-manuals` artifact for 14 days. Source changes also trigger the build so a
-reviewer can consider whether the manual needs a corresponding update; CI does
-not prove behavioral accuracy or replace visual inspection.
+[Manuals and white paper](../.github/workflows/manuals.yml) builds both manuals
+and the standalone white paper on relevant pull requests and pushes to `master`,
+version-tag pushes, published releases, and manual dispatch. It checks manual
+version agreement with the manifest, readable PDFs, navigation, metadata, and
+resolved references, then retains a downloadable `publication-pdfs` artifact for
+14 days. Source changes also trigger the build so a reviewer can consider
+whether the manual needs a corresponding update; CI does not prove behavioral
+accuracy or replace visual inspection.
 
 Only a published-release event or manual dispatch attaches assets to a release.
 The separate upload job has write permission; ordinary build jobs have read
-permission. Asset names are **RackNES.pdf** and **CVGenie.pdf**, matching the
-existing README and manifest links. Rebuilding a release replaces assets with
+permission. Manual asset names are **RackNES.pdf** and **CVGenie.pdf**, matching
+the existing README and manifest links. The report is attached as
+**RackNES-whitepaper.pdf**. Rebuilding a release replaces assets with
 those names. A tag push alone builds an artifact without publishing assets.
 
 To rebuild an existing release, run the workflow with its tag. That tag must
 already contain this shared manual layout; historical tags using the old build
-are not supported by this workflow. The release must already exist. If a
-release is created by another workflow using `GITHUB_TOKEN`, dispatch this
+are not supported by this workflow. Tags that have the shared manuals but
+predate the white paper upload only the manuals. The release must already exist.
+If a release is created by another workflow using `GITHUB_TOKEN`, dispatch this
 workflow manually when the release event does not start a run.
