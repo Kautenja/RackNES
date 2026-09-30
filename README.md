@@ -3,6 +3,10 @@
 An Arhythmetic Units Nintendo Entertainment System (NES) emulator as if it were
 designed by Bob Moog.
 
+[![Latest GitHub Release][ReleaseBadge]][LatestRelease]
+[![VCV Library: Rack 2][VCVBadge]][VCVLibrary]
+[![Source License: GPL-3.0-or-later][LicenseBadge]](LICENSING.md)
+
 <p align="center">
 <img alt="RackNES" src="manual/RackNES/img/Panel.png" height="380px">
 </p>
@@ -131,3 +135,9 @@ Many thanks to [@anlexmatos][anlexmatos] for developing the _CV Genie_ expander
 module.
 
 [anlexmatos]: https://github.com/anlexmatos
+
+[ReleaseBadge]: https://img.shields.io/github/v/release/Kautenja/RackNES?label=GitHub%20release
+[LatestRelease]: https://github.com/Kautenja/RackNES/releases/latest
+[VCVBadge]: https://img.shields.io/badge/VCV-Rack%202-0099dd
+[VCVLibrary]: https://library.vcvrack.com/KautenjaDSP-RackNES
+[LicenseBadge]: https://img.shields.io/badge/source%20license-GPL--3.0--or--later-blue
