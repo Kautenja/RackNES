@@ -85,6 +85,12 @@ complete emulator or UI validation.
     CNROM CHR-bank bounds, read-only CHR, legacy register restoration, and
     unchanged PRG windows. Four-screen decoding is tested only as metadata;
     four-screen VRAM support is still absent.
+-   Palette/NTSC: all 256 palette byte values decode to six-bit colors. Full
+    602-by-240 filtered frames match a direct filter reference for all 64 colors
+    with each combination of upper bits, through both PPUDATA writes and legacy
+    palette JSON restoration. This synthetic backdrop fixture reproduces an
+    unsafe filter-input path found while investigating issue #45; it does not
+    establish correct Bubble Bobble gameplay.
 -   Playback safety: Blip_Buffer bulk, one-sample, stereo, and direct-reader
     paths agree on positive and negative PCM, including overlapping buffer
     compaction. PPU reset clears sprite-hit status and stale buffered reads.
@@ -95,7 +101,7 @@ buffers. Tests connect input channels as Rack's engine would: `setChannels()`
 alone cannot connect a disconnected port. The RackNES fixture creates a headless
 Rack engine context for the module's sample-rate initialization.
 
-These checks do not test rendering, a live UI session, or every game's response
+These checks do not test live UI rendering or every game's response
 to memory edits. They do not replace listening and gameplay checks when changing
 CPU/PPU/APU timing or audio conversion.
 

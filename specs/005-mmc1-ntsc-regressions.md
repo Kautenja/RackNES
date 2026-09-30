@@ -5,7 +5,7 @@ Resolve [#26: Metroid MMC1 failure][metroid] and
 evidence and focused fixes where needed. An old report is not resolved merely
 because nearby code has changed.
 
-Status: PLANNED
+Status: IN PROGRESS
 
 Created: September 30, 2026
 
@@ -99,6 +99,61 @@ Record dates, commits, fixture hashes, reference-emulator versions, screenshots
 or artifact locations, listening observations, executed commands, and skipped
 checks here. The existing synthetic checks and this planning pass are not a
 manual Rack validation. Archive only after both issue dispositions have evidence.
+
+### September 30, 2026: Issue #45 Palette-Range Fix
+
+Investigated from revision `261b548` on macOS arm64 with the prepared Rack
+2.6.0 tree and Apple Clang. The issue screenshot shows a recognizable Bubble
+Bobble title with severe color corruption. No Bubble Bobble ROM revision or
+fixture was available for this run, so the original game's title, gameplay,
+and reference-emulator comparison remain unverified. Issue #26 was not tested.
+
+The NTSC integration introduced in `6d3ce77` passes palette bytes directly to
+`nes_ntsc_blit`. The configured filter has 64 entries and does not mask its
+input. `PictureBus::read_palette()` previously returned all eight stored bits,
+allowing input values above 63 to read beyond the filter table. This establishes
+a concrete unsafe integration path, but not that Bubble Bobble exercises it.
+The [PPU palette reference][palette-reference] documents six-bit color values.
+
+Added `check_ntsc_palette_range()` in [tests/ntsc.hpp](../tests/ntsc.hpp), using
+no game ROM. With the production code unchanged, an initial full-frame test
+passed for ordinary colors and failed with `NTSC mismatch: high bits 0x40,
+restored 0`. It compares every output pixel against the bundled composite
+filter given a known six-bit input image. The failure is reproducible after
+cold reset and independent of MMC1. The final fixture also checks every byte
+value at the palette-read boundary and repeats full-frame checks with legacy
+JSON palettes containing upper bits.
+
+Masking `read_palette()` to `0x3F` makes all eight frame comparisons pass:
+64 colors, four combinations of upper bits, and two input paths (PPUDATA and
+legacy palette JSON). The output is 602 by 240 pixels. The patch leaves palette
+storage, saved JSON keys/bytes, CPU-visible reads, filter configuration, display
+buffer ownership, and emulator scheduling unchanged. It adds only a bounded
+bit mask to rendering, with no allocation or synchronization changes.
+
+Validation from the isolated worktree root, with `RACK_DIR` set to the same
+absolute prepared Rack tree for both commands:
+
+```shell
+make -j4 RACK_DIR="$RACK_DIR"
+make -C tests -j2 RACK_DIR="$RACK_DIR"
+git diff --check
+```
+
+-   Plugin build passed on macOS arm64 (Rack 2.6.0).
+-   CV Genie, RackNES, and the audio fixture passed with AddressSanitizer and
+    UndefinedBehaviorSanitizer. The prebuilt Rack library is not instrumented.
+-   Five-channel NROM/CNROM PCM fingerprints match the pre-fix baseline:
+    `f5146c03e0a6ceb2` at the 1,789,773 Hz Blip clock and `d8915d435c9cf9a9`
+    at 768,000 Hz, over 44.1, 48, 96, and 192 kHz host rates.
+-   No manual Rack session, Bubble Bobble/Metroid gameplay or listening,
+    game SAVE/LOAD, clock-extreme, or cross-platform checks were performed.
+    Existing headless snapshot, invalid-load, controller, and mapper checks
+    passed but do not substitute for these missing game-level checks.
+-   Keep this spec active and issue #45 open pending the original game check;
+    the palette fix alone does not satisfy the combined acceptance criteria.
+
+[palette-reference]: https://www.nesdev.org/wiki/PPU_palettes
 
 [metroid]: https://github.com/Kautenja/RackNES/issues/26
 [bubble]: https://github.com/Kautenja/RackNES/issues/45

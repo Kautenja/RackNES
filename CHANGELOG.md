@@ -80,6 +80,11 @@
 
 ### 2.2.0 (Unreleased)
 
+-   Mask rendered palette colors to six bits before NTSC conversion, preventing
+    out-of-range filter lookups and corrupted frames when palette writes or
+    legacy snapshots contain upper bits. Add full-frame regression coverage
+    for all 256 palette byte values while investigating issue #45.
+
 -   Fix overlapping sample-buffer copies and undefined negative-value shifts
     in Blip_Buffer. Initialize PPU edge visibility, sprite-hit status, and the
     PPUDATA buffer on reset. Run the five-channel audio fixture in the default

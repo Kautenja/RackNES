@@ -13,6 +13,8 @@ Plugin* plugin_instance = nullptr;
 static Model inputGenieModel;
 Model* modelInputGenie = &inputGenieModel;
 
+#include "ntsc.hpp"
+
 /// Preserve held buttons and the unread portion of a controller stream.
 static void check_controller_state() {
     NES::Controller source, restored;
@@ -344,6 +346,7 @@ int main(int argc, char** argv) {
     check_controller_state();
     check_blip_sample_reads();
     check_ppu_reset();
+    check_ntsc_palette_range();
     check_mmc1_chr_banks();
     check_mapper_headers();
     check_upstream_graphics_fixes();
@@ -405,5 +408,5 @@ int main(int argc, char** argv) {
         json_decref(latest);
         json_decref(saved);
     }
-    std::puts("RackNES: controller state, mapper headers/CHR, snapshots, failed loads, and RAM bounds passed");
+    std::puts("RackNES: controller state, mapper headers/CHR, palette/NTSC, snapshots, failed loads, and RAM bounds passed");
 }
