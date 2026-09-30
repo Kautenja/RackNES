@@ -57,6 +57,10 @@ class PPU {
     /// Fetch selected sprite rows in OAM order, including covered/hidden rows.
     void fetch_latched_sprite_patterns(PictureBus& bus);
 
+    /// Sprite pattern addresses captured for the timed MMC3 fetch slots.
+    std::array<NES_Address, 8> irq_sprite_addresses = {};
+    void clock_mapper_address(PictureBus& bus);
+
     /// The current pipeline state of the PPU
     enum State {
         PRE_RENDER,
@@ -132,6 +136,20 @@ class PPU {
     NES_Pixel ntsc_screen[VISIBLE_SCANLINES][SCANLINE_VISIBLE_DOTS_NTSC];
 
  public:
+    /// A completed CPU PPUADDR write drives the external address bus.
+    void observe_cpu_address(PictureBus& bus) {
+        if (is_first_write) bus.observe_address(data_address);
+    }
+    static bool is_valid_irq_fetch_state(json_t* state) {
+        if (!json_is_array(state) || json_array_size(state) != 8) return false;
+        for (int i = 0; i < 8; ++i) {
+            json_t* value = json_array_get(state, i);
+            if (!json_is_integer(value) || json_integer_value(value) < 0 ||
+                json_integer_value(value) > 0x1FFF) return false;
+        }
+        return true;
+    }
+
     /// Validate the new fetch state before replacing a loaded emulator.
     static bool is_valid_latch_fetch_state(json_t* state) {
         if (!json_is_object(state) ||
@@ -242,6 +260,10 @@ class PPU {
             json_array_append_new(sprites, json_integer(byte));
         json_object_set_new(fetch, "sprites", sprites);
         json_object_set_new(rootJ, "chr_latch_fetches", fetch);
+        json_t* irq_fetches = json_array();
+        for (NES_Address address : irq_sprite_addresses)
+            json_array_append_new(irq_fetches, json_integer(address));
+        json_object_set_new(rootJ, "irq_sprite_addresses", irq_fetches);
         // encode sprite_memory
         {
             auto data_string = base64_encode(&sprite_memory[0], sprite_memory.size());
@@ -255,9 +277,9 @@ class PPU {
         json_object_set_new(rootJ, "pipeline_state", json_integer(pipeline_state));
         json_object_set_new(rootJ, "cycles", json_integer(cycles));
         json_object_set_new(rootJ, "scanline", json_integer(scanline));
-        json_object_set_new(rootJ, "is_even_frame", json_boolean(scanline));
-        json_object_set_new(rootJ, "is_vblank", json_boolean(scanline));
-        json_object_set_new(rootJ, "is_sprite_zero_hit", json_boolean(scanline));
+        json_object_set_new(rootJ, "is_even_frame", json_boolean(is_even_frame));
+        json_object_set_new(rootJ, "is_vblank", json_boolean(is_vblank));
+        json_object_set_new(rootJ, "is_sprite_zero_hit", json_boolean(is_sprite_zero_hit));
         json_object_set_new(rootJ, "data_address", json_integer(data_address));
         json_object_set_new(rootJ, "temp_address", json_integer(temp_address));
         json_object_set_new(rootJ, "fine_x_scroll", json_integer(fine_x_scroll));
@@ -278,6 +300,11 @@ class PPU {
 
     /// Load the object's state from a JSON object.
     void dataFromJson(json_t* rootJ) {
+        irq_sprite_addresses.fill(0);
+        json_t* irq_fetches = json_object_get(rootJ, "irq_sprite_addresses");
+        if (is_valid_irq_fetch_state(irq_fetches))
+            for (int i = 0; i < 8; ++i)
+                irq_sprite_addresses[i] = json_integer_value(json_array_get(irq_fetches, i));
         latch_background_valid = false;
         latch_background_address = latch_background_page = 0;
         latch_background_low = latch_background_high = 0;

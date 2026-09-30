@@ -864,6 +864,90 @@ still limit deterministic continuation; validation of the new fetch fields
 does not validate all older CPU/PPU/APU or bus JSON. This specification and
 its associated issue gates remain IN PROGRESS.
 
+### MMC3 Integration: September 30, 2026
+
+Mapper 4 (standard MMC3B/C TxROM) is now implemented. This extends the MMC2
+work above and the independently completed SRAM ownership migration. The
+specification remains IN PROGRESS; enabling this mapper does not close the
+broader hardware timing, state, manual validation, or mapper 5/69 gates.
+
+Implemented contracts:
+
+-   Adapt nes-py's pinned MMC3 bank/register behavior with 8 KiB PRG windows,
+    both PRG/CHR inversion modes, aligned 2 KiB CHR pairs, two six-bit PRG
+    bank registers, and bounded 1 KiB CHR banks. CHR RAM is banked too.
+    Cartridge clones rebind ROM/callback ownership and retain mapper state.
+-   Enable/write-protect PRG RAM independently of its saved capacity. Disabled
+    reads use the existing zero/open-bus approximation. OAM DMA reads current
+    cartridge ROM banks or a preallocated zero page for unmapped/disabled
+    ranges, avoiding null-pointer DMA. Allocate four-screen nametable storage;
+    mapper mirroring writes cannot override a four-screen board.
+-   Accept exact-size NTSC iNES and NES 2.0 submapper-0 images: power-of-two
+    32--512 KiB PRG ROM, 8--256 KiB CHR ROM or 8 KiB CHR RAM, and 8 KiB PRG
+    RAM. NES 2.0 requires explicit RAM sizes consistent with battery metadata.
+    Reject trainers, MMC6/other submappers, mixed CHR ROM/RAM, extended sizes,
+    extra devices and alternate timing. Mapper 4 SRAM file transfers remain
+    disabled; Rack patches and SAVE snapshots retain its RAM.
+-   Emit timed PPU address observations separately from pixel reads. Include
+    background, attribute/nametable, pre-render, sprite and empty sprite slots,
+    even with one layer hidden. Capture sprite addresses in OAM order, including
+    flipped 8x16 rows. CPU PPUADDR/PPUDATA operations observe address changes
+    without manufacturing elapsed dots. Keep MMC2 post-read latch behavior.
+-   Use a conservative ten-PPU-dot low filter before rising A12 clocks the
+    MMC3B/C reload/decrement counter. Short fetch gaps do not double-clock;
+    reversed tables and mixed-table sprites have explicit regression cases.
+    This replaces upstream's read-observation count with elapsed time, but
+    remains an approximation: real hardware uses M2 edges. CPU/PPU phase,
+    odd-frame anomalies, MMC3A and MC-ACC behavior are not claimed accurate.
+-   Keep mapper IRQ asserted while CPU I is set, until acknowledgement at
+    `$E000`; `$E001` enables future counter events. Poll mapper and APU levels
+    together at instruction boundaries, with edge-latched NMI priority and
+    DMA/instruction stalls respected. Acknowledging either device cannot clear
+    the other. The APU notifier only signals schedule changes and is no longer
+    an immediate CPU interrupt callback. Frame/DMC status is polled through
+    `earliest_irq()` without acknowledging `$4015`.
+-   Correct PHP/PLP/RTI/BRK/IRQ/NMI stack status encoding without reinterpreting
+    legacy numeric CPU JSON flags. Save pending NMI, mapper registers/RAM/IRQ
+    and partial A12-filter history, and sprite fetch addresses. Validate new
+    mapper/fetch fields before replacement. Fix three PPU snapshot booleans
+    previously serialized from `scanline`. Refresh bundled APU IRQ scheduling
+    after snapshot flag restoration; the prior code left a pending frame IRQ
+    invisible when the DMC schedule was unchanged.
+
+Validation on macOS arm64 with Apple Clang 21 and the prepared Rack tree:
+
+-   `make -C tests -j2`: ASan/UBSan passes. Tests cover all register bytes,
+    supported PRG/CHR bank counts, protection, DMA bank reads, mirroring,
+    header/state rejection, source destruction after clone, partial-filter
+    restoration, zero reload, enable/disable/acknowledge, and both sprite
+    sizes. A synthetic CPU program services raster IRQs through the full
+    emulator and round-trips live/SAVE Rack patch state.
+-   Focused CPU/APU checks pass for masked IRQ retention, NMI priority, OAM
+    stalls, PHP/PLP/BRK/RTI status bytes, independent frame/DMC/mapper pending
+    state and acknowledgements, restored APU IRQs, and DMC refills after PRG
+    bank changes.
+-   Five-mapper PCM/frame comparison passes at 44.1/48/96/192 kHz, 2,000 host
+    samples each, nominal emulation speed and both Blip clocks. All five voices
+    are nonzero. MMC3 changes CHR registers while DMC reads the fixed window;
+    the separate DMC test switches its live PRG bank. Fingerprints remain
+    `f5146c03e0a6ceb2` (1,789,773 Hz) and `d8915d435c9cf9a9` (768,000 Hz).
+-   `make -j4`, `make -C manual`, `make -C whitepaper`, and
+    `make -C whitepaper source` pass. Native whitepaper compilation passes.
+    The manuals and dated whitepaper addendum describe the supported subset
+    and limits; the historical manuscript revision stays pinned. Rendered
+    pages, links and `git diff --check` are reviewed before commit.
+
+Compatibility: CPU interrupt and stack-status corrections affect all mappers;
+IRQ-dependent programs may now behave or sound differently. The characterized
+non-interrupt audio workload remains identical. No oscillator, resampling,
+Blip clock, host cycle quantization or frame-output timing was changed.
+
+Remaining: hardware-exact M2/PPU timing, commercial-game and manual Rack/listening
+checks, other platforms and clock extremes, broader parser/JSON validation,
+complete emulator clone rebinding, omitted full-state fields and audio-buffer
+continuation, DMC DMA timing, and mappers 5/69. These remain open rather than
+being inferred from successful synthetic tests.
+
 [upstream]: https://github.com/Kautenja/nes-py/tree/301da52f7f75de380e6e195fd36621c3d5b03757
 [factory]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/mapper_factory.cpp
 [upstream-bus]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/main_bus.cpp

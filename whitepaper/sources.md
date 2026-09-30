@@ -69,7 +69,7 @@ from scholarly citations; see [LICENSING.md](../LICENSING.md) and the
 
 The manuscript's dated mapper paragraph describes a subsequent change. The
 rest of the implementation account remains pinned to `e8c99bf86295`; this
-addendum does not retroactively attribute AxROM or MMC2 to that revision.
+addendum does not retroactively attribute AxROM, MMC2, or MMC3 to that revision.
 
 -   [AxROM implementation](../src/nes/mappers/mapper7_AxROM.hpp) and
     [cartridge factory](../src/nes/cartridge.hpp): 32 KiB banking, one-screen
@@ -94,6 +94,22 @@ addendum does not retroactively attribute AxROM or MMC2 to that revision.
     of hardware-exact PPU timing. Earlier mappers retain their pixel-read path.
     MMC2 joins the same four-rate/two-clock PCM comparison, with switchable
     code banks and fixed DMC windows.
+-   [MMC3 implementation](../src/nes/mappers/mapper4_MMC3.hpp) and
+    [regressions](../tests/mmc3.hpp): banking, banked CHR RAM, RAM protection,
+    four-screen storage, IRQ acknowledgement/reload, timed sprite/dummy
+    fetches, masked IRQs, NMI priority, DMA stalls, and patch restoration.
+    Banking/register behavior adapts the pinned nes-py MMC3 implementation.
+    The [NESdev MMC3 reference](https://www.nesdev.org/wiki/MMC3) describes
+    hardware filtering through M2 edges; RackNES uses a conservative ten-dot
+    low filter and does not reproduce sub-cycle M2 alignment or MMC3A IRQs.
+-   [CPU](../src/nes/cpu.cpp), [emulator](../src/nes/emulator.hpp), and
+    [APU wrapper](../src/nes/apu.hpp): poll independent APU/mapper IRQ levels
+    without reading/acknowledging status. The bundled notifier reports schedule
+    changes; it is no longer treated as an immediate CPU interrupt.
+    [Snapshot refresh](../src/nes/apu/apu_snapshot.cpp) repairs stale restored
+    IRQ scheduling. Stack flags use hardware positions while legacy CPU JSON
+    keeps its prior bitfield encoding. Synthesis and buffer timing remain fixed.
+    MMC3 joins the same PCM comparison with CHR bank writes and fixed DMC data.
 -   [Spec 001](../specs/001-nes-py-integration.md) records exact validation
     commands and limitations. No new performance measurements, commercial
     game tests, or manual listening results are claimed.

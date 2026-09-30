@@ -15,6 +15,7 @@
 namespace NES {
 
 void PPU::reset() {
+    irq_sprite_addresses.fill(0);
     latch_background_valid = false;
     latch_background_address = latch_background_page = 0;
     latch_background_low = latch_background_high = 0;
@@ -70,8 +71,43 @@ void PPU::fetch_latched_sprite_patterns(PictureBus& bus) {
     }
 }
 
+// Emit the external fetch address by dot, independently of cached pixel reads.
+// The renderer remains scanline based; this is not a dot-accurate PPU pipeline.
+void PPU::clock_mapper_address(PictureBus& bus) {
+    const bool rendering = is_showing_background || is_showing_sprites;
+    if (!rendering || (pipeline_state != PRE_RENDER && pipeline_state != RENDER)) {
+        bus.clock_address(data_address);
+        return;
+    }
+    if (cycles == 257) {
+        // Empty sprite slots still fetch tile $FF. In 8x16 mode its table is high.
+        irq_sprite_addresses.fill(is_long_sprites || sprite_page == HIGH ? 0x1FF0 : 0x0FF0);
+        const int height = is_long_sprites ? 16 : 8;
+        unsigned slot = 0;
+        for (unsigned i = 0; i < 64 && slot < 8; ++i) {
+            int row = (pipeline_state == PRE_RENDER ? -1 : scanline) - sprite_memory[i * 4];
+            if (row < 0 || row >= height) continue;
+            const NES_Byte tile = sprite_memory[i * 4 + 1];
+            if (sprite_memory[i * 4 + 2] & 0x80) row ^= height - 1;
+            irq_sprite_addresses[slot++] = is_long_sprites ?
+                ((tile & 1) << 12) + (tile & 0xFE) * 16 + (row & 7) + ((row & 8) << 1) :
+                (sprite_page << 12) + tile * 16 + row;
+        }
+    }
+    NES_Address address = 0x2000;  // Nametable/attribute/dummy fetch: A12 low.
+    if (cycles >= 1 && cycles <= 336 && ((cycles - 1) & 7) >= 4) {
+        if (cycles >= 257 && cycles <= 320)
+            address = irq_sprite_addresses[(cycles - 257) / 8];
+        else
+            address = background_page << 12;
+    }
+    bus.clock_address(address);
+}
+
 void PPU::cycle(PictureBus& bus) {
-    const bool latch_fetches = bus.hasCHRReadLatches();
+    const bool address_fetches = bus.observesPPUAddresses();
+    if (address_fetches) clock_mapper_address(bus);
+    const bool latch_fetches = bus.hasCHRReadLatches() || address_fetches;
     const bool rendering = is_showing_background || is_showing_sprites;
     const bool scroll_enabled = latch_fetches ? rendering :
         (is_showing_background && is_showing_sprites);
@@ -423,8 +459,10 @@ void PPU::set_data_address(NES_Byte address) {
 }
 
 NES_Byte PPU::get_data(PictureBus& bus) {
+    bus.observe_address(data_address);
     auto data = bus.read(data_address);
     data_address += data_address_increment;
+    bus.observe_address(data_address);
     // Reads are delayed by one byte/read when address is in this range
     if (data_address < 0x3f00)
         // Return from the data buffer and store the current value in the buffer
@@ -433,8 +471,10 @@ NES_Byte PPU::get_data(PictureBus& bus) {
 }
 
 void PPU::set_data(PictureBus& bus, NES_Byte data) {
+    bus.observe_address(data_address);
     bus.write(data_address, data);
     data_address += data_address_increment;
+    bus.observe_address(data_address);
 }
 
 void PPU::set_scroll(NES_Byte scroll) {

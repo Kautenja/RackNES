@@ -18,6 +18,7 @@
 #include "mappers/mapper1_MMC1.hpp"
 #include "mappers/mapper2_UNROM.hpp"
 #include "mappers/mapper3_CNROM.hpp"
+#include "mappers/mapper4_MMC3.hpp"
 #include "mappers/mapper7_AxROM.hpp"
 #include "mappers/mapper9_MMC2.hpp"
 
@@ -42,6 +43,7 @@ class Cartridge : public ROM {
         MMC1   = 1,
         UNROM  = 2,
         CNROM  = 3,
+        MMC3   = 4,
         AXROM  = 7,
         MMC2   = 9,
     };
@@ -77,6 +79,13 @@ class Cartridge : public ROM {
                     json_object_get(cartridge_state, "mapper"))))
                 return nullptr;
         }
+        if ((header[6] >> 4) == 4 && (header[7] & 0xF0) == 0) {
+            file.seekg(0, std::ios::end);
+            if (!MapperMMC3::supports(header, file.tellg()) ||
+                (cartridge_state && !MapperMMC3::is_valid_state(
+                    json_object_get(cartridge_state, "mapper"))))
+                return nullptr;
+        }
         // initialize a new cartridge
         auto cartridge = new Cartridge(path);
         // load the mapper
@@ -86,6 +95,9 @@ class Cartridge : public ROM {
             case MapperID::MMC1:  cartridge->mapper = new MapperMMC1(*cartridge, callback); break;
             case MapperID::UNROM: cartridge->mapper = new MapperUNROM(*cartridge);          break;
             case MapperID::CNROM: cartridge->mapper = new MapperCNROM(*cartridge);          break;
+            case MapperID::MMC3:
+                cartridge->mapper = new MapperMMC3(*cartridge, callback);
+                break;
             case MapperID::AXROM:
                 cartridge->mapper = new MapperAxROM(*cartridge, callback,
                     header[7] == 0x08 && (header[8] >> 4) == 2);
@@ -102,7 +114,10 @@ class Cartridge : public ROM {
     /// Copy this cartridge.
     Cartridge(const Cartridge& other, Callback callback = Callback()) : ROM(other) {
         if (other.mapper != nullptr) {
-            if (get_mapper_number() == 7)
+            if (get_mapper_number() == 4)
+                mapper = new MapperMMC3(*this,
+                    *static_cast<const MapperMMC3*>(other.mapper), callback);
+            else if (get_mapper_number() == 7)
                 mapper = new MapperAxROM(*this,
                     *static_cast<const MapperAxROM*>(other.mapper), callback);
             else if (get_mapper_number() == 9)

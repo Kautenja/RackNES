@@ -58,6 +58,10 @@ class APU {
         apu.dmc_reader(callback);
     }
 
+    /// Poll the level without acknowledging $4015. Notifier callbacks only
+    /// report changes to scheduling, not necessarily an asserted interrupt.
+    bool irq_pending() const { return apu.earliest_irq() == Nes_Apu::irq_waiting; }
+
     /// @brief Set the callback function for IRQ interrupting the CPU.
     ///
     /// @param callback the callback method that interrupts the CPU (IRQ)

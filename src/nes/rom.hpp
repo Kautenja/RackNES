@@ -441,6 +441,15 @@ class ROM {
             return true;
         }
 
+        /// Cartridge RAM access policy, separate from allocated/saved capacity.
+        virtual bool canReadPRGRAM() const { return hasExtendedRAM(); }
+        virtual bool canWritePRGRAM() const { return hasExtendedRAM(); }
+        virtual bool observesPPUAddresses() const { return false; }
+        virtual void observePPUAddress(NES_Address) { }
+        virtual void clockPPU() { }
+        virtual void resetPPUObservation() { }
+        virtual bool irqPending() const { return false; }
+
         /// Whether rendering must reuse fetched patterns to avoid extra latches.
         inline virtual bool hasCHRReadLatches() const { return false; }
 

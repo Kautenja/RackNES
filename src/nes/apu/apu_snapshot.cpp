@@ -119,6 +119,9 @@ void Nes_Apu::load_snapshot( apu_snapshot_t const& state )
 	refl::reflect_noise   ( st.noise,       noise );
 	refl::reflect_dmc     ( st.dmc,         dmc );
 	dmc.recalc_irq();
+	// RackNES polls the IRQ level. Restored frame/DMC flags must refresh it
+	// even when recalc_irq() finds an unchanged future DMC schedule.
+	irq_changed();
 	dmc.last_amp = dmc.dac;
 }
 

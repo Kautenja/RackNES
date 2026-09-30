@@ -78,6 +78,8 @@ class MainBus {
  private:
     /// The RAM on the main bus
     std::vector<NES_Byte> ram = std::vector<NES_Byte>(0x800, 0);
+    /// Scratch page for ROM and unmapped OAM DMA; no hot-path allocation.
+    mutable NES_Byte dma_page[256] = {};
     /// a pointer to the mapper on the cartridge
     ROM::Mapper* mapper = nullptr;
     /// a map of IO registers to callback methods for writes
@@ -114,10 +116,14 @@ class MainBus {
             NES_DEBUG("Register address memory pointer access attempt");
         } else if (address < 0x6000) {
             NES_DEBUG("Expansion ROM access attempted, which is unsupported");
-        } else if (address < 0x8000 && mapper->hasExtendedRAM()) {
+        } else if (address < 0x8000 && mapper->canReadPRGRAM()) {
             return &mapper->get_extended_ram()[address - 0x6000];
         }
-        return nullptr;
+        // DMA sees current PRG banking. Unmapped/disabled pages read as zero,
+        // matching this bus's existing open-bus approximation.
+        for (unsigned i = 0; i < 256; ++i)
+            dma_page[i] = address >= 0x8000 ? mapper->readPRG(address + i) : 0;
+        return dma_page;
     }
 
     /// Return a 8-bit pointer to the RAM buffer's first address.
@@ -157,7 +163,7 @@ class MainBus {
         } else if (address < 0x6000) {
             NES_DEBUG("Expansion ROM read attempted. This is currently unsupported");
         } else if (address < 0x8000) {
-            if (mapper->hasExtendedRAM()) return mapper->get_extended_ram()[address - 0x6000];
+            if (mapper->canReadPRGRAM()) return mapper->get_extended_ram()[address - 0x6000];
         } else {
             return mapper->readPRG(address);
         }
@@ -193,7 +199,7 @@ class MainBus {
         } else if (address < 0x6000) {
             NES_DEBUG("Expansion ROM write access attempted. This is currently unsupported");
         } else if (address < 0x8000) {
-            if (mapper->hasExtendedRAM()) mapper->get_extended_ram()[address - 0x6000] = value;
+            if (mapper->canWritePRGRAM()) mapper->get_extended_ram()[address - 0x6000] = value;
         } else {
             mapper->writePRG(address, value);
         }

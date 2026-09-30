@@ -16,7 +16,7 @@ bool CPU::implied(MainBus &bus, NES_Byte opcode) {
             break;
         }
         case PHP: {
-            push_stack(bus, flags.byte);
+            push_stack(bus, status_byte(true));
             break;
         }
         case CLC: {
@@ -33,7 +33,7 @@ bool CPU::implied(MainBus &bus, NES_Byte opcode) {
             break;
         }
         case PLP: {
-            flags.byte = pop_stack(bus);
+            set_status_byte(pop_stack(bus));
             break;
         }
         case SEC: {
@@ -41,7 +41,7 @@ bool CPU::implied(MainBus &bus, NES_Byte opcode) {
             break;
         }
         case RTI: {
-            flags.byte = pop_stack(bus);
+            set_status_byte(pop_stack(bus));
             register_PC = pop_stack(bus);
             register_PC |= pop_stack(bus) << 8;
             break;
@@ -459,7 +459,8 @@ void CPU::reset(NES_Address start_address) {
     register_A = 0;
     register_X = 0;
     register_Y = 0;
-    flags.byte = 0b00110100;
+    set_status_byte(0x24);
+    nmi_pending = false;
     skip_cycles = 0;
     cycles = 0;
 }
@@ -473,7 +474,7 @@ void CPU::interrupt(MainBus &bus, InterruptType type) {
     // push values on to the stack
     push_stack(bus, register_PC >> 8);
     push_stack(bus, register_PC);
-    push_stack(bus, flags.byte | 0b00100000 | (type == BRK_INTERRUPT) << 4);
+    push_stack(bus, status_byte(type == BRK_INTERRUPT));
     // set the interrupt flag
     flags.bits.I = true;
     // handle the kind of interrupt
@@ -490,7 +491,7 @@ void CPU::interrupt(MainBus &bus, InterruptType type) {
     skip_cycles += 7;
 }
 
-void CPU::cycle(MainBus &bus) {
+void CPU::cycle(MainBus &bus, bool irq_pending) {
     // increment the number of cycles
     ++cycles;
     // if in a skip cycle, return
@@ -498,6 +499,12 @@ void CPU::cycle(MainBus &bus) {
         return;
     // reset the number of skip cycles to 0
     skip_cycles = 0;
+    if (nmi_pending || (irq_pending && !flags.bits.I)) {
+        const auto type = nmi_pending ? NMI_INTERRUPT : IRQ_INTERRUPT;
+        nmi_pending = false;
+        interrupt(bus, type);
+        return;
+    }
     // read the opcode from the bus and lookup the number of cycles
     NES_Byte op = bus.read(register_PC++);
     // Using short-circuit evaluation, call the other function only if the

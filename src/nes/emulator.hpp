@@ -72,7 +72,10 @@ class Emulator {
         bus.set_write_callback(PPUCTRL,  [&](NES_Byte b) { ppu.control(b);                                             });
         bus.set_write_callback(PPUMASK,  [&](NES_Byte b) { ppu.set_mask(b);                                            });
         bus.set_write_callback(OAMADDR,  [&](NES_Byte b) { ppu.set_OAM_address(b);                                     });
-        bus.set_write_callback(PPUADDR,  [&](NES_Byte b) { ppu.set_data_address(b);                                    });
+        bus.set_write_callback(PPUADDR, [&](NES_Byte b) {
+            ppu.set_data_address(b);
+            ppu.observe_cpu_address(picture_bus);
+        });
         bus.set_write_callback(PPUSCROL, [&](NES_Byte b) { ppu.set_scroll(b);                                          });
         bus.set_write_callback(PPUDATA,  [&](NES_Byte b) { ppu.set_data(picture_bus, b);                               });
         bus.set_write_callback(OAMDMA,   [&](NES_Byte b) { cpu.skip_DMA_cycles(); ppu.do_DMA(bus.get_page_pointer(b)); });
@@ -102,10 +105,10 @@ class Emulator {
         bus.set_write_callback(SND_CHN,     [&](NES_Byte b) { apu.write(SND_CHN, b);     });
         bus.set_write_callback(JOY2,        [&](NES_Byte b) { apu.write(JOY2, b);        });
         // set the interrupt callback for the PPU
-        ppu.set_interrupt_callback([&]() { cpu.interrupt(bus, CPU::NMI_INTERRUPT); });
+        ppu.set_interrupt_callback([&]() { cpu.request_nmi(); });
         // setup the DMC reader callback (for loading samples from RAM)
         apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
-        apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
+        // IRQ levels are polled at CPU boundaries; the APU notifier is not an IRQ edge.
     }
 
     // @brief Destroy this emulator.
@@ -281,6 +284,7 @@ class Emulator {
         // reset the CPU, PPU, and APU
         cpu.reset(bus);
         ppu.reset();
+        cartridge->get_mapper()->resetPPUObservation();
         apu.reset();
     }
 
@@ -296,7 +300,7 @@ class Emulator {
         ppu.cycle(picture_bus);
         ppu.cycle(picture_bus);
         ppu.cycle(picture_bus);
-        cpu.cycle(bus);
+        cpu.cycle(bus, cartridge->get_mapper()->irqPending() || apu.irq_pending());
         apu.cycle();
         // increment the cycles counter
         ++cycles;
@@ -360,6 +364,8 @@ class Emulator {
         ++cartridge_generation;
         json_t* fetch = json_object_get(json_object_get(rootJ, "ppu"), "chr_latch_fetches");
         if (fetch && !PPU::is_valid_latch_fetch_state(fetch)) return false;
+        json_t* irq_fetches = json_object_get(json_object_get(rootJ, "ppu"), "irq_sprite_addresses");
+        if (irq_fetches && !PPU::is_valid_irq_fetch_state(irq_fetches)) return false;
         // load cartridge
         {
             json_t* json_data = json_object_get(rootJ, "cartridge");
@@ -398,7 +404,8 @@ class Emulator {
             json_t* json_data = json_object_get(rootJ, "picture_bus");
             if (json_data) picture_bus.dataFromJson(json_data);
             // New mappers own mirroring; ignore stale bus-derived state.
-            if (cartridge && (cartridge->get_mapper_number() == 7 ||
+            if (cartridge && (cartridge->get_mapper_number() == 4 ||
+                              cartridge->get_mapper_number() == 7 ||
                               cartridge->get_mapper_number() == 9))
                 picture_bus.update_mirroring();
         }

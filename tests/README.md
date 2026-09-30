@@ -89,6 +89,13 @@ complete emulator or UI validation.
     CHR RAM, old-bank bus conflicts, strict image rejection, malformed mapper
     JSON, cartridge clones after source destruction, live/backup Rack patch
     restoration, CPU/module reset, and DMC callbacks across distinct PRG banks.
+-   MMC3: register bytes and both inversion modes, CHR ROM/RAM, RAM protection,
+    four-screen mirroring, image/state rejection, clone ownership, filtered
+    IRQ reload/acknowledgement and partial-filter snapshots. Timed PPU tests
+    cover both table arrangements, hidden/dummy sprites and mixed 8x16 sprites.
+    CPU/APU checks cover mask retention, NMI priority, DMA delay, hardware stack
+    flags, independent frame/DMC IRQ acknowledgements and restored pending IRQs.
+    A full emulator program handles raster IRQs and round-trips Rack snapshots.
 -   MMC2: all PRG/CHR register bytes across supported bank counts, exact and
     ranged latch triggers, old-byte ordering, non-triggering writes, PRG RAM,
     mirroring, image/state rejection, clones, and live/backup patch restoration.
@@ -111,15 +118,16 @@ CPU/PPU/APU timing or audio conversion.
 
 ## Focused Audio Characterization
 
-A CPU-program fixture compares NROM, CNROM, AxROM, and MMC2 integer PCM for all
+A CPU-program fixture compares NROM, CNROM, AxROM, MMC2, and MMC3 integer PCM for all
 five voices, including looping DMC while the CPU writes bank selections.
 AxROM repeats identical code/sample data in four PRG banks, switching from
 bank 0 to bank 3; a separate DMC callback test reads distinct bank markers.
 MMC2 switches the first 8 KiB code window from bank 0 to bank 3, while its
 last three PRG windows retain the reference program's layout and DMC bytes.
+MMC3 changes CHR bank registers while reading the same fixed DMC window.
 It checks 2,000 host samples at each of 44.1, 48, 96, and 192 kHz, at nominal
 CPU speed with the existing integer cycle loop, using both the core's default
-Blip clock and RackNES's fixed 768,000 Hz Blip clock. All four mapper runs must
+Blip clock and RackNES's fixed 768,000 Hz Blip clock. All five mapper runs must
 match sample by sample, produce nonzero output on every channel, and generate
 the same number of frame callbacks. It also prints a reproducible PCM
 fingerprint for before/after comparisons on the same toolchain.

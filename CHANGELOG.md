@@ -80,6 +80,14 @@
 
 ### 2.2.0 (Unreleased)
 
+-   Add standard MMC3B/C mapper 4 banking, banked CHR RAM, RAM protection,
+    four-screen mirroring, filtered PPU A12 IRQs, and validated mapper state.
+    Combine mapper/APU IRQ levels at CPU instruction boundaries, prioritize
+    latched NMI, correct interrupt stack status, and refresh restored APU IRQs.
+    Fix three PPU snapshot flags and handle cartridge-ROM/disabled-RAM OAM
+    DMA safely. IRQ-driven software may change behavior; audio synthesis,
+    buffer clocks, and the five-channel PCM reference remain unchanged.
+
 -   Add Import SRAM and Export SRAM for explicit, reviewed 8 KiB battery-RAM
     layouts on mappers 0--3. Use bounded generation-checked engine/UI transfers,
     exact-size validation, and temporary-file replacement. Preserve SAVE/LOAD

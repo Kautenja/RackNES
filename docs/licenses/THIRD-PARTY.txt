@@ -20,7 +20,7 @@ Historical provenance and import evidence:
 https://github.com/Kautenja/RackNES/blob/master/whitepaper/sources.md
 The exact upstream import revision is unknown.
 
-Selective nes-py graphics, reset, AxROM, and MMC2 adaptations
+Selective nes-py graphics, reset, AxROM, MMC2, and MMC3 adaptations
 -----------------------------------------------------------
 Upstream: https://github.com/Kautenja/nes-py
 Revision: 301da52f7f75de380e6e195fd36621c3d5b03757
@@ -28,8 +28,9 @@ Files: mirroring decoding in src/nes/rom.hpp, bounded CHR reads in
        src/nes/mappers/mapper3_CNROM.hpp, reset/fetch handling in src/nes/ppu.cpp
        and src/nes/ppu.hpp,
        src/nes/mappers/mapper7_AxROM.hpp, src/nes/mappers/mapper9_MMC2.hpp,
+       src/nes/mappers/mapper4_MMC3.hpp,
        and adapted regression cases in tests/racknes.cpp, tests/axrom.hpp,
-       and tests/mmc2.hpp.
+       tests/mmc2.hpp, and tests/mmc3.hpp.
 Sources: nes_emu/src/nes_emu/cartridge.cpp,
          nes_emu/include/nes_emu/mapper_bank.hpp,
          nes_emu/include/nes_emu/mappers/mapper_CNROM.hpp,
@@ -37,6 +38,8 @@ Sources: nes_emu/src/nes_emu/cartridge.cpp,
          nes_emu/include/nes_emu/mappers/mapper_AxROM.hpp,
          nes_emu/src/nes_emu/mappers/mapper_AxROM.cpp,
          nes_emu/test/nes_emu/mappers/test_mapper_AxROM.cpp,
+         nes_emu/include/nes_emu/mappers/mapper_MMC3.hpp,
+         nes_emu/src/nes_emu/mappers/mapper_MMC3.cpp,
          nes_emu/include/nes_emu/mappers/mapper_MMC2.hpp,
          nes_emu/src/nes_emu/mappers/mapper_MMC2.cpp,
          nes_emu/test/nes_emu/mappers/test_mapper_MMC2.cpp,
@@ -80,6 +83,8 @@ Game_Music_Emu 0.5.2. RackNES adaptations retain their file notices,
 including the additional GPL-3.0-or-later notice in apu_snapshot.h.
 RackNES also corrects overlapping buffer compaction and signed-delta scaling
 in Blip_Buffer.cpp and Blip_Buffer.h; the original LGPL notices remain intact.
+The MMC3 integration refreshes IRQ scheduling after restoring APU snapshot
+flags in apu_snapshot.cpp; synthesis and buffer timing are unchanged.
 
 nes_ntsc
 --------

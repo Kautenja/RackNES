@@ -238,16 +238,17 @@ implemented cartridge and machine model before its musical behavior can be
 controlled through the patch.
 
 \paragraph{Mapper updates (September 2026).}
-Subsequent adaptations add AxROM/AOROM (7), with 32\,KiB PRG banking and
-one-screen mirroring, and MMC2/PxROM (9), with 8\,KiB PRG and latched
-4\,KiB CHR banks. MMC2's triggering read returns the old bank's byte;
-rendering reuses fetched pattern bytes to avoid repeated latch transitions.
-Those bytes and mapper registers survive snapshots. Both additions validate
-supported image layouts. APU code and scheduling are unchanged; five-channel
-PCM matches NROM at four host rates and two buffer clocks. Synthetic banking,
-fetch and state checks are not commercial-game or listening validation.
-The updates' evidence and limits are recorded in \code{sources.md} and
-specification 001, separately from the pinned historical account.
+Subsequent adaptations add validated AxROM/AOROM (7), MMC2/PxROM (9),
+and MMC3/TxROM (4) subsets with saved mapper state. MMC2 retains post-read
+CHR latches and fetched bytes. MMC3 adds bank inversion, protected RAM,
+four-screen mirroring and timed A12 IRQ observations; its conservative
+filter does not reproduce hardware M2 phase. Independent mapper/APU IRQ
+levels now reach CPU instruction boundaries with NMI priority, corrected
+stack status and restored IRQ flags. Synthesis and buffer clocks remain
+unchanged: five-channel PCM matches NROM at four host rates and two clocks.
+Synthetic checks do not establish gameplay or listening validation.
+\code{sources.md} and specification 001 record evidence and limits separately
+from the pinned historical account.
 
 \subsection{Three intervention layers}
 At the \emph{gameplay layer}, sixteen gate inputs represent the eight buttons

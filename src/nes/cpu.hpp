@@ -44,6 +44,20 @@ class CPU {
         NES_Byte byte;
     } flags = {.byte = 0b00110100};
 
+    /// Edge-latched NMI, serviced before level IRQ at an instruction boundary.
+    bool nmi_pending = false;
+
+    /// Stack status uses hardware bit positions; legacy JSON keeps its layout.
+    NES_Byte status_byte(bool brk) const {
+        return (flags.bits.N << 7) | (flags.bits.V << 6) | 0x20 | (brk << 4) |
+            (flags.bits.D << 3) | (flags.bits.I << 2) | (flags.bits.Z << 1) | flags.bits.C;
+    }
+    void set_status_byte(NES_Byte value) {
+        flags.bits.N = value & 0x80; flags.bits.V = value & 0x40;
+        flags.bits.B = false; flags.bits.D = value & 8; flags.bits.I = value & 4;
+        flags.bits.Z = value & 2; flags.bits.C = value & 1;
+    }
+
     /// The number of cycles to skip
     int skip_cycles = 0;
     /// The number of cycles the CPU has run
@@ -217,7 +231,8 @@ class CPU {
     ///
     /// @param bus the bus to read and write data from / to
     ///
-    void cycle(MainBus &bus);
+    void cycle(MainBus &bus, bool irq_pending = false);
+    void request_nmi() { nmi_pending = true; }
 
     /// Skip DMA cycles.
     ///
@@ -237,11 +252,13 @@ class CPU {
         json_object_set_new(rootJ, "flags", json_integer(flags.byte));
         json_object_set_new(rootJ, "skip_cycles", json_integer(skip_cycles));
         json_object_set_new(rootJ, "cycles", json_integer(cycles));
+        json_object_set_new(rootJ, "nmi_pending", json_boolean(nmi_pending));
         return rootJ;
     }
 
     /// Load the object's state from a JSON object.
     void dataFromJson(json_t* rootJ) {
+        nmi_pending = json_is_true(json_object_get(rootJ, "nmi_pending"));
         // load register_PC
         json_t* register_PC_ = json_object_get(rootJ, "register_PC");
         if (register_PC_)

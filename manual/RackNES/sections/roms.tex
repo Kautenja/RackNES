@@ -9,19 +9,30 @@ SAVE. Canceling leaves the current selection alone. Only the first dropped
 file is used.
 
 \subsection{Supported cartridge mappers}
-A mapper arranges cartridge memory. RackNES supports these six IDs;
+A mapper arranges cartridge memory. RackNES supports these seven IDs;
 individual games and modified ROMs may still behave incorrectly.
 \begin{center}
 \begin{tabular}{@{}rl@{\hspace{3em}}rl@{}}
 \toprule
 \textbf{ID} & \textbf{Name} & \textbf{ID} & \textbf{Name} \\
 \midrule
-0 & NROM & 3 & CNROM \\
+0 & NROM & 4 & MMC3 / TxROM \\
 1 & MMC1 & 7 & AxROM / AOROM \\
 2 & UNROM & 9 & MMC2 / PxROM \\
+3 & CNROM & & \\
 \bottomrule
 \end{tabular}
 \end{center}
+Mapper 4 supports standard MMC3B/C TxROM: power-of-two PRG ROM sizes of
+32--512 KiB, CHR ROM sizes of 8--256 KiB or 8 KiB banked CHR RAM, and
+8 KiB PRG RAM. Horizontal, vertical and four-screen mirroring are supported.
+Accepted formats are clean NTSC iNES and NES 2.0 submapper 0; trainers,
+MMC6, alternate IRQ revisions and mixed CHR ROM/RAM boards are excluded.
+Scanline IRQs use timed PPU address observations with an approximate A12
+filter; cycle-exact raster effects and commercial-game compatibility have
+not been verified. Cartridge RAM survives patches and SAVE snapshots;
+mapper 4 does not support SRAM file import/export.
+
 Mapper 7 accepts 32--256 KiB of PRG ROM in power-of-two sizes, 8 KiB of
 CHR RAM, and either one-screen nametable page. Legacy iNES and NES 2.0
 submappers 0/1 use no bus conflicts; submapper 2 combines writes with the
@@ -39,11 +50,12 @@ Timing is fixed; there is no PAL/NTSC or mapper selector. Audio uses the five
 base NES voices without cartridge expansion sound. CV Genie's game list
 contains memory maps and does not define ROM compatibility.
 
+\newpage
 \subsection{When loading fails}
 \begin{description}
 \item[ASIC mapper not implemented for ROM!]
 The file requests a mapper outside the implemented set, or an unsupported
-mapper-7 or mapper-9 image layout.
+mapper-4, mapper-7 or mapper-9 image layout.
 \item[ROM file failed to load!]
 The selected path failed ROM validation. Check the file and its format.
 \item[ROM file was not found!]
@@ -76,7 +88,7 @@ up to 128 KiB for MMC1; UNROM uses CHR RAM. When CHR ROM is absent, the layout
 must use 8 KiB volatile CHR RAM. Trainers, four-screen layouts, extra devices,
 ambiguous headers, and banked or larger saves are excluded. Unsupported or
 empty cartridges and an outstanding transfer disable the menu commands.
-Mapper 7 and mapper 9 do not support these file commands.
+Mappers 4, 7 and 9 do not support these file commands.
 
 Import checks the complete file before applying it. A wrong size or a file
 error leaves live RAM and SAVE unchanged. Import changes only persistent
