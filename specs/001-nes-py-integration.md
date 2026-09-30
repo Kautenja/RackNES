@@ -96,6 +96,30 @@ must occur even when no visible sprite pixels need drawing, and pixel rendering
 must not emit duplicate fetch observations. The upstream A12 filter counts
 observations; it is not evidence of a fully cycle-accurate hardware bus.
 
+### RackNES Manual And Mapper Presentation
+
+The [RackNES user manual][racknes-manual] includes a "Supported cartridge
+mappers" table in [ROMs and compatibility][manual-roms]. It currently lists
+IDs 0 through 3 by ID and name. Update that table alongside each newly enabled
+mapper, checking it against [the cartridge factory][cartridge] and validation
+evidence. Keep the README compatibility summary aligned. The target matrix
+above describes planned work; it must not become a user-facing support claim
+before implementation passes its gates.
+
+Present mapper IDs, family names, and relevant board, rendering, and audio
+limitations together so partial support is clear. Preserve the distinction
+between mapper support and guaranteed game compatibility, and between RackNES
+cartridge compatibility and CV Genie's separate game-memory maps.
+
+As the table grows, reassess its presentation in the rendered manual. A compact
+table may remain sufficient for nine IDs; if limitations crowd the rows or the
+table no longer fits comfortably, consider a multipage table with repeated
+headers or a short ID/name summary linked to detailed compatibility notes.
+Choose based on readability and ease of maintenance, without shrinking text
+to force a fit. Record the choice here during implementation and follow the
+[manual guide][manual-guide] for builds and visual review, including page
+breaks, navigation, and keeping each limitation associated with its mapper.
+
 ### Other Fixes And Improvements
 
 | Area | Decision | Scope And Acceptance |
@@ -340,7 +364,8 @@ enable a mapper in the factory before its audio and JSON checks pass.
     register/state tests, and explicit partial-support information. Expansion
     audio and MMC5 vertical splits remain deferred as described above.
 7.  **Integration and documentation.** Run the complete matrix below, update
-    user-facing mapper/limitation documentation and changelog, and record
+    the RackNES manual's mapper table and limitations, review its presentation
+    as described above, align the README and changelog, and record
     actual platforms/fixtures. No release version, tag, push, or publication
     is implied by implementation of this specification.
 8.  **Optional measured optimization.** Consider direct pages and PPU caches
@@ -442,6 +467,10 @@ benchmarks cannot establish a RackNES speedup.
       performance results are reported separately with reproducible fixtures.
 - [ ] Manuals/changelog and license attribution reflect implemented behavior;
       no commercial ROMs or generated build products are committed.
+- [ ] The RackNES manual's supported-mapper table agrees with enabled factory
+      IDs and verified limitations; the README summary agrees with the manual.
+      The expanded presentation is reviewed in the rendered PDF, with the
+      layout choice and review results recorded here.
 
 ## Specification Review Record
 
@@ -476,3 +505,5 @@ diff before commit.
 [fme7-apu]: ../src/nes/apu/Nes_Fme7_Apu.cpp
 [license]: ../LICENSE.md
 [manual-guide]: ../manual/README.md
+[racknes-manual]: ../manual/RackNES/manual.tex
+[manual-roms]: ../manual/RackNES/sections/roms.tex
