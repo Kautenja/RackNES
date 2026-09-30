@@ -82,3 +82,15 @@
 
 -   Rebrand RackNES and CV Genie as Arhythmetic Units, including panel and
     manual artwork. Preserve existing plugin and module slugs for saved patches.
+
+-   Make CV Genie unassigned rows and menus safe before game selection, clear
+    stale assignments on game changes, and validate restored game/row indices.
+-   Clamp continuous Genie CV to 0--10 V, ignore non-finite signals, and toggle
+    between each element's actual endpoints. Reset toggles on reassignment and
+    preserve their choices in patches, with defaults for older patches.
+-   Correct the five Super Mario Bros. Enemy Heading addresses without changing
+    saved element indices. Clear unused expander messages and bound RAM writes.
+-   Release RackNES snapshots with JSON reference counting, safely serialize an
+    empty emulator, and preserve the current display when a ROM load fails.
+-   Update the manuals to reflect these fixes and add focused SDK-backed
+    regression checks.

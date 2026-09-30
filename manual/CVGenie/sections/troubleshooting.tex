@@ -4,38 +4,31 @@
 Put Genie immediately to the right of RackNES, load a game, select the
 matching map, and assign the connected row. Check that the scene uses the
 chosen variable. Some values are quickly overwritten by game logic.
-\item[An Unassigned row or menu causes a crash.]
-Select a game before opening any row menu or using Randomize. Keep
-Unassigned rows unplugged. The current implementation has unchecked
-selection access; these are required operating precautions for this version.
-\item[Changing games produces strange labels or behavior.]
-Map changes retain the previous indices. Unplug inputs and clear selections
-before switching maps, then choose entries from the new map.
+\item[The rows became Unassigned after changing games.]
+Each map has its own set of elements. Choose assignments from the new map;
+existing cables can stay connected while rows are inactive.
 \item[A toggle appears to ignore the gate.]
 Use distinct rising edges above about 2 V, separated by lows below about
 0.1 V. A high gate writes only on its rising edge. The row's internal state
 may disagree with the game, and the game can overwrite the byte.
-\item[Only 0 and 1 are written despite a larger listed range.]
-Entries marked T use the toggle path regardless of their endpoint values.
-Spawn Powerup, Reverb (Pulse), and Potion Type are affected.
 \item[LOAD does not undo a change.]
 Disconnect continuous CV writes before restoring RackNES's snapshot. Genie
 selections and toggle states are outside that snapshot.
 \item[Two controls change together.]
-Check for duplicate addresses. The Mario Enemy Heading entries all share
-\texttt{0x001A}, also used by Enemy 5 Type. Row order matters for competing
-writes.
-\item[Values wrap or behave unpredictably.]
-Check that continuous CV stays in 0--10 V. There is no input clamp. Also
-check whether the selected byte value is meaningful in the current game
-scene; the table endpoints are not validation of every possible state.
+Check whether multiple rows target the same element. A later row takes
+precedence when both write in the same update. Game logic can also link
+variables that have distinct memory addresses.
+\item[The result stays at one end of the range.]
+Continuous input is limited to 0--10 V. Scale and offset your source if it
+spends much of its time outside that range. Also check whether the selected
+byte value is meaningful in the current game scene.
 \end{description}
 
 \subsection{Sources and credits}
 CV Genie was developed by \textbf{@anlexmatos}. The embedded maps credit
 Data Crystal. The tables in this manual reproduce the project's
 \texttt{src/GameMaps.hpp}; operating behavior follows \texttt{src/CVGenie.cpp}
-and the expander handling in \texttt{src/RackNES.cpp}. They describe this
-implementation rather than corrected or expanded external memory maps.
+and the expander handling in \texttt{src/RackNES.cpp}. The maps describe the named games; other ROM revisions can use different
+addresses.
 See the \href{https://github.com/Kautenja/RackNES/releases/latest/download/RackNES.pdf}{RackNES manual}
 for ROM loading, controller gates, snapshots, clocking, and audio routing.

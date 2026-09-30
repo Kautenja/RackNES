@@ -197,6 +197,9 @@ struct RackNES : Module {
         rightExpander.consumerMessage = rightMessages[1];
     }
 
+    /// Release the optional snapshot through its owning JSON library.
+    ~RackNES() override { json_decref(backup); }
+
     /// Handle a new ROM being loaded into the emulator.
     void handleNewROM() {
         // create a new emulator with the specified ROM and reset it
@@ -204,18 +207,16 @@ struct RackNES : Module {
             // if load game returns true, the load succeeded
             if (emulator.load_game(rom_path_signal)) {
                 // remove the existing backup if there is one
-                if (backup != nullptr) delete backup;
+                json_decref(backup);
                 backup = nullptr;
                 // done loading, return to caller
                 return;
             }
-            // ROM load failed, initialize screen and send error signal
-            initalizeScreen();
+            // Keep the current game and display when replacement fails.
             // send a mapper not found signal to the widget to display a
             // UI dialog to the user
             mapper_not_found_signal = true;
-        } else {  // ROM file not valid, initialize screen and send error signal
-            initalizeScreen();
+        } else {  // ROM file not valid; keep the existing game and display.
             // send a ROM load failure signal to the widget to display a
             // UI dialog to the user
             rom_load_failed_signal = true;
@@ -261,7 +262,7 @@ struct RackNES : Module {
             inputs[INPUT_SAVE].getVoltage()
         )) {
             // delete existing save
-            if (backup != nullptr) delete backup;
+            json_decref(backup);
             // create a new save of the NES state
             backup = emulator.dataToJson();
         }
@@ -314,12 +315,12 @@ struct RackNES : Module {
                 uint16_t *message = reinterpret_cast<uint16_t*>(rightExpander.consumerMessage);
                 // Write requested values from message to requested memory locations
                 for (int i = 0; i < 16; i += 2) {
-                    if (message[i] != 0) {  // data available for consumption
-                        // write the address, data tuple to the emulator
-                        emulator.get_memory_buffer()[message[i]] = message[i + 1];
-                        // consume the data by setting the address to 0
-                        message[i] = 0;
-                    }
+                    // Genie addresses refer to the NES's 2 KiB internal RAM.
+                    const uint16_t address = message[i];
+                    if (address > 0 && address < 0x800)
+                        emulator.get_memory_buffer()[address] = static_cast<uint8_t>(message[i + 1]);
+                    // Consume invalid messages too, so they cannot be replayed.
+                    message[i] = 0;
                 }
             }
             /// TODO: Output Genie
@@ -388,7 +389,8 @@ struct RackNES : Module {
     /// @brief Respond to the module being reset by the host environment.
     void onReset() override {
         emulator.remove_game();
-        if (backup != nullptr) { delete backup; backup = nullptr; }
+        json_decref(backup);
+        backup = nullptr;
         initalizeScreen();
     }
 
@@ -423,7 +425,7 @@ struct RackNES : Module {
         // load backup
         json_t* backup_data = json_object_get(rootJ, "backup");
         // delete any existing backup before overwriting
-        if (backup != nullptr) delete backup;
+        json_decref(backup);
         backup = nullptr;
         // set the backup data if there is one, otherwise just nullptr it.
         // the initial JSON that is passed in is dynamically allocated by the

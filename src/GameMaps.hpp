@@ -16,6 +16,7 @@
 #ifndef GAME_MAPS_HPP_
 #define GAME_MAPS_HPP_
 
+#include <atomic>
 #include <string>
 #include <cstdint>
 
@@ -102,11 +103,13 @@ static const GameParameter PLUMBER_PARAMETERS[PARAMETER_COUNTS[PLUMBER]] = {
     GameParameter(0x0018, 0x00, 0x3C, "Enemy 3 Type"),
     GameParameter(0x0019, 0x00, 0x3C, "Enemy 4 Type"),
     GameParameter(0x001A, 0x00, 0x3C, "Enemy 5 Type"),
-    GameParameter(0x001A, 0x00, 0x02, "Enemy 1 Heading"),
-    GameParameter(0x001A, 0x00, 0x02, "Enemy 2 Heading"),
-    GameParameter(0x001A, 0x00, 0x02, "Enemy 3 Heading"),
-    GameParameter(0x001A, 0x00, 0x02, "Enemy 4 Heading"),
-    GameParameter(0x001A, 0x00, 0x02, "Enemy 5 Heading"),
+    // Enemy_MovingDir is $46 + enemy slot (SMB disassembly).
+    // https://6502disassembly.com/nes-smb/SuperMarioBros.html#SymEnemy_MovingDir
+    GameParameter(0x0046, 0x00, 0x02, "Enemy 1 Heading"),
+    GameParameter(0x0047, 0x00, 0x02, "Enemy 2 Heading"),
+    GameParameter(0x0048, 0x00, 0x02, "Enemy 3 Heading"),
+    GameParameter(0x0049, 0x00, 0x02, "Enemy 4 Heading"),
+    GameParameter(0x004A, 0x00, 0x02, "Enemy 5 Heading"),
     GameParameter(0x006E, 0x00, 0xFF, "Enemy 1 Horizontal Level Position"),
     GameParameter(0x006F, 0x00, 0xFF, "Enemy 2 Horizontal Level Position"),
     GameParameter(0x0070, 0x00, 0xFF, "Enemy 3 Horizontal Level Position"),
@@ -196,48 +199,64 @@ static const GameParameter* games[2] = {
 
 /// @brief A container for memory maps of NES games
 struct GameMap {
-    /// the current ID of the loaded game
-    int gameId = -1;
+    /// The engine publishes the selected game for the UI to display.
+    std::atomic<int> gameId{-1};
 
-    /// @brief Initialize a new game map.
-    GameMap() { }
+    /// @brief Return whether a game ID names a built-in map.
+    static bool isValidGame(int id) { return id >= 0 && id < NUM_GAMES; }
 
-    /// @brief Return the memory address for a given ID.
-    inline uint16_t getAddress(int elementId) const {
-        return games[gameId][elementId].address;
+    /// @brief Return a mapped entry, or nullptr for an unassigned/invalid ID.
+    const GameParameter* getParameter(int elementId) const {
+        const int id = gameId.load();
+        if (!isValidGame(id) || elementId < 0 ||
+            static_cast<unsigned>(elementId) >= PARAMETER_COUNTS[id]) return nullptr;
+        return &games[id][elementId];
     }
 
-    /// @brief Return the minimum value for the memory address with a given ID.
-    inline uint8_t getMinValue(int elementId) const {
-        return games[gameId][elementId].minimum;
+    /// @brief Return zero (the empty-message sentinel) for invalid selections.
+    uint16_t getAddress(int elementId) const {
+        const auto* parameter = getParameter(elementId);
+        return parameter ? parameter->address : 0;
     }
 
-    /// @brief Return the maximum value for the memory address with a given ID.
-    inline uint8_t getMaxValue(int elementId) const {
-        return games[gameId][elementId].maximum;
+    /// @brief Return the first endpoint, or zero for an invalid selection.
+    uint8_t getMinValue(int elementId) const {
+        const auto* parameter = getParameter(elementId);
+        return parameter ? parameter->minimum : 0;
     }
 
-    /// @brief Return whether the memory address with a given ID is a toggle.
-    inline bool isToggle(int elementId) const {
-        return games[gameId][elementId].toggle;
+    /// @brief Return the second endpoint, or zero for an invalid selection.
+    uint8_t getMaxValue(int elementId) const {
+        const auto* parameter = getParameter(elementId);
+        return parameter ? parameter->maximum : 0;
     }
 
-    /// @brief Return the string name for the memory address with a given ID.
-    inline std::string getName(int elementId) const {
-        return games[gameId][elementId].name;
+    /// @brief Return whether a valid selection uses rising-edge toggles.
+    bool isToggle(int elementId) const {
+        const auto* parameter = getParameter(elementId);
+        return parameter && parameter->toggle;
     }
 
-    inline unsigned getNumCheats() const {
-        return PARAMETER_COUNTS[gameId];
+    /// @brief Return the display name, including for unassigned rows.
+    std::string getName(int elementId) const {
+        const auto* parameter = getParameter(elementId);
+        return parameter ? parameter->name : "Unassigned";
     }
 
-    /// @brief Return the name for the game associated with a given ID.
-    inline std::string getGameName(int id) const {
-        return NAMES[id];
+    /// @brief Return zero while no valid game is selected.
+    unsigned getNumCheats() const {
+        const int id = gameId.load();
+        return isValidGame(id) ? PARAMETER_COUNTS[id] : 0;
     }
 
-    /// @brief Set the game to a new game ID.
-    inline void setGame(GameIds id) { gameId = id; }
+    /// @brief Return a game's display name, or the unselected placeholder.
+    std::string getGameName(int id) const {
+        return isValidGame(id) ? NAMES[id] : "No Game Selected";
+    }
+
+    /// @brief Select a valid game, otherwise clear the selection.
+    void setGame(int id) { gameId.store(isValidGame(id) ? id : -1); }
+
 };
 
 #endif  // GAME_MAPS_HPP_

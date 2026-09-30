@@ -22,9 +22,9 @@ Read the relevant sources before editing:
 
 This guide takes its working principles from Fourier's agent instructions,
 adapted to the files and workflows in RackNES. It is self-contained; Fourier
-is not a build dependency. There is currently no separate contributor guide or
-automated plugin test suite. The user-manual CI workflow is described in
-[manual/README.md](manual/README.md).
+is not a build dependency. There is no separate contributor guide. Focused
+SDK-backed regression checks are described in [tests/README.md](tests/README.md);
+the user-manual CI workflow is described in [manual/README.md](manual/README.md).
 
 ## Working In This Repository
 
@@ -140,11 +140,12 @@ plugins directory; use it when local installation is part of the task.
 `make clean` removes plugin build and distribution outputs. Reuse the same `RACK_DIR`
 override for all targets when using an external SDK.
 
-There is no `make test` target or established standalone test harness. The
-Makefile's `-DTEST` flag does not run tests. Validate source changes with a Rack
-build and the relevant regression or manual checks, reporting missing SDKs or
-other prerequisites explicitly. Do not introduce a test framework merely to
-complete a small unrelated change.
+There is no root `make test` target. Run the focused SDK-backed checks with
+`make -C tests`; [tests/README.md](tests/README.md) documents their scope and
+prerequisites. The plugin Makefile's `-DTEST` flag does not run tests. Validate
+source changes with a Rack build and the relevant regression or manual checks,
+reporting missing SDKs or other prerequisites explicitly. Do not introduce a
+test framework merely to complete a small unrelated change.
 
 For affected integration behavior, check in Rack:
 

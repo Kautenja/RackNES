@@ -2,20 +2,20 @@
 CV Genie writes control voltages into game memory in RackNES. Eight input
 rows each target one named element from a built-in game map. Depending on
 the element, voltage continuously sets a byte value or a trigger toggles a
-stored 0/1 state.
+choice between two values.
 
 In the module browser, choose \textbf{CV Genie (Input)}. This version
 provides the input expander only. It does not output game-memory voltages,
 accept typed Game Genie codes, or offer an arbitrary-address editor.
 
-\subsection{Set up in this order}
+\subsection{Start here}
 \begin{enumerate}
 \item Load and start a supported game in RackNES. CV Genie includes maps for
 \textbf{Super Mario Bros.} and \textbf{The Legend of Zelda}.
 \item Place CV Genie \textbf{immediately to the right of RackNES}, touching
 it in the same row. There must be no module or empty space between them.
-\item Leave the eight inputs unplugged. Click the top display and select
-the game that is actually running in RackNES.
+\item Click the top display and select the game that is actually running
+in RackNES.
 \item Click a row's display and choose a \textbf{Game Element}. For a first
 Super Mario Bros. experiment, try \textbf{Player Horizontal Screen Position}.
 \item Connect an adjustable \textbf{0--10 V} source to that row. Start near
@@ -25,12 +25,11 @@ byte; game logic decides how it appears on screen.
 connected in the same way, one at a time.
 \end{enumerate}
 
-\subsection{An important setup limitation}
-\textbf{Choose the game before opening row menus, and assign a row before
-connecting CV.} The current implementation does not guard every access to
-an unselected game or an Unassigned row. These combinations can access
-invalid memory and may crash Rack. An Unassigned row with a cable is not a
-safe disabled input; unplug it first.
+\subsection{Enable only the rows you need}
+An \textbf{Unassigned} row is inactive, even with a cable connected.
+Choose a Game Element to enable it, or choose Unassigned to stop its writes.
+Before a game is selected, all rows are inactive. Changing the game clears
+all assignments so you can choose elements from the new map.
 
 \subsection{What a game map means}
 The top selector chooses a table of addresses. It neither loads a ROM nor

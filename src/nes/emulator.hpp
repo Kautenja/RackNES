@@ -314,6 +314,8 @@ class Emulator {
     ///
     json_t* dataToJson() const {
         json_t* rootJ = json_object();
+        // An empty module may not have initialized its hardware state yet.
+        if (!has_game()) return rootJ;
         if (cartridge != nullptr)
             json_object_set_new(rootJ, "cartridge", cartridge->dataToJson());
         json_object_set_new(rootJ, "controllers[0]", controllers[0].dataToJson());

@@ -28,15 +28,14 @@ then compare with the input disconnected.
 \subsection{Trigger a toggle}
 Choose \textbf{Player Swimming} in Super Mario Bros. or a Zelda entry marked
 T in the reference table. Feed separated 0--5 V gates. Each rising edge
-alternates the written value. Holding a gate does not keep rewriting it,
+alternates between the entry's two endpoint values. Holding a gate does not keep rewriting it,
 and a second row's trigger state is independent.
 
 \subsection{How rows interact}
 If several rows target the same address, they compete. RackNES consumes rows
 in top-to-bottom order, so a later row with a write in the same update takes
 precedence. The game can then overwrite that value during emulation.
-Some differently named entries already share an address; see the Mario map
-notes on page~\pageref{sec:maps}.
+Assign distinct elements when you want independent control of game variables.
 
 Genie works at Rack's sample rate rather than the controller inputs' slower
 16-sample scan. Expander messages pass between processing steps, so a write

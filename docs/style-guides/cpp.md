@@ -9,7 +9,7 @@ RackNES's emulator, namespaces, build structure, and licensing.
 
 -   Use the Rack build's C++11 baseline for production headers and sources.
     Do not introduce newer language requirements without an explicit build
-    compatibility change. RackNES has no separate test or benchmark harness.
+    compatibility change. Focused Rack SDK regression checks live in `tests/`.
 -   Use `.hpp` for C++ headers and `.cpp` for implementation and test files.
     Keep templates in headers. Preserve existing bundled-library extensions.
 -   Use the `NES` namespace for emulator code. Keep Rack types and host
@@ -145,8 +145,8 @@ and lifetime for buffers crossing that boundary.
 
 Follow [Development And Validation](../../AGENTS.md#development-and-validation)
 for build commands, regression evidence, fixtures, and manual Rack checks.
-There is no established automated test harness; add focused deterministic
-checks where feasible without assuming Fourier's Catch2 targets exist here.
+Extend the focused deterministic checks in `tests/` where relevant; they
+use assertions and the Rack SDK, not Fourier's Catch2 targets.
 
 Before completing a change, check that its files have clear ownership,
 math and units are documented, emulator and DSP logic remain independent of Rack,

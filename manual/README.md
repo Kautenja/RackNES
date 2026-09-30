@@ -99,23 +99,22 @@ several places where comments or the former manuals overstated the behavior.
 
 The Genie tables preserve source order and contain all 53 Mario and 55 Zelda
 entries. Compare names, hexadecimal addresses, decimal endpoints, and toggle
-flags when editing them. In particular, preserve these current limitations in
-the prose until the implementation changes:
+flags when editing them. CV Genie validates selections, clamps continuous
+voltage to 0--10 V, and toggles between the mapped endpoints. Its saved JSON
+retains the existing game and location indices, with an optional per-row
+`Toggle State` field. The Mario Enemy Heading entries use `0x0046` through
+`0x004A`, following `Enemy_MovingDir` plus the slot index in the
+[SMB disassembly](https://6502disassembly.com/nes-smb/SuperMarioBros.html#SymEnemy_MovingDir).
 
--   A connected Unassigned row, row menu before game selection, or Randomize
-    before selection can access an invalid map index.
--   Selecting a different game retains old row indices.
--   Toggles write 0/1 regardless of their endpoint metadata and are not serialized.
--   All five Mario Enemy Heading entries share `0x001A` with Enemy 5 Type.
--   Continuous Genie voltage is not clamped to 0--10 V.
--   Hang holds output voltages while control and Genie processing continue.
--   Snapshot serialization omits the frame counter and queued audio samples.
--   CPU cycles per Rack sample round upward; the APU conversion clock is set
-    separately to 768000 in the module constructor. Clock CV is not calibrated
-    audio pitch tracking or an external synchronization input.
+Some operating distinctions still matter: Hang holds outputs while controls
+and Genie writes continue; snapshots omit the frame counter and queued audio;
+and clock modulation changes execution speed rather than synchronizing to
+an external clock or providing calibrated pitch tracking. Keep these
+explanations practical and separate from setup instructions.
 
-This manual update does not fix these behaviors. Patch ideas are suggestions
-based on the implementation, not claims of testing every game or ROM revision.
+The focused checks in `tests/` cover selection handling, byte conversion,
+toggles, patch compatibility, and RackNES snapshot ownership. Patch ideas
+are suggestions, not claims of testing every game or ROM revision.
 
 ## Review The PDFs
 

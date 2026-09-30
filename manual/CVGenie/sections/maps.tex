@@ -1,8 +1,8 @@
 \manualchapter{Built-in game maps}{sec:maps}
 These tables list every selectable entry in menu order. Addresses are
-hexadecimal; the two endpoint columns are decimal byte values at 0 V and
-10 V for continuous entries. \textbf{C} means a continuous write;
-\textbf{T} means a trigger toggles 0/1 and ignores the endpoints.
+hexadecimal; First and Second are decimal byte values. For continuous
+entries (\textbf{C}), First corresponds to 0 V and Second to 10 V. For
+toggles (\textbf{T}), rising triggers alternate between these two values.
 
 The maps contain 53 Mario entries and 55 Zelda entries. They identify no
 specific ROM region or revision, and Genie does not check the ROM's identity.
@@ -10,21 +10,19 @@ A supported mapper in RackNES does not establish that a memory map matches
 that ROM. The names and addresses below are the ones shipped in the code.
 
 \subsection{Super Mario Bros.}
-All five Enemy Heading entries use \texttt{0x001A}, the same address as
-Enemy 5 Type. They are not independent enemy-direction controls in this
-version. Spawn Powerup is marked as a toggle even though its stored
-endpoints are 0 and 46; the actual writes are 0 and 1.
+The five Enemy Heading entries control separate enemy slots. Their values
+are 0--2; which enemies occupy those slots depends on the current scene.
 
 \begingroup\small
 \setlength{\tabcolsep}{4pt}
 \begin{longtable}{@{}p{.49\textwidth}lrrc@{}}
 \toprule
-\textbf{Game Element} & \textbf{Address} & \textbf{0 V} & \textbf{10 V} & \textbf{Mode} \\
+\textbf{Game Element} & \textbf{Address} & \textbf{First} & \textbf{Second} & \textbf{Mode} \\
 \midrule
 \endfirsthead
 \multicolumn{5}{@{}l}{\textit{Super Mario Bros. (continued)}}\\[4pt]
 \toprule
-\textbf{Game Element} & \textbf{Address} & \textbf{0 V} & \textbf{10 V} & \textbf{Mode} \\
+\textbf{Game Element} & \textbf{Address} & \textbf{First} & \textbf{Second} & \textbf{Mode} \\
 \midrule
 \endhead
 \midrule\multicolumn{5}{r@{}}{\textit{Continued on next page}}\\
@@ -58,11 +56,11 @@ Enemy 2 Type & \texttt{0x0017} & 0 & 60 & C \\
 Enemy 3 Type & \texttt{0x0018} & 0 & 60 & C \\
 Enemy 4 Type & \texttt{0x0019} & 0 & 60 & C \\
 Enemy 5 Type & \texttt{0x001A} & 0 & 60 & C \\
-Enemy 1 Heading & \texttt{0x001A} & 0 & 2 & C \\
-Enemy 2 Heading & \texttt{0x001A} & 0 & 2 & C \\
-Enemy 3 Heading & \texttt{0x001A} & 0 & 2 & C \\
-Enemy 4 Heading & \texttt{0x001A} & 0 & 2 & C \\
-Enemy 5 Heading & \texttt{0x001A} & 0 & 2 & C \\
+Enemy 1 Heading & \texttt{0x0046} & 0 & 2 & C \\
+Enemy 2 Heading & \texttt{0x0047} & 0 & 2 & C \\
+Enemy 3 Heading & \texttt{0x0048} & 0 & 2 & C \\
+Enemy 4 Heading & \texttt{0x0049} & 0 & 2 & C \\
+Enemy 5 Heading & \texttt{0x004A} & 0 & 2 & C \\
 Enemy 1 Horizontal Level Position & \texttt{0x006E} & 0 & 255 & C \\
 Enemy 2 Horizontal Level Position & \texttt{0x006F} & 0 & 255 & C \\
 Enemy 3 Horizontal Level Position & \texttt{0x0070} & 0 & 255 & C \\
@@ -88,21 +86,19 @@ Level Palette & \texttt{0x0773} & 0 & 4 & C \\
 \endgroup
 \clearpage
 \subsection{The Legend of Zelda}
-Reverb (Pulse) has descending stored endpoints 128 and 1 but uses the toggle
-path, so it writes only 0/1. Potion Type likewise writes only 0/1 despite
-its 0--2 endpoints. Note Delay and Triangle Freeze are continuous 0--1
-entries, not toggles: in the intended range, 1 is reached at 10 V.
+Note Delay and Triangle Freeze are continuous 0--1 entries: 1 is reached
+at 10 V. Reverb (Pulse) alternates between 128 and 1 on rising triggers.
 
 \begingroup\small
 \setlength{\tabcolsep}{4pt}
 \begin{longtable}{@{}p{.49\textwidth}lrrc@{}}
 \toprule
-\textbf{Game Element} & \textbf{Address} & \textbf{0 V} & \textbf{10 V} & \textbf{Mode} \\
+\textbf{Game Element} & \textbf{Address} & \textbf{First} & \textbf{Second} & \textbf{Mode} \\
 \midrule
 \endfirsthead
 \multicolumn{5}{@{}l}{\textit{The Legend of Zelda (continued)}}\\[4pt]
 \toprule
-\textbf{Game Element} & \textbf{Address} & \textbf{0 V} & \textbf{10 V} & \textbf{Mode} \\
+\textbf{Game Element} & \textbf{Address} & \textbf{First} & \textbf{Second} & \textbf{Mode} \\
 \midrule
 \endhead
 \midrule\multicolumn{5}{r@{}}{\textit{Continued on next page}}\\

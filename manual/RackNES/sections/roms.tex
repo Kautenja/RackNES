@@ -41,10 +41,8 @@ The selected path failed ROM validation. Check the file and its format.
 A patch's stored ROM path could not be validated on restore. Check that the
 same ROM is still present at that path.
 \end{description}
-A failed new-ROM attempt clears the screen buffer but does not necessarily
-remove the previously loaded cartridge. Do not assume that a blank screen
-means the old game has stopped. Load a known supported ROM to establish the
-intended state.
+A failed new-ROM attempt leaves the current game, display, and SAVE slot
+in place. Correct the file selection and try again.
 
 \subsection{Moving a patch between computers}
 Keep the original ROM available at its saved path. A Rack patch stores the
