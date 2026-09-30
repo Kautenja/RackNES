@@ -134,6 +134,64 @@ static void check_mmc1_chr_banks() {
     assert(std::remove(path) == 0);
 }
 
+/// Negative samples agree across bulk, overlapping, stereo, and reader paths.
+static void check_blip_sample_reads() {
+    Blip_Buffer bulk, chunked, stereo, direct;
+    blip_sample_t input[32];
+    for (int i = 0; i < 32; ++i) input[i] = (i / 4) % 2 ? 1000 : -1000;
+    for (auto* buffer : {&bulk, &chunked, &stereo, &direct}) {
+        assert(buffer->sample_rate(48000) == nullptr);
+        buffer->clock_rate(48000);
+        buffer->mix_samples(input, 32);
+        buffer->end_frame(64);
+    }
+    blip_sample_t expected[64], interleaved[128];
+    for (auto& value : interleaved) value = 1234;
+    assert(bulk.read_samples(expected, 64) == 64);
+    assert(stereo.read_samples(interleaved, 64, true) == 64);
+    Blip_Reader reader;
+    const int bass_shift = reader.begin(direct);
+    bool negative = false, positive = false;
+    for (int i = 0; i < 64; ++i) {
+        blip_sample_t value;
+        assert(chunked.read_samples(&value, 1) == 1);
+        assert(value == expected[i]);
+        assert(interleaved[2 * i] == expected[i]);
+        assert(interleaved[2 * i + 1] == 1234);
+        assert(reader.read() == expected[i]);
+        reader.next(bass_shift);
+        negative |= value < 0;
+        positive |= value > 0;
+    }
+    reader.end(direct);
+    direct.remove_samples(64);
+    assert(negative && positive);
+    assert(chunked.samples_avail() == 0 && direct.samples_avail() == 0);
+}
+
+/// Reset clears stale PPU status and the buffered PPUDATA read.
+static void check_ppu_reset() {
+    NES::PPU ppu;
+    NES::PictureBus bus;
+    ppu.reset();
+    assert(ppu.get_status() == 0);
+    bus.write(0x2000, 0x55);
+    ppu.set_data_address(0x20);
+    ppu.set_data_address(0x00);
+    assert(ppu.get_data(bus) == 0);
+    assert(ppu.get_data(bus) == 0x55);
+    json_t* stale = json_pack("{s:b,s:i}", "is_sprite_zero_hit", 1, "data_buffer", 0x77);
+    ppu.dataFromJson(stale);
+    json_decref(stale);
+    assert(ppu.get_status() == 0x40);
+    ppu.reset();
+    assert(ppu.get_status() == 0);
+    ppu.set_data_address(0x20);
+    ppu.set_data_address(0x00);
+    assert(ppu.get_data(bus) == 0);
+    assert(ppu.get_data(bus) == 0x55);
+}
+
 /// Exercise all five voices through CPU bus writes on NROM and CNROM.
 static void check_graphics_audio_preservation(uint64_t blip_clock) {
     const char* path = ".build/mapper-audio.nes";
@@ -276,8 +334,7 @@ static void check_upstream_graphics_fixes() {
 }
 
 int main(int argc, char** argv) {
-    // Separate audio characterization exposes a known Blip_Buffer sanitizer
-    // failure in the baseline; see the spec and tests/README.md.
+    // Allow isolated audio characterization; the default Make target runs it too.
     if (argc == 2 && std::string(argv[1]) == "--audio-only") {
         check_graphics_audio_preservation(NES::CLOCK_RATE);
         check_graphics_audio_preservation(768000);
@@ -285,6 +342,8 @@ int main(int argc, char** argv) {
     }
     assert(argc == 1);
     check_controller_state();
+    check_blip_sample_reads();
+    check_ppu_reset();
     check_mmc1_chr_banks();
     check_mapper_headers();
     check_upstream_graphics_fixes();

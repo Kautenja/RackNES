@@ -4,6 +4,9 @@
 //
 //  Copyright (c) 2019 Christian Kauten. All rights reserved.
 //
+//  Reset initialization adapted from nes-py 301da52f7f75de38 (MIT).
+//  See docs/licenses/THIRD-PARTY.txt for the upstream notice.
+//
 
 #include <cstring>
 #include "ppu.hpp"
@@ -14,8 +17,11 @@ void PPU::reset() {
     is_long_sprites = false;
     is_interrupting = false;
     is_vblank = false;
+    is_sprite_zero_hit = false;
     is_showing_background = true;
     is_showing_sprites = true;
+    is_hiding_edge_background = false;
+    is_hiding_edge_sprites = false;
     is_even_frame = true;
     is_first_write = true;
     background_page = LOW;
@@ -26,6 +32,7 @@ void PPU::reset() {
     sprite_data_address = 0;
     fine_x_scroll = 0;
     temp_address = 0;
+    data_buffer = 0;
     data_address_increment = 1;
     pipeline_state = PRE_RENDER;
     scanline_sprites.reserve(8);

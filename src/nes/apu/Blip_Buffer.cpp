@@ -324,10 +324,8 @@ void Blip_Buffer::remove_samples( long count )
 	
 	// copy remaining samples to beginning and clear old samples
 	long remain = samples_avail() + widest_impulse_ + copy_extra;
-	if ( count >= remain )
-		memmove( buffer_, buffer_ + count, remain * sizeof (buf_t_) );
-	else
-		memcpy(  buffer_, buffer_ + count, remain * sizeof (buf_t_) );
+	// Source and destination overlap when count is smaller than remain.
+	memmove( buffer_, buffer_ + count, remain * sizeof (buf_t_) );
 	memset( buffer_ + remain, sample_offset & 0xFF, count * sizeof (buf_t_) );
 }
 
@@ -353,7 +351,8 @@ long Blip_Buffer::read_samples( blip_sample_t* out, long max_samples, bool stere
 		for ( long n = count; n--; ) {
 			long s = accum >> accum_fract;
 			accum -= accum >> bass_shift;
-			accum += (long (*buf++) - sample_offset) << accum_fract;
+			// Multiplication also defines scaling for negative deltas.
+			accum += (long (*buf++) - sample_offset) * (1L << accum_fract);
 			*out++ = (blip_sample_t) s;
 			
 			// clamp sample
@@ -365,7 +364,7 @@ long Blip_Buffer::read_samples( blip_sample_t* out, long max_samples, bool stere
 		for ( long n = count; n--; ) {
 			long s = accum >> accum_fract;
 			accum -= accum >> bass_shift;
-			accum += (long (*buf++) - sample_offset) << accum_fract;
+			accum += (long (*buf++) - sample_offset) * (1L << accum_fract);
 			*out = (blip_sample_t) s;
 			out += 2;
 			

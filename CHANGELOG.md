@@ -80,6 +80,11 @@
 
 ### 2.2.0 (Unreleased)
 
+-   Fix overlapping sample-buffer copies and undefined negative-value shifts
+    in Blip_Buffer. Initialize PPU edge visibility, sprite-hit status, and the
+    PPUDATA buffer on reset. Run the five-channel audio fixture in the default
+    regression suite, including sanitizers where available.
+
 -   Follow Rack's global light/dark panel preference for RackNES, CV Genie,
     and browser previews, including live theme changes. Replace the Plugin
     Theme menu and stop reading the legacy `RackNES.json` preference. Require

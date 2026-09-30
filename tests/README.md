@@ -82,6 +82,10 @@ complete emulator or UI validation.
     CNROM CHR-bank bounds, read-only CHR, legacy register restoration, and
     unchanged PRG windows. Four-screen decoding is tested only as metadata;
     four-screen VRAM support is still absent.
+-   Playback safety: Blip_Buffer bulk, one-sample, stereo, and direct-reader
+    paths agree on positive and negative PCM, including overlapping buffer
+    compaction. PPU reset clears sprite-hit status and stale buffered reads.
+    The five-channel CPU-program audio fixture below runs in the default suite.
 
 The Genie fixture uses a real Rack `Module` neighbor with two explicit expander
 buffers. Tests connect input channels as Rack's engine would: `setChannels()`
@@ -94,7 +98,7 @@ CPU/PPU/APU timing or audio conversion.
 
 ## Focused Audio Characterization
 
-An optional CPU-program fixture compares NROM and CNROM integer PCM for all
+A CPU-program fixture compares NROM and CNROM integer PCM for all
 five voices, including looping DMC while the CPU writes CHR bank selections.
 It checks 2,000 host samples at each of 44.1, 48, 96, and 192 kHz, at nominal
 CPU speed with the existing integer cycle loop, using both the core's default
@@ -103,11 +107,11 @@ match sample by sample, produce nonzero output on every channel, and generate
 the same number of frame callbacks. It also prints a reproducible PCM
 fingerprint for before/after comparisons on the same toolchain.
 
-The unchanged bundled `Blip_Buffer::remove_samples()` currently triggers
-AddressSanitizer's `memcpy-param-overlap` check during this workload. The
-optional audio run remains separate from the default sanitizer regressions;
-this is a known baseline failure, not a passing instrumented audio test.
-From the repository root, reproduce it on macOS with the prepared Rack tree:
+This fixture previously exposed overlapping copies and negative signed shifts
+in Blip_Buffer, followed by uninitialized PPU edge-visibility flags. Those
+defects are fixed, and `make -C tests` now includes the audio run under the
+configured sanitizers. From the repository root on macOS with the prepared
+Rack tree, run the full suite or isolate playback:
 
 ```shell
 make -C tests -j2
@@ -125,6 +129,7 @@ make -C tests BUILD=.build/audio SANITIZERS= .build/audio/racknes
 Use `LD_LIBRARY_PATH` on Linux, the Rack runtime in `PATH` on Windows, and
 the same external `RACK_DIR` and runtime directory for both builds if needed.
 The generator is in `check_graphics_audio_preservation()` in `racknes.cpp`;
-it removes its temporary ROM on success. Rendering is disabled in this
-fixture. It does not cover clock modulation, channel/MIX routing, listening,
+it removes its temporary ROM on success. The fixture leaves reset-default
+rendering enabled with zero-filled CHR; it does not configure graphics through
+PPU registers. It does not cover clock modulation, channel/MIX routing, listening,
 or audio changes caused by a game's response to corrected graphics behavior.

@@ -567,18 +567,60 @@ pulses, triangle, noise, and looping DMC, comparing NROM and CNROM PCM at
 after this port, the uninstrumented core-default-clock PCM fingerprint was
 `f5146c03e0a6ceb2`; every channel was nonzero and NROM/CNROM samples matched
 exactly. The fixture also checks both mappers with RackNES's 768,000 Hz Blip
-clock (matching PCM, fingerprint `d8915d435c9cf9a9`). Rendering is disabled and
-no listening or manual Rack session was run.
+clock (matching PCM, fingerprint `d8915d435c9cf9a9`). The fixture leaves
+reset-default rendering enabled with zero-filled CHR; the earlier description
+of rendering as disabled was incorrect. No listening or manual Rack session
+was run.
 This evidence does not guarantee identical game audio when a game responds to
 corrected PPU behavior. Reproduction commands are in `tests/README.md`.
 
 The audio fixture exposed a pre-existing ASan `memcpy-param-overlap` failure
-in `Blip_Buffer::remove_samples()` before any production port changes. The
-bundled audio code remains untouched, and instrumented audio characterization
-is still failing; only the separate `SANITIZERS=` comparison passes. Fixing
-that library defect is a separate follow-up. Wider PRG/CHR bank validation,
+in `Blip_Buffer::remove_samples()` before any production port changes. At that
+stage, bundled audio code remained untouched and only the separate
+`SANITIZERS=` comparison passed. The follow-up below resolves the instrumented
+playback failures. Wider PRG/CHR bank validation,
 state migration, cloning/rebinding, full four-screen support, all new mappers,
 and the complete audio/timing acceptance matrix remain open.
+
+### Playback Sanitizer Fixes: September 30, 2026
+
+Fixed the pre-existing failures reached by the five-channel fixture:
+
+-   `Blip_Buffer::remove_samples()` always uses `memmove` when compacting its
+    buffer. The old branch incorrectly selected `memcpy` for overlapping
+    ranges. Sample counts, clearing, filtering, and scheduling stay unchanged.
+-   Mono, stereo, and `Blip_Reader` scale signed deltas by multiplication rather
+    than left-shifting negative values. The unsigned 16-bit buffer minus
+    `0x7F7F`, scaled by `2^15`, fits even a 32-bit `long`. This preserves the
+    intended arithmetic without undefined signed shifts.
+-   Adapted the four missing reset assignments from the pinned nes-py
+    `nes_emu/src/nes_emu/ppu.cpp`: initialize edge visibility, clear sprite-hit
+    status, and zero the buffered PPUDATA byte. Keep RackNES's existing
+    rendering-enable defaults, OAM contents, RAM, NTSC path, and reset timing.
+
+The Blip fixes necessarily touch the bundled library because both defects
+occur inside its sample reader; changing the host wrapper cannot make those
+operations defined. Original LGPL notices are preserved. The PPU adaptation
+is recorded in the existing MIT provenance inventory.
+
+Validation on macOS arm64 with Apple Clang 21 and the prepared Rack tree:
+
+-   Reproduced the original overlapping-copy failure before editing, then the
+    uninitialized PPU boolean and negative signed shift as playback progressed.
+-   `make -C tests -j2`: passed CV Genie, RackNES, and the newly mandatory
+    `--audio-only` run with ASan and UBSan. Direct sample-reader checks compare
+    bulk, single-sample, stereo, and `Blip_Reader` results on positive and
+    negative PCM; PPU checks cover initial and repeated reset status/buffering.
+-   `make -j4`: plugin build passed; existing SDK warnings remain.
+-   `make -C tests BUILD=.build/audio SANITIZERS= .build/audio/racknes`, then
+    `(cd tests && DYLD_LIBRARY_PATH=../../.. .build/audio/racknes --audio-only)`:
+    passed. Both sanitized and uninstrumented fingerprints equal the recorded
+    pre-fix values `f5146c03e0a6ceb2` and `d8915d435c9cf9a9` at their respective
+    Blip clocks. These results cover the existing four sample-rate workloads,
+    not all possible games, clock modulation, or mixer configurations.
+-   `git diff --check`: passed. No manual Rack/listening session or other
+    platform build was performed. No remaining sanitizer failure was observed
+    in these workloads; broader spec 001 completion gates remain open.
 
 [upstream]: https://github.com/Kautenja/nes-py/tree/301da52f7f75de380e6e195fd36621c3d5b03757
 [factory]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/mapper_factory.cpp

@@ -23,6 +23,7 @@ OBJECTS := $(patsubst ../%.cpp,$(BUILD)/%.o,$(SOURCES)) $(BUILD)/src/nes/ntsc/ne
 check: $(BUILD)/cv-genie$(EXE_SUFFIX) $(BUILD)/racknes$(EXE_SUFFIX)
 	DYLD_LIBRARY_PATH="$(RACK_DIR):$$DYLD_LIBRARY_PATH" LD_LIBRARY_PATH="$(RACK_DIR):$$LD_LIBRARY_PATH" $(BUILD)/cv-genie$(EXE_SUFFIX)
 	DYLD_LIBRARY_PATH="$(RACK_DIR):$$DYLD_LIBRARY_PATH" LD_LIBRARY_PATH="$(RACK_DIR):$$LD_LIBRARY_PATH" $(BUILD)/racknes$(EXE_SUFFIX)
+	DYLD_LIBRARY_PATH="$(RACK_DIR):$$DYLD_LIBRARY_PATH" LD_LIBRARY_PATH="$(RACK_DIR):$$LD_LIBRARY_PATH" $(BUILD)/racknes$(EXE_SUFFIX) --audio-only
 $(BUILD)/cv-genie$(EXE_SUFFIX): cv_genie.cpp ../src/CVGenie.cpp ../src/GameMaps.hpp ../src/theme.hpp
 	@mkdir -p $(BUILD)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MMD -MP -MF $(BUILD)/cv-genie.d $< $(LDLIBS) -o $@
