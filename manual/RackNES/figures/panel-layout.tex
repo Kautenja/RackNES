@@ -1,0 +1,35 @@
+% Spatial guide to RackNESWidget in src/RackNES.cpp; not runtime artwork.
+\begin{tikzpicture}[x=1pt,y=-1pt]
+  \draw[panel,rounded corners=3pt] (0,0) rectangle (570,380);
+  \node[label] at (285,8) {RACKNES};
+  \draw[detail] (157,18) rectangle (413,258);
+  \node[label,align=center] at (285,135) {NES VIDEO\\Display only};
+  % Controller button/jack pairs retain UP, DOWN, LEFT, RIGHT, SELECT, START, B, A.
+  \foreach \y/\name in {34/UP,80/DOWN,126/LEFT,172/RIGHT,
+    218/SELECT,264/START,301/B,347/A} {
+    \PanelButton{37}{\y}\PanelJack{74}{\y}
+    \PanelJack{494}{\y}\PanelButton{528}{\y}
+    \node[label,font=\sffamily\fontsize{7}{8}\selectfont] at (55,\y-18) {\name};
+    \node[label,font=\sffamily\fontsize{7}{8}\selectfont] at (511,\y-18) {\name};
+  }
+  \PanelBadge{12}{190}{1}\PanelBadge{556}{190}{2}
+  \PanelJack{128}{61}\PanelBadge{103}{61}{3}
+  \PanelKnob{128}{113}\PanelBadge{103}{113}{4}
+  \PanelKnob{128}{168}\PanelBadge{103}{168}{5}
+  \PanelJack{128}{225}\PanelBadge{103}{225}{6}
+  \node[label] at (128,41) {CLK};
+  \node[label] at (128,91) {SPEED};
+  \node[label] at (128,195) {AMOUNT};
+  \node[label] at (128,249) {MOD};
+  \foreach \y/\name/\num in {60/SAVE/7,115/LOAD/8,170/HANG/9,225/RESET/10} {
+    \PanelJack{433}{\y}\PanelButton{463}{\y}
+    \node[label] at (449,\y-21) {\name};
+    \PanelBadge{449}{\y+21}{\num}
+  }
+  \foreach \x/\name in {174/SQ1,218/SQ2,262/TRI,306/NOI,350/DMC,394/MIX} {
+    \node[label] at (\x,272) {\name};
+    \PanelJack{\x}{291}\PanelKnob{\x}{338}
+  }
+  \draw[detail] (161,359)--(363,359);
+  \PanelBadge{262}{369}{11}\PanelBadge{394}{369}{12}
+\end{tikzpicture}

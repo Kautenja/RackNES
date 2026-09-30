@@ -1,0 +1,16 @@
+% Schematic controls; coordinates use Rack's 380-unit panel height.
+\tikzset{
+  panel/.style={draw=manualInk,line width=.7pt},
+  detail/.style={draw=manualMuted!55,line width=.4pt},
+  label/.style={font=\sffamily\fontsize{9}{10}\selectfont,text=manualInk},
+  badge/.style={circle,fill=manualAccent,text=white,inner sep=0pt,
+    minimum size=16pt,font=\sffamily\bfseries\fontsize{10}{10}\selectfont}}
+\newcommand{\PanelJack}[2]{%
+  \draw[panel,fill=white] (#1,#2) circle (9);
+  \draw[detail] (#1,#2) circle (5);}
+\newcommand{\PanelKnob}[2]{%
+  \draw[panel,fill=white] (#1,#2) circle (12);
+  \draw[panel] (#1,#2)--(#1,#2-9);}
+\newcommand{\PanelButton}[2]{%
+  \draw[panel,rounded corners=2pt] (#1-10,#2-10) rectangle (#1+10,#2+10);}
+\newcommand{\PanelBadge}[3]{\node[badge] at (#1,#2) {#3};}

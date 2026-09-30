@@ -1,0 +1,16 @@
+% Spatial guide to InputGenieWidget in src/CVGenie.cpp.
+\begin{tikzpicture}[x=1pt,y=-1pt]
+  \draw[panel,rounded corners=3pt] (0,0) rectangle (180,380);
+  \draw[panel] (9.5,13) rectangle (170,36);
+  \node[label] at (90,25) {GAME SELECTION};
+  \PanelBadge{-13}{25}{1}
+  \foreach \i in {0,...,7} {
+    \pgfmathsetmacro{\y}{69+38.5*\i}
+    \PanelJack{26}{\y}
+    \draw[detail] (66,\y-12) rectangle (168,\y+12);
+    \node[label] at (117,\y) {ROW \the\numexpr\i+1\relax};
+  }
+  \draw[draw=manualAccent] (-4,55)--(-10,55)--(-10,351)--(-4,351);
+  \PanelBadge{-13}{201}{2}
+  \node[label] at (90,368) {CV GENIE};
+\end{tikzpicture}

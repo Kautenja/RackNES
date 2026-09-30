@@ -12,7 +12,7 @@ with each item. Move this document to `docs/specs/archive/` on completion.
 
 ## Work Items
 
-- [ ] **1. Panel reference diagrams.** Replace both annotated panel images
+- [x] **1. Panel reference diagrams.** Replace both annotated panel images
     with native TikZ wireframes, showing the spatial control groups and the
     existing numbered explanations. Keep the NES display conceptual. Read
     widget positions from `src/RackNES.cpp` and `src/CVGenie.cpp`; remove the
@@ -73,3 +73,9 @@ Record the actual Rack build, platform, fixture settings, and skipped checks.
 Specification created after inspecting the clean working tree, manual build,
 asset references, widget coordinates, and Fourier's production-widget capture
 and TikZ approach. Local Rack source and TeX tools are available.
+
+Item 1 complete: both manuals built with `make -C manual` (13 pages each).
+Rendered and visually inspected both panel pages at 1500 px: all 12 RackNES
+references and both Genie groups fit beside their explanations. No overfull
+boxes; references resolved on the final LaTeX pass. Removed four obsolete
+annotated assets and updated the interim export instructions.

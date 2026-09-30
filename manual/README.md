@@ -48,8 +48,10 @@ rejects an output directory containing a copied `manual.tex`.
 -   Each `img/` directory: module logos, brand wordmarks, and panel
     illustrations, read in place.
 
-Keep the annotated panel numbers aligned with their explanations. The supplied
-panel artwork is an illustration, not a new runtime screenshot. Preserve the
+The panel reference sections use native TikZ wireframes in each `figures/`
+directory, with shared primitives in `latex/panel-drawing.tex`. Keep their
+coordinates aligned with the widget constructors and their numbered
+explanations. The supplied panel artwork is an illustration, not a new runtime screenshot. Preserve the
 Arhythmetic Units identity and the visual-asset license terms in the root
 `LICENSING.md`.
 The white paper is an independent publication and is not changed by these builds.
@@ -58,7 +60,7 @@ The `ArhythmeticUnits.pdf` wordmarks are copied from Fourier's manual assets.
 The panel logo outlines in `../res/ArhythmeticUnits.svg` come from Fourier's
 `src/rack_extensions/panel_artwork.hpp` at revision
 `12ac3236e332b7d0a01b2d750fa07a0849132341`. The same outlines are embedded
-in the four runtime panels and six manual/README illustrations. Keep those
+in the four runtime panels and four manual/README illustrations. Keep those
 copies aligned; retain the CV Genie collaborator credit alongside the brand.
 
 After editing the illustration SVGs, regenerate their PDFs from the repository
@@ -66,7 +68,7 @@ root with CairoSVG (2.9.1 was used for this branding update):
 
 ```shell
 for module in RackNES CVGenie; do
-    for asset in "$module-Module" "$module-Manual" Plugin; do
+    for asset in "$module-Module" Plugin; do
         cairosvg "manual/$module/img/$asset.svg" -o "manual/$module/img/$asset.pdf"
     done
 done
