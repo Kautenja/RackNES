@@ -11,6 +11,20 @@ Status: IN PROGRESS
 
 Created: September 30, 2026
 
+## Current Progress
+
+Reviewed September 30, 2026 against committed revision `4e11320`:
+
+-   Mapper IDs 0 through 3 and 7 are committed. The AxROM increment records
+    passing plugin, sanitizer, audio, state, and documentation checks below;
+    manual Rack/gameplay/listening validation remains open.
+-   MMC2 (mapper 9) and its PPU fetch changes are local work in progress,
+    outside this specification update. They have no recorded mapper-specific
+    regression or Rack validation and are not a supported-mapper claim.
+-   Mappers 4, 5, and 69, general NES 2.0 support, and the remaining ownership,
+    CPU/IRQ, state, audio, and manual gates are incomplete. Issues #1 and #31
+    remain open; retain `Status: IN PROGRESS`.
+
 ## GitHub Issue Tracking
 
 This specification owns [#1: NES Mappers][issue-1] and
@@ -146,8 +160,9 @@ observations; it is not evidence of a fully cycle-accurate hardware bus.
 
 The [RackNES user manual][racknes-manual] includes a "Supported cartridge
 mappers" table in [ROMs and compatibility][manual-roms]. It currently lists
-IDs 0 through 3 by ID and name. Update that table alongside each newly enabled
-mapper, checking it against [the cartridge factory][cartridge] and validation
+IDs 0 through 3 and 7 by ID and name at committed revision `4e11320`. Update
+that table alongside each newly enabled mapper, checking it against
+[the cartridge factory][cartridge] and validation
 evidence. Keep the README compatibility summary aligned. The target matrix
 above describes planned work; it must not become a user-facing support claim
 before implementation passes its gates.
@@ -733,6 +748,40 @@ bus fixes and four-screen storage, CPU/IRQ contracts, and the wider audio and
 manual acceptance matrix. The new validation covers mapper-7 state fields;
 it does not make arbitrary CPU/PPU/APU or bus JSON safe. PPU flag serialization
 and the pre-existing snapshot omissions still limit deterministic continuation.
+
+### MMC2 Work In Progress: September 30, 2026
+
+Source inspection found an uncommitted `src/nes/mappers/mapper9_MMC2.hpp`
+and related changes in the cartridge factory, ROM mapper interface, picture
+bus, emulator restoration, and PPU. This documentation commit does not include
+those implementation changes or establish that they pass acceptance checks.
+
+The draft adds bounded PRG/CHR bank selection, post-read FD/FE latches,
+mapper-controlled mirroring, a restricted NTSC image validator, mapper JSON
+validation, and cartridge-copy rebinding. The PPU draft caches background and
+sprite pattern bytes for latch-sensitive reads and adds `chr_latch_fetches`
+snapshot fields. Factory registration is present locally, but the required
+mapper-specific audio and JSON evidence is still missing.
+
+Before accepting this increment:
+
+-   Add deterministic checks for both latch trigger ranges and old-bank read
+    ordering, PRG/CHR boundaries, mirroring, PRG RAM, rejected images, and
+    malformed mapper/fetch JSON without losing the active game or backup.
+-   Verify background and sprite fetch ordering, hidden/covered sprites,
+    reset, and mid-fetch restoration through the complete emulator. Check
+    legacy mapper rendering and snapshots for regressions.
+-   Run clone/source-destruction, five-channel audio/DMC, host SAVE/LOAD, and
+    patch-reopen checks. Record plugin and sanitizer results using the
+    commands above, then perform the required manual Rack checks.
+-   Reconcile upstream attribution and user documentation with verified
+    mapper-9 behavior before publishing a compatibility claim.
+
+This spec-only update checks local links, referenced paths, existing validation
+commands, and the complete documentation diff with `git diff --check`.
+No plugin build, executable regression, manual Rack session, or performance
+measurement was run for this update; earlier results remain attached to their
+implementation increments above.
 
 [upstream]: https://github.com/Kautenja/nes-py/tree/301da52f7f75de380e6e195fd36621c3d5b03757
 [factory]: https://github.com/Kautenja/nes-py/blob/301da52f7f75de380e6e195fd36621c3d5b03757/nes_emu/src/nes_emu/mapper_factory.cpp
