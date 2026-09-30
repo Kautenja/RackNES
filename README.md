@@ -39,6 +39,38 @@ module.
 
 [CVGenie]: https://github.com/Kautenja/RackNES/releases/latest/download/CVGenie.pdf
 
+## Citation
+
+The technical report, [**RackNES: A Voltage-Controlled NES Emulator as a Musical
+Instrument**](whitepaper/README.md), describes the project's foundations, related
+work, architecture, and implementation. Its [standalone LaTeX source](whitepaper/racknes.tex)
+includes the bibliography and architecture diagram; the report README provides
+PDF build instructions.
+
+To cite the project and its implementation account, use the report entry below.
+GitHub's **Cite this repository** button uses the preferred citation in
+[CITATION.cff](CITATION.cff); [CITATION.bib](whitepaper/CITATION.bib) provides the
+same BibTeX entry.
+
+```bibtex
+@techreport{kauten2026racknes,
+  author      = {Kauten, Christian},
+  title       = {{RackNES}: A Voltage-Controlled {NES} Emulator as a Musical Instrument},
+  institution = {Arhythmetic Units},
+  year        = {2026},
+  month       = sep,
+  type        = {Technical report},
+  note        = {Manuscript version 1, dated September 30, 2026; repository manuscript},
+  url         = {https://github.com/Kautenja/RackNES/tree/master/whitepaper},
+}
+```
+
+When referencing the software, link to this repository and identify the version
+or commit used. The report documents RackNES 2.1.0 at source revision
+[`e8c99bf86295318724ef62ad40a17ba6897be696`](https://github.com/Kautenja/RackNES/tree/e8c99bf86295318724ef62ad40a17ba6897be696).
+It is currently a repository manuscript without an assigned DOI or conference
+publication status.
+
 ## Acknowledgments
 
 The code for the module derives from:
