@@ -10,6 +10,13 @@ audio and displays, and compatibility with users' saved patches.
 Read the relevant sources before editing:
 
 -   [README.md](README.md): project overview and user manual links.
+-   [Contributor guide](CONTRIBUTING.md): environment setup and pull requests.
+-   [Architecture](CONTRIBUTING.md#architecture): source map, processing,
+    ownership, and compatibility.
+-   [Development And Testing](CONTRIBUTING.md#development-and-testing):
+    build commands, regression coverage, CI, and manual checks.
+-   [Manual Figures](CONTRIBUTING.md#manual-figures): production captures
+    and panel references.
 -   [plugin.json](plugin.json): plugin identity, registered modules, and version.
 -   [CHANGELOG.md](CHANGELOG.md): historical behavior and compatibility fixes.
 -   [LICENSING.md](LICENSING.md): source, visual-asset, and dependency terms.
@@ -20,11 +27,10 @@ Read the relevant sources before editing:
 -   [Technical report guide](whitepaper/README.md): manuscript structure,
     evidence, citation metadata, and build commands.
 
-This guide takes its working principles from Fourier's agent instructions,
-adapted to the files and workflows in RackNES. It is self-contained; Fourier
-is not a build dependency. There is no separate contributor guide. Focused
-SDK-backed regression checks are described in [tests/README.md](tests/README.md);
-the user-manual CI workflow is described in [manual/README.md](manual/README.md).
+These instructions and the contributor guide adapt Fourier's working
+principles to RackNES. They are self-contained; Fourier is not a build
+dependency. Keep shared setup, architecture, and validation guidance in
+`CONTRIBUTING.md`, and agent-specific workflow in this file.
 
 ## Working In This Repository
 
@@ -51,39 +57,15 @@ the user-manual CI workflow is described in [manual/README.md](manual/README.md)
     release only when requested. Keep credentials and private local paths
     out of tracked files.
 
-## Source Map And Compatibility
+## Compatibility
 
--   `src/plugin.cpp` and `src/plugin.hpp`: plugin initialization and model
-    registration. The plugin slug is `KautenjaDSP-RackNES`; the registered
-    module slugs are `RackNES` and `InputGenie`. Output Genie code is
-    unfinished and is not registered as a module.
--   `src/RackNES.cpp`: controls, audio processing, emulator ownership,
-    save/restore, patch JSON, expander consumption, and panel integration.
--   `src/CVGenie.cpp` and `src/GameMaps.hpp`: expander processing, game-specific
-    RAM maps, selectors, and saved game/location indices.
--   `src/nes/emulator.hpp`: CPU, PPU, APU, controller, and bus coordination.
-    The other `src/nes/` headers and sources implement those components,
-    cartridge loading, and mappers. The cartridge factory currently supports
-    mapper IDs 0 through 3: NROM, MMC1, UNROM, and CNROM.
--   `src/nes/apu.hpp`: RackNES audio wrapper; `src/nes/apu/` contains the
-    bundled sound-emulation code. `src/nes/ntsc/` contains the NTSC filter.
--   `src/widget/display.hpp`, `src/components.hpp`, and `src/theme.hpp`:
-    display rendering, custom controls, and panel themes. `res/` holds the
-    panel and component SVG assets.
--   `manual/RackNES/` and `manual/CVGenie/`: LaTeX user manuals and artwork.
-    `patches/debugCVGenie.vcv` is an existing integration/debug patch.
--   `whitepaper/racknes.tex`: standalone technical report, with supporting
-    evidence recorded in `whitepaper/sources.md`.
-
-Do not renumber existing parameter, port, or light IDs, rename slugs, or change
-saved JSON meanings without an intentional compatibility plan and verification
-with existing patches. Game IDs and memory-location indices are serialized;
-reordering the maps can silently change a restored patch's behavior.
-
-Preserve the CV Genie adjacency and message contract: Input Genie sits directly
-to RackNES's right and sends eight address/value pairs through Rack's expander
-buffers. Address zero denotes an empty message. Review producer/consumer
-ownership, message flips, memory bounds, and disconnected inputs together.
+Follow the [architecture guidance](CONTRIBUTING.md#architecture) when changing
+module identities, saved JSON, game maps, or expander messages. Do not renumber
+existing Rack IDs, rename slugs, or reorder serialized game/location indices
+without an intentional compatibility plan and verification with existing
+patches. Preserve Input Genie's placement to RackNES's right, eight address/value
+pairs, and address-zero sentinel. Review buffer ownership, message flips,
+memory bounds, and disconnected inputs together.
 
 ## Correctness And Real-Time Behavior
 
@@ -117,51 +99,12 @@ effect; a successful build is not evidence of a speedup.
 
 ## Development And Validation
 
-The root [Makefile](Makefile) delegates to VCV Rack's `plugin.mk`. Use a Rack 2
-SDK or prepared Rack source tree with the required headers, libraries, and
-build tools. `RACK_DIR` defaults to `../..`, matching a checkout under
-`Rack/plugins/RackNES`. An external SDK can be selected explicitly:
-
-```shell
-make RACK_DIR=/absolute/path/to/Rack-SDK
-```
-
-From the repository root with the default layout:
-
-```shell
-make
-make dist
-```
-
-`make` builds the platform plugin library; `make dist` packages it under `dist/`.
-Packaging requires the tools used by the selected SDK's `plugin.mk`, including
-`jq` and `zstd`. `make install` additionally copies a package into the Rack user
-plugins directory; use it when local installation is part of the task.
-`make clean` removes plugin build and distribution outputs. Reuse the same `RACK_DIR`
-override for all targets when using an external SDK.
-
-There is no root `make test` target. Run the focused SDK-backed checks with
-`make -C tests`; [tests/README.md](tests/README.md) documents their scope and
-prerequisites. The plugin Makefile's `-DTEST` flag does not run tests. Validate
-source changes with a Rack build and the relevant regression or manual checks,
-reporting missing SDKs or other prerequisites explicitly. Do not introduce a
-test framework merely to complete a small unrelated change.
-
-For affected integration behavior, check in Rack:
-
--   Module creation, panel preview, light/dark themes, and display rendering.
--   ROM loading and replacement, invalid files, unsupported mappers, and patch
-    reload when the original ROM is unavailable.
--   Both controllers, clock knob/CV extremes, frame-clock output, channel/mix
-    routing, and host sample-rate changes.
--   Save/load, simultaneous save/reset/load, hang, module reset, and patch
-    save/reopen.
--   CV Genie attached/detached, game/location selection, continuous and toggle
-    inputs, and restored selections. Use the debug patch where useful.
-
-Use user-provided ROMs or redistributable test/homebrew fixtures. Do not add
-commercial ROMs to the repository. Record the fixtures and settings used so
-that checks can be reproduced.
+Follow [Development And Testing](CONTRIBUTING.md#development-and-testing)
+for prerequisites, commands, regression coverage, and manual Rack checks.
+Validate source changes with a Rack build and the relevant regression or
+manual checks. There is no root `make test` target; use `make -C tests` with
+the same Rack SDK as the plugin build. Report missing prerequisites explicitly,
+and do not introduce a test framework for a small unrelated change.
 
 Documentation-only changes need link, path, command, and diff checks rather
 than a mandatory C++ build. Run `git diff --check` and review the complete diff
@@ -170,32 +113,13 @@ checks, and an actual manual Rack session in completion reports.
 
 ## Manuals And Technical Report
 
-Keep user-facing documentation in the existing manual directories. Panel
-references use `figures/panel-layout.tex` with shared TikZ primitives; verify
-that positions and numbered explanations match the widget constructors.
-Covers and README reuse each module's `img/Panel.png`, rendered from production
-widgets by `make -C tools/capture screenshots`. Read `tools/capture/README.md`
-for desktop/SDK prerequisites and the original branded ROM fixture. Refresh
-and visually review captures after visible widget or runtime SVG changes;
-do not recreate screenshots as manually maintained SVG/PDF illustrations.
-Follow the active manual makefiles; ordinary builds use committed screenshots
-without Rack, ROM generation, or a graphical session.
-
-With the TeX tools required by the active recipes (`pdflatex`, BibTeX, and
-`latexmk` where used) and the packages declared by the manuals installed:
-
-```shell
-make -C manual/RackNES
-make -C manual/CVGenie
-```
-
-Each manual is written to its own `.build/manual.pdf`. The shared build uses
-`latexmk`, disables shell escape, and fails on compilation errors. See
-[manual/README.md](manual/README.md) for prerequisites and the combined build.
-Review compiler output and inspect the generated PDF for missing content,
-unresolved references, and layout errors. Compile directly with errors visible
-when diagnosing a failure. Keep intermediate files and compiled manuals in
-ignored build folders.
+Follow [Manual Figures](CONTRIBUTING.md#manual-figures) and the
+[manual guide](manual/README.md) for panel references, production screenshots,
+PDF builds, and visual review. Refresh captures after visible widget or runtime
+SVG changes, using the production widgets and original branded ROM fixture.
+Do not replace screenshots with manually maintained illustrations. Ordinary
+manual builds use committed screenshots without Rack or a graphical session.
+Keep intermediate files and compiled manuals in ignored build folders.
 
 Follow [whitepaper/README.md](whitepaper/README.md) for report edits. Keep the
 manuscript, bibliography, and diagram in the canonical standalone
