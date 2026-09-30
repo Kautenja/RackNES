@@ -27,6 +27,8 @@ class Emulator {
  private:
     /// the number of elapsed cycles
     uint32_t cycles = 0;
+    /// APU reconstruction notifications must not interrupt a restored CPU.
+    bool restoring_apu = false;
     /// the virtual cartridge with ROM and mapper data
     Cartridge* cartridge = nullptr;
     /// the 2 controllers on the emulator
@@ -102,7 +104,9 @@ class Emulator {
         ppu.set_interrupt_callback([&]() { cpu.interrupt(bus, CPU::NMI_INTERRUPT); });
         // setup the DMC reader callback (for loading samples from RAM)
         apu.set_dmc_reader([&](void*, cpu_addr_t addr) -> int { return bus.read(addr);  });
-        apu.set_irq_callback([&](void*) { cpu.interrupt(bus, CPU::IRQ_INTERRUPT); });
+        apu.set_irq_callback([&](void*) {
+            if (!restoring_apu) cpu.interrupt(bus, CPU::IRQ_INTERRUPT);
+        });
     }
 
     // @brief Destroy this emulator.
@@ -195,6 +199,10 @@ class Emulator {
     /// @returns a 32-bit pointer to the screen buffer's first address
     ///
     inline NES_Pixel* get_screen_buffer() { return ppu.get_screen_buffer(); }
+
+    /// Diagnostic frame access for synchronous, headless capture only.
+    inline const NES_Byte* get_palette_buffer() const { return ppu.get_palette_buffer(); }
+    inline bool is_video_frame_complete() const { return ppu.is_video_frame_complete(); }
 
     /// @brief Return a 8-bit pointer to the RAM buffer's first address.
     ///
@@ -390,7 +398,13 @@ class Emulator {
         // load apu
         {
             json_t* json_data = json_object_get(rootJ, "apu");
-            if (json_data) apu.dataFromJson(json_data);
+            if (json_data) {
+                // Loading APU registers can notify changes to IRQ scheduling.
+                // Reconstruction is not an elapsed CPU cycle or a new IRQ.
+                restoring_apu = true;
+                apu.dataFromJson(json_data);
+                restoring_apu = false;
+            }
         }
         return true;
     }

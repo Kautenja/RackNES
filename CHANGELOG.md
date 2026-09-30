@@ -80,6 +80,11 @@
 
 ### 2.2.0 (Unreleased)
 
+-   Restore MMC1 CHR windows from saved registers instead of stale derived
+    offsets. Prevent APU reconstruction from servicing an IRQ into the restored
+    CPU/stack, and initialize unused APU snapshot bytes before JSON encoding.
+    Add MMC1 audio, host controls, routing, and game replay regression coverage.
+
 -   Add mapper 7 (AxROM / AOROM): bounded 32 KiB PRG banking, one-screen
     mirroring, 8 KiB CHR RAM, validated JSON restoration, and independent
     cartridge clones. Validate supported image layouts before loading;

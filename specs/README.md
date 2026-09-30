@@ -10,7 +10,7 @@ evidence in the owning spec, then archive it using [the agent workflow][flow].
 | --- | --- | --- | --- |
 | [001](001-nes-py-integration.md) | Cartridge parsing, mapper integration, audio/state compatibility | [#1][i1], [#31][i31] | Deliver parser/tracker and mapper gates as separate increments. |
 | [004](004-sram-import-export.md) | Raw battery-save import/export | [#52][i52] | Start with unambiguous supported 8 KiB layouts; coordinate RAM ownership with 001. |
-| [005](005-mmc1-ntsc-regressions.md) | Metroid and Bubble Bobble reproduction and fixes | [#26][i26], [#45][i45] | Reproduce first; potentially the smallest closures. |
+| [005](005-mmc1-ntsc-regressions.md) | Metroid and Bubble Bobble reproduction and fixes | [#26][i26], [#45][i45] | Fixes integrated and game replays verified; listening signoff pending. |
 | [006](006-cv-genie-readback.md) | RAM and 2A03 register CV output | [#51][i51], remaining scope from [#6][i6] | Larger phased feature after observation/protocol contracts. |
 | [007](007-snapshot-slots.md) | Eight snapshots with slot CV | [#12][i12] | Larger phased feature dependent on safe state restoration. |
 

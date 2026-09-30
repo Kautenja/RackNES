@@ -136,6 +136,22 @@ static void check_mmc1_chr_banks() {
     check_banks(2, 3);
     write_register(0x8000, 0x1C);
     check_banks(3, 1);
+    // Old snapshots stored derived offsets from the broken startup/alignment.
+    // The serialized registers, including partial writes, remain authoritative.
+    for (int mode : {0x0C, 0x1C}) {
+        write_register(0x8000, mode);
+        mapper->writePRG(0xA000, 0);  // First bit of selecting CHR bank 2.
+        json_t* legacy = mapper->dataToJson();
+        json_object_set_new(legacy, "first_bank_chr", json_integer(0));
+        json_object_set_new(legacy, "second_bank_chr", json_integer(0));
+        mapper->dataFromJson(legacy);
+        check_banks(mode == 0x0C ? 2 : 3, mode == 0x0C ? 3 : 1);
+        for (int bit = 1; bit < 5; ++bit)
+            mapper->writePRG(0xA000, (2 >> bit) & 1);
+        check_banks(2, mode == 0x0C ? 3 : 1);
+        write_register(0xA000, 3);
+        json_decref(legacy);
+    }
     assert(std::remove(path) == 0);
 }
 
@@ -319,9 +335,8 @@ static void check_ppu_reset() {
     assert(ppu.get_data(bus) == 0x55);
 }
 
-/// Exercise all five voices through CPU bus writes on NROM, CNROM and AxROM.
-static void check_graphics_audio_preservation(uint64_t blip_clock) {
-    const char* path = ".build/mapper-audio.nes";
+/// Original CPU program driving all five voices, with looping DMC.
+static std::vector<unsigned char> make_audio_image() {
     std::vector<unsigned char> bytes(16 + 0x8000 + 0x8000, 0);
     bytes[0] = 'N'; bytes[1] = 'E'; bytes[2] = 'S'; bytes[3] = 0x1A;
     bytes[4] = 2; bytes[5] = 4;
@@ -349,13 +364,20 @@ static void check_graphics_audio_preservation(uint64_t blip_clock) {
     bytes[pc++] = 0x4C; bytes[pc++] = loop & 0xFF; bytes[pc++] = loop >> 8;
     for (int i = 0; i < 17; ++i) bytes[16 + 0x4000 + i] = 0x55;
     bytes[16 + 0x7FFC] = 0; bytes[16 + 0x7FFD] = 0x80;
+    return bytes;
+}
+
+/// Compare all five voices on NROM, CNROM, AxROM, and MMC1.
+static void check_graphics_audio_preservation(uint64_t blip_clock) {
+    const char* path = ".build/mapper-audio.nes";
+    auto bytes = make_audio_image();
     uint64_t fingerprint = 14695981039346656037ULL;
     for (int rate : {44100, 48000, 96000, 192000}) {
-        std::unique_ptr<NES::Emulator> emulators[3];
-        for (int variant = 0; variant < 3; ++variant) {
-            bytes[6] = variant == 0 ? 0x00 : variant == 1 ? 0x33 : 0x70;
-            // AxROM uses CHR RAM; all three see identical PRG data.
-            bytes[5] = variant == 0 ? 1 : variant == 1 ? 4 : 0;
+        std::unique_ptr<NES::Emulator> emulators[4];
+        for (int variant = 0; variant < 4; ++variant) {
+            bytes[6] = variant == 0 ? 0x00 : variant == 1 ? 0x33 : variant == 2 ? 0x70 : 0x10;
+            // AxROM uses CHR RAM; all four see identical PRG data.
+            bytes[5] = variant == 0 || variant == 3 ? 1 : variant == 1 ? 4 : 0;
             std::ofstream file(path, std::ios::binary);
             if (variant == 2) {
                 // Four identical PRG banks let the CPU switch to bank 3 while
@@ -377,25 +399,27 @@ static void check_graphics_audio_preservation(uint64_t blip_clock) {
             emulators[variant]->set_clock_rate(blip_clock);
         }
         int nonzero[5] = {};
-        int frames[3] = {};
+        int frames[4] = {};
         for (int sample = 0; sample < 2000; ++sample) {
-            for (int variant = 0; variant < 3; ++variant)
+            for (int variant = 0; variant < 4; ++variant)
                 for (int cycle = 0; cycle < NES::CLOCK_RATE / double(rate); ++cycle)
                     emulators[variant]->cycle([&]() { ++frames[variant]; });
             for (int channel = 0; channel < 5; ++channel) {
                 const int16_t value = emulators[0]->get_audio_sample(channel);
                 assert(value == emulators[1]->get_audio_sample(channel));
                 assert(value == emulators[2]->get_audio_sample(channel));
+                assert(value == emulators[3]->get_audio_sample(channel));
                 if (value != 0) ++nonzero[channel];
                 fingerprint ^= static_cast<uint16_t>(value);
                 fingerprint *= 1099511628211ULL;
             }
         }
         for (int count : nonzero) assert(count > 0);
-        assert(frames[0] == frames[1] && frames[0] == frames[2]);
+        assert(frames[0] == frames[1] && frames[0] == frames[2] &&
+               frames[0] == frames[3]);
     }
     assert(std::remove(path) == 0);
-    std::printf("NROM/CNROM/AxROM PCM at Blip clock %llu: %llx\n",
+    std::printf("NROM/CNROM/AxROM/MMC1 PCM at Blip clock %llu: %llx\n",
                 static_cast<unsigned long long>(blip_clock),
                 static_cast<unsigned long long>(fingerprint));
     std::fflush(stdout);
@@ -471,7 +495,12 @@ static void check_upstream_graphics_fixes() {
     assert(std::remove(path) == 0);
 }
 
+#include "mmc1_host.hpp"
+#include "replay.hpp"
+
 int main(int argc, char** argv) {
+    if (argc == 7 && std::string(argv[1]) == "--replay") return replay_game(argv, false);
+    if (argc == 7 && std::string(argv[1]) == "--replay-roundtrip") return replay_game(argv, true);
     // Allow isolated audio characterization; the default Make target runs it too.
     if (argc == 2 && std::string(argv[1]) == "--audio-only") {
         check_graphics_audio_preservation(NES::CLOCK_RATE);
@@ -493,6 +522,7 @@ int main(int argc, char** argv) {
     context.engine = new engine::Engine;
     contextSet(&context);
     check_axrom_module();
+    check_mmc1_host();
     {
         std::unique_ptr<RackNES> module(new RackNES);
         // An empty module must serialize without touching uninitialized hardware.

@@ -190,6 +190,15 @@ class PPU {
         sprite_memory[sprite_data_address++] = value;
     }
 
+    /// Read-only diagnostic view; sample at frame completion on the engine thread.
+    inline const NES_Byte* get_palette_buffer() const { return *nes_pixels; }
+
+    /// True for the three PPU dots following publication of a complete frame.
+    /// A caller stepping three dots per CPU cycle observes this exactly once.
+    inline bool is_video_frame_complete() const {
+        return pipeline_state == PRE_RENDER && cycles >= 1 && cycles <= 3;
+    }
+
     /// Return a pointer to the screen buffer.
     inline NES_Pixel* get_screen_buffer() { return *ntsc_screen; }
 

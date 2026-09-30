@@ -117,13 +117,13 @@ CPU/PPU/APU timing or audio conversion.
 
 ## Focused Audio Characterization
 
-A CPU-program fixture compares NROM, CNROM, and AxROM integer PCM for all
+A CPU-program fixture compares NROM, CNROM, AxROM, and MMC1 integer PCM for all
 five voices, including looping DMC while the CPU writes bank selections.
 AxROM repeats identical code/sample data in four PRG banks, switching from
 bank 0 to bank 3; a separate DMC callback test reads distinct bank markers.
 It checks 2,000 host samples at each of 44.1, 48, 96, and 192 kHz, at nominal
 CPU speed with the existing integer cycle loop, using both the core's default
-Blip clock and RackNES's fixed 768,000 Hz Blip clock. All three mapper runs must
+Blip clock and RackNES's fixed 768,000 Hz Blip clock. All four mapper runs must
 match sample by sample, produce nonzero output on every channel, and generate
 the same number of frame callbacks. It also prints a reproducible PCM
 fingerprint for before/after comparisons on the same toolchain.
@@ -149,8 +149,62 @@ make -C tests BUILD=.build/audio SANITIZERS= .build/audio/racknes
 
 Use `LD_LIBRARY_PATH` on Linux, the Rack runtime in `PATH` on Windows, and
 the same external `RACK_DIR` and runtime directory for both builds if needed.
-The generator is in `check_graphics_audio_preservation()` in `racknes.cpp`;
-it removes its temporary ROM on success. The fixture leaves reset-default
+The generator is `make_audio_image()` in `racknes.cpp`; the PCM check
+removes its temporary ROM on success. The fixture leaves reset-default
 rendering enabled with zero-filled CHR; it does not configure graphics through
-PPU registers. It does not cover clock modulation, channel/MIX routing, listening,
-or audio changes caused by a game's response to corrected graphics behavior.
+PPU registers. This PCM comparison does not cover clock modulation, channel/MIX
+routing, listening, or audio changes caused by a game's response to corrected graphics behavior.
+
+## MMC1 Host And Game Replays
+
+The default suite also runs `check_mmc1_host()` against the actual Rack module:
+44.1/48 kHz sample-rate notifications, minimum/normal/maximum clock, clock CV,
+all 32 individual-output connection combinations and MIX exclusion, Hang,
+coincident SAVE/RESET/LOAD, independent live/backup patches, five-voice playback
+after LOAD, failed/successful ROM replacement, and module reset. A synthetic
+snapshot with IRQs permitted verifies that APU reconstruction does not modify
+the restored CPU or stack. Legacy CHR snapshots retain partial serial writes
+while rebuilding derived windows from registers. These checks require no games.
+
+For optional game evidence, build the same test executable and supply your own
+ROM and an existing output directory. The repository contains no game ROMs.
+From `tests/`, with the Rack library in the platform's runtime search path:
+
+```shell
+.build/racknes --replay "$ROM" "$EVIDENCE_DIR/game" 48000 1500 replay-input.txt
+.build/racknes --replay "$ROM" "$EVIDENCE_DIR/game-44100" 44100 1500 replay-input.txt
+.build/racknes --replay-roundtrip "$ROM" "$EVIDENCE_DIR/game-restore" 48000 1500 replay-input.txt
+```
+
+Use `DYLD_LIBRARY_PATH="$RACK_DIR"` on macOS or the runtime paths described above.
+Each input line contains a completed video-frame count and two decimal
+controller bitmaps in the existing A/B/Select/Start/Up/Down/Left/Right order.
+The supplied sequence presses Start after frames 180, 300, and 420, moves right
+at 600, adds A at 720, and releases at 780. The runner uses normal emulation
+speed and RackNES's fixed 768,000 Hz Blip clock. It exports paired 256-by-240
+palette-index PGM and 602-by-240 filtered PPM frames every 60 video frames,
+plus state JSON and interleaved five-channel signed 16-bit little-endian PCM
+(`.s16le`, channels SQ1/SQ2/TRI/NOI/DMC). JSON contains the supplied ROM path;
+keep captures outside tracked source. PGM maximum value is 63, not 255.
+
+Every exported frame checks color bounds and exact agreement between the raw
+pixels filtered at either alternating burst phase and the production output.
+The diagnostic accessors are synchronous engine-thread reads; they are not a
+UI synchronization interface. `--replay-roundtrip` saves at frame 1200, restores
+at 1260, and asserts cartridge/CPU/PPU/RAM restoration. Compare its frame 1500
+with uninterrupted frame 1440 when no later controller inputs intervene. Audio
+snapshots do not preserve every phase/buffer and are not sample-exact loops.
+
+For an independent unfiltered reference, build a Nestopia libretro core and run
+from a writable evidence directory, passing paths to the repository helpers:
+
+```shell
+python3 "$REPO/tests/reference_nestopia.py" "$NESTOPIA_CORE" "$ROM" \
+    "$EVIDENCE_DIR/reference" "$REPO/tests/replay-input.txt" 1500
+```
+
+This optional standard-library helper uses NTSC, no cropping/filter, and the
+core's raw palette to export the same 0--63 indices; it does not compare emphasis
+bits, which RackNES does not implement. It downloads nothing. Reference core
+revision, fixture identities, observed differences, and actual validation are
+recorded in [spec 005](../specs/005-mmc1-ntsc-regressions.md).
