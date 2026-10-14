@@ -172,7 +172,7 @@
 -   Update the manuals to reflect these fixes and add focused SDK-backed
     regression checks.
 
-### 2.2.1 (Unreleased)
+### 2.2.1 (2026-10-14)
 
 -   Credit CV Genie developer Lejandra Matos-Rodríguez of System Delexandra
     across the README, manuals, source attribution, and original game maps.
