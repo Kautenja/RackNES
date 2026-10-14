@@ -112,7 +112,7 @@ and limitations here before marking complete and archiving. The implementation
 and validation results are recorded below; issue #52 remains open for native
 dialog checks and requester feedback.
 
-[issue]: https://github.com/Kautenja/RackNES/issues/52
+[issue]: https://github.com/Arhythmetic-Units/RackNES/issues/52
 
 ## Transfer Contract
 

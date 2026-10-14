@@ -189,13 +189,13 @@ same BibTeX entry.
   month       = sep,
   type        = {Technical report},
   note        = {Manuscript version 1, dated September 30, 2026; repository manuscript},
-  url         = {https://github.com/Kautenja/RackNES/tree/master/whitepaper},
+  url         = {https://github.com/Arhythmetic-Units/RackNES/tree/master/whitepaper},
 }
 ```
 
 When referencing the software, link to this repository and identify the version
 or commit used. The report documents RackNES 2.1.0 at source revision
-[`e8c99bf86295318724ef62ad40a17ba6897be696`](https://github.com/Kautenja/RackNES/tree/e8c99bf86295318724ef62ad40a17ba6897be696).
+[`e8c99bf86295318724ef62ad40a17ba6897be696`](https://github.com/Arhythmetic-Units/RackNES/tree/e8c99bf86295318724ef62ad40a17ba6897be696).
 It is currently a repository manuscript without an assigned DOI or conference
 publication status.
 
@@ -229,14 +229,14 @@ See [LICENSING.md](LICENSING.md) for the scope of each license and
 [third-party notices](docs/licenses/THIRD-PARTY.txt) for bundled components.
 The software license does not grant the same permissions for the artwork.
 
-[ReleaseBadge]: https://img.shields.io/github/v/release/Kautenja/RackNES?label=GitHub%20release
-[LatestRelease]: https://github.com/Kautenja/RackNES/releases/latest
+[ReleaseBadge]: https://img.shields.io/github/v/release/Arhythmetic-Units/RackNES?label=GitHub%20release
+[LatestRelease]: https://github.com/Arhythmetic-Units/RackNES/releases/latest
 [VCVBadge]: https://img.shields.io/badge/VCV-Rack%202-0099dd
 [VCVLibrary]: https://library.vcvrack.com/KautenjaDSP-RackNES
 [LicenseBadge]: https://img.shields.io/badge/source%20license-GPL--3.0--or--later-blue
-[RackNES]: https://github.com/Kautenja/RackNES/releases/latest/download/RackNES.pdf
-[CVGenie]: https://github.com/Kautenja/RackNES/releases/latest/download/CVGenie.pdf
-[Whitepaper]: https://github.com/Kautenja/RackNES/releases/latest/download/RackNES-whitepaper.pdf
+[RackNES]: https://github.com/Arhythmetic-Units/RackNES/releases/latest/download/RackNES.pdf
+[CVGenie]: https://github.com/Arhythmetic-Units/RackNES/releases/latest/download/CVGenie.pdf
+[Whitepaper]: https://github.com/Arhythmetic-Units/RackNES/releases/latest/download/RackNES-whitepaper.pdf
 [anlexmatos]: https://github.com/anlexmatos
 [SimpleNES]: https://github.com/amhndu/SimpleNES
 [Nes_Snd_Emu]: https://www.slack.net/~ant/libs/audio.html#Nes_Snd_Emu

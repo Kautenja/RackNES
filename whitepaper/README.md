@@ -62,7 +62,7 @@ for the supported tag layout and release requirements.
 ## Sources and maintenance
 
 The implementation account describes RackNES 2.1.0 at source revision
-[`e8c99bf86295318724ef62ad40a17ba6897be696`](https://github.com/Kautenja/RackNES/tree/e8c99bf86295318724ef62ad40a17ba6897be696).
+[`e8c99bf86295318724ef62ad40a17ba6897be696`](https://github.com/Arhythmetic-Units/RackNES/tree/e8c99bf86295318724ef62ad40a17ba6897be696).
 [sources.md](sources.md) records the literature and source-code evidence behind
 the manuscript. Keep claims tied to that evidence when revising the paper, and
 update the source revision if the implementation account changes.

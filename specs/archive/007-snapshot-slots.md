@@ -144,6 +144,6 @@ commits, fixture hashes, actual commands/platforms, byte budget, timing
 measurements, manual results, and limitations here before archival. Planning
 does not establish implementation, real-time safety, or game compatibility.
 
-[issue]: https://github.com/Kautenja/RackNES/issues/12
+[issue]: https://github.com/Arhythmetic-Units/RackNES/issues/12
 [build]: ../../CONTRIBUTING.md#development-and-testing
 [capture]: ../../tools/capture/README.md

@@ -205,8 +205,8 @@ git diff --check
 
 [palette-reference]: https://www.nesdev.org/wiki/PPU_palettes
 
-[metroid]: https://github.com/Kautenja/RackNES/issues/26
-[bubble]: https://github.com/Kautenja/RackNES/issues/45
+[metroid]: https://github.com/Arhythmetic-Units/RackNES/issues/26
+[bubble]: https://github.com/Arhythmetic-Units/RackNES/issues/45
 
 ### September 30, 2026: Integration And Game Verification
 

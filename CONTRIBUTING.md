@@ -48,7 +48,7 @@ From your projects directory, clone the repository. To contribute through a
 pull request, fork it on GitHub first and substitute your fork's clone URL:
 
 ```shell
-git clone https://github.com/Kautenja/RackNES.git
+git clone https://github.com/Arhythmetic-Units/RackNES.git
 cd RackNES
 git switch -c docs/contributor-setup
 ```
@@ -402,7 +402,7 @@ does not update the VCV Library automatically.
     executable regressions, and an actual Rack session; state skipped checks
     and unresolved failures explicitly.
 
-[issues]: https://github.com/Kautenja/RackNES/issues
+[issues]: https://github.com/Arhythmetic-Units/RackNES/issues
 [cpp-style]: docs/style-guides/cpp.md
 [markdown-style]: docs/style-guides/markdown.md
 [vcv-updates]: https://github.com/VCVRack/library#pushing-an-update

@@ -45,7 +45,7 @@ regression checks, and pull request guidance. For build or test failures,
 include the commit, command and working directory, tool versions, and relevant
 error output in the bug report.
 
-[racknes-manual]: https://github.com/Kautenja/RackNES/releases/latest/download/RackNES.pdf
-[genie-manual]: https://github.com/Kautenja/RackNES/releases/latest/download/CVGenie.pdf
-[issues]: https://github.com/Kautenja/RackNES/issues
-[new-issue]: https://github.com/Kautenja/RackNES/issues/new/choose
+[racknes-manual]: https://github.com/Arhythmetic-Units/RackNES/releases/latest/download/RackNES.pdf
+[genie-manual]: https://github.com/Arhythmetic-Units/RackNES/releases/latest/download/CVGenie.pdf
+[issues]: https://github.com/Arhythmetic-Units/RackNES/issues
+[new-issue]: https://github.com/Arhythmetic-Units/RackNES/issues/new/choose

@@ -49,9 +49,9 @@ are the report's synthesis, not terminology attributed to the cited works.
 
 ## Emulator And Library Attribution
 
-RackNES's [initial emulator import](https://github.com/Kautenja/RackNES/commit/1743db436a8da773069e61d82039e8e09b896129),
+RackNES's [initial emulator import](https://github.com/Arhythmetic-Units/RackNES/commit/1743db436a8da773069e61d82039e8e09b896129),
 dated June 14, 2020, already contains `Program: nes-py` source headers. The
-[acknowledgment added the same day](https://github.com/Kautenja/RackNES/commit/c19b6256f971a2ee2640f1c748a44614bd95aacc)
+[acknowledgment added the same day](https://github.com/Arhythmetic-Units/RackNES/commit/c19b6256f971a2ee2640f1c748a44614bd95aacc)
 credits SimpleNES and Nes_Snd_Emu. Together with nes-py's own SimpleNES
 attribution and the matching PPU structure, these support the lineage
 SimpleNES -> nes-py -> RackNES. These RackNES commits do not identify the
@@ -68,17 +68,17 @@ from scholarly citations; see [LICENSING.md](../LICENSING.md) and the
 ## Mapper Updates: September 30, 2026
 
 The manuscript's dated mapper addendum describes implementation through
-[`2cea414`](https://github.com/Kautenja/RackNES/commit/2cea414), reviewed at
-[`62cbf7a`](https://github.com/Kautenja/RackNES/commit/62cbf7a). The rest of the
+[`2cea414`](https://github.com/Arhythmetic-Units/RackNES/commit/2cea414), reviewed at
+[`62cbf7a`](https://github.com/Arhythmetic-Units/RackNES/commit/62cbf7a). The rest of the
 implementation account remains pinned to `e8c99bf86295`; this addendum does
 not retroactively attribute AxROM, MMC2, or MMC3 to that revision. The
 development factory supports IDs 0--4, 7, and 9; this is not a release claim.
 
 | Increment | Committed Implementation | Evidence Boundary |
 | --- | --- | --- |
-| AxROM / AOROM (7) | [4e11320](https://github.com/Kautenja/RackNES/commit/4e11320) | Banking, one-screen mirroring, header variants, state, DMC, and base-audio fixtures. |
-| MMC2 / PxROM (9) | [8013d8f](https://github.com/Kautenja/RackNES/commit/8013d8f) | Post-read latches, saved fetches, bounded cartridge layouts, state, and base-audio fixtures. |
-| MMC3B/C / TxROM (4) | [2cea414](https://github.com/Kautenja/RackNES/commit/2cea414) | Banking, RAM, four-screen storage, approximate A12 timing, shared CPU/APU IRQs, state, and base-audio fixtures. |
+| AxROM / AOROM (7) | [4e11320](https://github.com/Arhythmetic-Units/RackNES/commit/4e11320) | Banking, one-screen mirroring, header variants, state, DMC, and base-audio fixtures. |
+| MMC2 / PxROM (9) | [8013d8f](https://github.com/Arhythmetic-Units/RackNES/commit/8013d8f) | Post-read latches, saved fetches, bounded cartridge layouts, state, and base-audio fixtures. |
+| MMC3B/C / TxROM (4) | [2cea414](https://github.com/Arhythmetic-Units/RackNES/commit/2cea414) | Banking, RAM, four-screen storage, approximate A12 timing, shared CPU/APU IRQs, state, and base-audio fixtures. |
 
 The `supports()` validators in the three mapper headers below establish the
 documented PRG/CHR limits, power-of-two sizes, NTSC-only policy, exact payloads,
@@ -174,41 +174,41 @@ exhaustive certification of every serialized component. Likewise, the memory
 map discussion establishes available labels and executed mapping rules; it
 does not endorse every address or byte value as correct for every ROM.
 
-[revision]: https://github.com/Kautenja/RackNES/tree/e8c99bf86295318724ef62ad40a17ba6897be696
-[manifest]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/plugin.json
-[changelog]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/CHANGELOG.md
-[license]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/LICENSE.md
-[rack-constructor]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L129
-[clock-speed]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L236
-[process-cv]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L248
-[expanders]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L309
-[process]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L340
-[copy-screen]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L231
-[sample-rate]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L384
-[rack-json]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L399
-[constants]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/common.hpp#L33
-[emulator-callbacks]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L59
-[clock-high]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L118
-[emulator-rate]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L170
-[audio-voltage]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L249
-[cycle]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L272
-[emulator-json]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L315
-[cartridge]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/cartridge.hpp#L35
-[apu-constructor]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu.hpp#L34
-[apu-rate]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu.hpp#L73
-[apu-cycle]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu.hpp#L110
-[apu-sample]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu.hpp#L121
-[apu-json]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu.hpp#L133
-[nes-apu]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu/Nes_Apu.cpp#L17
-[ppu-json]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/ppu.hpp#L193
-[ppu-render]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/ppu.cpp#L263
-[display]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/widget/display.hpp#L63
-[rom-json]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/rom.hpp#L272
-[rom-load]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/rom.hpp#L149
-[ram]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/main_bus.hpp#L125
-[genie-process]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/CVGenie.cpp#L75
-[game-parameter]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/GameMaps.hpp#L22
-[game-maps]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/GameMaps.hpp#L58
-[plugin-init]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/plugin.cpp#L25
-[ntsc-readme]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/ntsc/readme.txt
-[base64]: https://github.com/Kautenja/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/base64.cpp
+[revision]: https://github.com/Arhythmetic-Units/RackNES/tree/e8c99bf86295318724ef62ad40a17ba6897be696
+[manifest]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/plugin.json
+[changelog]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/CHANGELOG.md
+[license]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/LICENSE.md
+[rack-constructor]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L129
+[clock-speed]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L236
+[process-cv]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L248
+[expanders]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L309
+[process]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L340
+[copy-screen]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L231
+[sample-rate]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L384
+[rack-json]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/RackNES.cpp#L399
+[constants]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/common.hpp#L33
+[emulator-callbacks]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L59
+[clock-high]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L118
+[emulator-rate]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L170
+[audio-voltage]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L249
+[cycle]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L272
+[emulator-json]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/emulator.hpp#L315
+[cartridge]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/cartridge.hpp#L35
+[apu-constructor]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu.hpp#L34
+[apu-rate]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu.hpp#L73
+[apu-cycle]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu.hpp#L110
+[apu-sample]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu.hpp#L121
+[apu-json]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu.hpp#L133
+[nes-apu]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/apu/Nes_Apu.cpp#L17
+[ppu-json]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/ppu.hpp#L193
+[ppu-render]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/ppu.cpp#L263
+[display]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/widget/display.hpp#L63
+[rom-json]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/rom.hpp#L272
+[rom-load]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/rom.hpp#L149
+[ram]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/main_bus.hpp#L125
+[genie-process]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/CVGenie.cpp#L75
+[game-parameter]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/GameMaps.hpp#L22
+[game-maps]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/GameMaps.hpp#L58
+[plugin-init]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/plugin.cpp#L25
+[ntsc-readme]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/nes/ntsc/readme.txt
+[base64]: https://github.com/Arhythmetic-Units/RackNES/blob/e8c99bf86295318724ef62ad40a17ba6897be696/src/base64.cpp

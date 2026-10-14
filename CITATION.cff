@@ -10,7 +10,7 @@ abstract: >-
 authors:
   - family-names: Kauten
     given-names: Christian
-repository-code: "https://github.com/Kautenja/RackNES"
+repository-code: "https://github.com/Arhythmetic-Units/RackNES"
 version: "2.2.0"
 license: GPL-3.0-or-later
 keywords:
@@ -33,5 +33,5 @@ preferred-citation:
   year: 2026
   month: 9
   version: "1"
-  url: "https://github.com/Kautenja/RackNES/tree/master/whitepaper"
+  url: "https://github.com/Arhythmetic-Units/RackNES/tree/master/whitepaper"
   notes: "Manuscript version 1, dated September 30, 2026; repository manuscript"

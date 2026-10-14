@@ -71,8 +71,8 @@ by [004: SRAM Import And Export](archive/004-sram-import-export.md), not this pa
 increment. Apply the build, regression, and manual validation commands below
 and record results against each issue gate.
 
-[issue-1]: https://github.com/Kautenja/RackNES/issues/1
-[issue-31]: https://github.com/Kautenja/RackNES/issues/31
+[issue-1]: https://github.com/Arhythmetic-Units/RackNES/issues/1
+[issue-31]: https://github.com/Arhythmetic-Units/RackNES/issues/31
 
 ## Baseline And Evidence
 
@@ -1002,9 +1002,9 @@ Validation:
 -   `make -C tests -B -j2`, then `make -C tests -j2` after the harness fix:
     passed with ASan/UBSan. Five-mapper PCM fingerprints remain
     `f5146c03e0a6ceb2` and `d8915d435c9cf9a9`.
--   [Rack SDK 2.6.3 platform CI](https://github.com/Kautenja/RackNES/actions/runs/36691554236):
+-   [Rack SDK 2.6.3 platform CI](https://github.com/Arhythmetic-Units/RackNES/actions/runs/36691554236):
     plugin builds and executable regressions passed on Linux x64, macOS arm64,
-    and Windows x64. [Linux instrumentation](https://github.com/Kautenja/RackNES/actions/runs/36691557511)
+    and Windows x64. [Linux instrumentation](https://github.com/Arhythmetic-Units/RackNES/actions/runs/36691557511)
     passed both ASan/UBSan and coverage runs.
 -   `make -C manual`, `make -C whitepaper`, and `make -C whitepaper source`:
     passed. The unchanged, previously visually reviewed PDFs remain 15, 10,

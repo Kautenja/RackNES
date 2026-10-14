@@ -17,7 +17,7 @@ and the nes-py contributors. RackNES adaptations retain their individual
 file notices.
 
 Historical provenance and import evidence:
-https://github.com/Kautenja/RackNES/blob/master/whitepaper/sources.md
+https://github.com/Arhythmetic-Units/RackNES/blob/master/whitepaper/sources.md
 The exact upstream import revision is unknown.
 
 Selective nes-py graphics, reset, AxROM, MMC2, and MMC3 adaptations

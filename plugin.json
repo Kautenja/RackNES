@@ -9,17 +9,17 @@
   "author": "Christian Kauten",
   "authorEmail": "arhythmetic.units@gmail.com",
   "authorUrl": "https://github.com/Kautenja",
-  "pluginUrl": "https://github.com/Kautenja/RackNES",
-  "manualUrl": "https://github.com/Kautenja/RackNES/releases/latest/download/RackNES.pdf",
-  "sourceUrl": "https://github.com/Kautenja/RackNES",
-  "changelogUrl": "https://github.com/Kautenja/RackNES/blob/master/CHANGELOG.md",
+  "pluginUrl": "https://github.com/Arhythmetic-Units/RackNES",
+  "manualUrl": "https://github.com/Arhythmetic-Units/RackNES/releases/latest/download/RackNES.pdf",
+  "sourceUrl": "https://github.com/Arhythmetic-Units/RackNES",
+  "changelogUrl": "https://github.com/Arhythmetic-Units/RackNES/blob/master/CHANGELOG.md",
   "modules": [
     {
       "slug": "RackNES",
       "name": "RackNES",
       "description": "A Nintendo Entertainment System emulator with CV",
       "keywords": "NES Nintendo Famicom chiptune video game emulator",
-      "manualUrl": "https://github.com/Kautenja/RackNES/releases/latest/download/RackNES.pdf",
+      "manualUrl": "https://github.com/Arhythmetic-Units/RackNES/releases/latest/download/RackNES.pdf",
       "hidden": false,
       "tags": [
         "Clock generator",
@@ -32,7 +32,7 @@
       "name": "CV Genie (Input)",
       "description": "Expander for RackNES",
       "keywords": "NES Nintendo Game Genie cheat code memory CV",
-      "manualUrl": "https://github.com/Kautenja/RackNES/releases/latest/download/CVGenie.pdf",
+      "manualUrl": "https://github.com/Arhythmetic-Units/RackNES/releases/latest/download/CVGenie.pdf",
       "hidden": false,
       "tags": [
         "Expander"

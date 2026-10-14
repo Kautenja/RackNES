@@ -58,13 +58,13 @@ Do not close unresolved game bugs because a fixture is unavailable, or mark a
 feature completed merely because its spec has been committed.
 
 [flow]: ../AGENTS.md#planning-and-completion
-[i1]: https://github.com/Kautenja/RackNES/issues/1
-[i5]: https://github.com/Kautenja/RackNES/issues/5
-[i6]: https://github.com/Kautenja/RackNES/issues/6
-[i12]: https://github.com/Kautenja/RackNES/issues/12
-[i24]: https://github.com/Kautenja/RackNES/issues/24
-[i26]: https://github.com/Kautenja/RackNES/issues/26
-[i31]: https://github.com/Kautenja/RackNES/issues/31
-[i45]: https://github.com/Kautenja/RackNES/issues/45
-[i51]: https://github.com/Kautenja/RackNES/issues/51
-[i52]: https://github.com/Kautenja/RackNES/issues/52
+[i1]: https://github.com/Arhythmetic-Units/RackNES/issues/1
+[i5]: https://github.com/Arhythmetic-Units/RackNES/issues/5
+[i6]: https://github.com/Arhythmetic-Units/RackNES/issues/6
+[i12]: https://github.com/Arhythmetic-Units/RackNES/issues/12
+[i24]: https://github.com/Arhythmetic-Units/RackNES/issues/24
+[i26]: https://github.com/Arhythmetic-Units/RackNES/issues/26
+[i31]: https://github.com/Arhythmetic-Units/RackNES/issues/31
+[i45]: https://github.com/Arhythmetic-Units/RackNES/issues/45
+[i51]: https://github.com/Arhythmetic-Units/RackNES/issues/51
+[i52]: https://github.com/Arhythmetic-Units/RackNES/issues/52

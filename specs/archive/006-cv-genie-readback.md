@@ -155,5 +155,5 @@ Record dates, commits, fixture identities, measured message latency, actual
 commands, platforms, manual observations, and limitations here. No readback
 implementation or validation has been completed by this planning change.
 
-[issue]: https://github.com/Kautenja/RackNES/issues/51
-[origin]: https://github.com/Kautenja/RackNES/issues/6
+[issue]: https://github.com/Arhythmetic-Units/RackNES/issues/51
+[origin]: https://github.com/Arhythmetic-Units/RackNES/issues/6
