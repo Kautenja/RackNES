@@ -1,6 +1,6 @@
 {
   "slug": "KautenjaDSP-RackNES",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "minRackVersion": "2.4.0",
   "license": "GPL-3.0-or-later",
   "name": "RackNES",

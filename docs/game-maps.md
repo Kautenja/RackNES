@@ -31,6 +31,10 @@ would not meet the narrower admission criteria for new maps.
 
 ### Existing Maps: IDs 0--1
 
+Lejandra Matos-Rodríguez (System Delexandra,
+[@anlexmatos](https://github.com/anlexmatos)) implemented the original
+Super Mario Bros. and The Legend of Zelda maps as part of CV Genie.
+
 Super Mario Bros. and The Legend of Zelda retain all 53 and 55 entries,
 respectively, with unchanged order, names, byte endpoints, and trigger modes.
 Their inherited catalog does not identify precise ROM revisions. Sources:

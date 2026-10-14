@@ -1,8 +1,9 @@
 # RackNES: A Voltage-Controlled NES Emulator as a Musical Instrument
 
-A technical report by Christian Kauten (Arhythmetic Units), manuscript version 1,
-dated September 30, 2026. It describes RackNES's foundations, architecture, musical
-interaction, and implementation lessons for future engineers and researchers.
+A technical report by Christian Kauten (Arhythmetic Units) and Lejandra
+Matos-Rodríguez (System Delexandra), manuscript version 2, dated October 14,
+2026. It describes RackNES's foundations, architecture, musical interaction,
+and implementation lessons for future engineers and researchers.
 A dated mapper addendum records the subsequent AxROM, MMC2, and MMC3 integrations
 separately from the pinned historical implementation account.
 It records the development implementation through `2cea414`, reviewed at
