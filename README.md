@@ -52,7 +52,8 @@ through its own effects chain.
 ## CV Genie
 
 Go beyond the controllers. CV Genie is a Game Genie-inspired input expander,
-developed by [@anlexmatos][anlexmatos], that writes CV into game memory.
+developed by [Lejandra Matos-Rodríguez][anlexmatos] of **System Delexandra**,
+that writes CV into game memory.
 Its eight rows expose named game elements from ten built-in maps, including
 **Super Mario Bros.**, **The Legend of Zelda**, **Mega Man**, **Castlevania**,
 **Contra**, **Metroid**, **Ninja Gaiden**, and **Tetris**. See the CV Genie
@@ -182,13 +183,13 @@ same BibTeX entry.
 
 ```bibtex
 @techreport{kauten2026racknes,
-  author      = {Kauten, Christian},
+  author      = {Kauten, Christian and Matos-Rodr{\'i}guez, Lejandra},
   title       = {{RackNES}: A Voltage-Controlled {NES} Emulator as a Musical Instrument},
   institution = {Arhythmetic Units},
   year        = {2026},
-  month       = sep,
+  month       = oct,
   type        = {Technical report},
-  note        = {Manuscript version 1, dated September 30, 2026; repository manuscript},
+  note        = {Manuscript version 2, dated October 14, 2026; repository manuscript},
   url         = {https://github.com/Arhythmetic-Units/RackNES/tree/master/whitepaper},
 }
 ```
@@ -215,8 +216,9 @@ for component licenses and attribution.
 
 ## Contributors
 
-Many thanks to [@anlexmatos][anlexmatos] for developing the **CV Genie**
-expander module.
+**CV Genie** was developed by [Lejandra Matos-Rodríguez][anlexmatos] of
+**System Delexandra**, including the original Super Mario Bros. and The Legend
+of Zelda memory maps. Contact: [system@delexandra.com](mailto:system@delexandra.com).
 
 ## License
 

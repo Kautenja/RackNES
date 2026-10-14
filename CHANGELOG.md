@@ -171,3 +171,15 @@
     empty emulator, and preserve the current display when a ROM load fails.
 -   Update the manuals to reflect these fixes and add focused SDK-backed
     regression checks.
+
+### 2.2.1 (Unreleased)
+
+-   Credit CV Genie developer Lejandra Matos-Rodríguez of System Delexandra
+    across the README, manuals, source attribution, and original game maps.
+-   Update both CV Genie panel themes with the developer's current name and
+    affiliation, and refresh the manual's production screenshot.
+-   Add Lejandra as a technical-report coauthor and software contributor in
+    the citation metadata. Publish manuscript version 2, dated October 14,
+    2026, preserving the report's historical implementation account.
+-   Update both manuals to version 2.2.1. Plugin and module identities, saved
+    patches, emulation, and CV processing remain unchanged.

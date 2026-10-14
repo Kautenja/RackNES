@@ -1,4 +1,5 @@
 // Memory map data from https://datacrystal.romhacking.net
+// CV Genie originally developed by Lejandra Matos-Rodríguez (System Delexandra).
 // Copyright 2020 Christian Kauten
 //
 // This program is free software: you can redistribute it and/or modify

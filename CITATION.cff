@@ -10,8 +10,12 @@ abstract: >-
 authors:
   - family-names: Kauten
     given-names: Christian
+  - family-names: Matos-Rodríguez
+    given-names: Lejandra
+    affiliation: System Delexandra
+    email: system@delexandra.com
 repository-code: "https://github.com/Arhythmetic-Units/RackNES"
-version: "2.2.0"
+version: "2.2.1"
 license: GPL-3.0-or-later
 keywords:
   - Nintendo Entertainment System
@@ -28,10 +32,14 @@ preferred-citation:
     - family-names: Kauten
       given-names: Christian
       affiliation: Arhythmetic Units
+    - family-names: Matos-Rodríguez
+      given-names: Lejandra
+      affiliation: System Delexandra
+      email: system@delexandra.com
   institution:
     name: Arhythmetic Units
   year: 2026
-  month: 9
-  version: "1"
+  month: 10
+  version: "2"
   url: "https://github.com/Arhythmetic-Units/RackNES/tree/master/whitepaper"
-  notes: "Manuscript version 1, dated September 30, 2026; repository manuscript"
+  notes: "Manuscript version 2, dated October 14, 2026; repository manuscript"
